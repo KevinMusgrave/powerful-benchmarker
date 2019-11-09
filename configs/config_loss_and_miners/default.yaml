@@ -1,0 +1,15 @@
+loss_funcs:
+  metric_loss: 
+    MultiSimilarityLoss:
+      alpha: 0.1
+      beta: 40
+      base: 0.5
+
+sampler:
+  MPerClassSampler:
+    m: 5
+
+mining_funcs:
+  post_gradient_miner: 
+    MultiSimilarityMiner: 
+      epsilon: 0.1

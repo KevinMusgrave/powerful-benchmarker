@@ -1,0 +1,17 @@
+pytorch_home: /home/tkm45/NEW_STUFF/pytorch_models
+dataset_root: /home/tkm45/NEW_STUFF/data
+
+training_method: MetricLossOnly
+testing_method: GlobalEmbeddingSpaceTester
+dataset:  
+  CUB200:
+num_epochs_train: 4
+iterations_per_epoch: 100
+save_interval: 2
+split_schemes: 
+  - simple
+
+label_hierarchy_level: 0
+dataloader_num_workers: 2
+skip_eval: False
+check_pretrained_accuracy: False

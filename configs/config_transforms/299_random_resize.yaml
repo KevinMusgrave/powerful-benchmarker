@@ -1,0 +1,16 @@
+transforms:
+  train:
+    Resize:
+      size: 337
+    RandomResizedCrop:
+      scale: 0.16 1
+      ratio: 0.75 1.33
+      size: 299
+    RandomHorizontalFlip:
+      p: 0.5
+
+  eval:
+    Resize:
+      size: 337
+    CenterCrop:
+      size: 299
