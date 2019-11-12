@@ -10,8 +10,9 @@ iterations_per_epoch: 100
 save_interval: 2
 split_schemes: 
   - simple
+num_variants_per_split_scheme: 4
 
 label_hierarchy_level: 0
-dataloader_num_workers: 2
+dataloader_num_workers: 32
 skip_eval: False
 check_pretrained_accuracy: False

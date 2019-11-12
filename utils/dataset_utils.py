@@ -1,7 +1,5 @@
 #! /usr/bin/env python3
 
-
-import logging
 from collections import OrderedDict, defaultdict
 
 import numpy as np
@@ -10,12 +8,9 @@ import torch.utils.data
 
 def get_labels_to_indices(labels):
     """
-    Creates self.labels_to_indices, which is a dictionary mapping each label
+    Creates labels_to_indices, which is a dictionary mapping each label
     to a numpy array of indices that will be used to index into self.dataset
-    Creates self.zero_indexed_label_map, which simply maps self.labels to
-    another label set that starts at 0. This is useful during training.
     """
-    logging.info("setting up labels")  # map from label to dataset indices
     labels_to_indices = {}
     if labels.ndim == 1:
         labels_to_indices[0] = defaultdict(list)
@@ -94,10 +89,13 @@ def numeric_class_rule(rule_params, mode="range"):
     """
     ### maybe add other modes later
     a, b = rule_params
-    return lambda label: a <= label <= b
+    if a < b:
+        return lambda label: a <= label <= b
+    elif a > b:
+        return lambda label: label >= a or label <= b
 
 
-def create_one_split_scheme(dataset, split_scheme_name, hierarchy_level=0):
+def create_one_split_scheme(dataset, split_scheme_name, start_idx=0, hierarchy_level=0):
     """
     Args:
         dataset: type torch.utils.data.Dataset, the dataset to return a subset of
@@ -121,13 +119,12 @@ def create_one_split_scheme(dataset, split_scheme_name, hierarchy_level=0):
         split_lens["test"] += num_original_labels - sum(
             v for k, v in split_lens.items()
         )
-        logging.info(split_lens)
         assert sum(v for _, v in split_lens.items()) == num_original_labels
 
-        start_idx = 0
+        start_idx = int(start_idx*len(sorted_label_set))
         for k, v in split_lens.items():
-            s = sorted_label_set[start_idx]
-            e = sorted_label_set[start_idx + v - 1]
+            s = sorted_label_set[start_idx % len(sorted_label_set)]
+            e = sorted_label_set[(start_idx + v - 1) % len(sorted_label_set)]
             class_rule = numeric_class_rule([s, e], mode="range")
             traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
             start_idx += v

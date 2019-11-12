@@ -103,7 +103,9 @@ class BaseAPIParser:
             self.split_manager = split_manager.SplitManager(input_dataset_splits=input_dataset_splits)
         else:
             chosen_dataset = chosen_dataset(**dataset_params)
-            self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, split_scheme_names=self.args.split_schemes)
+            self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
+                                                            split_scheme_names=self.args.split_schemes, 
+                                                            num_variants_per_split_scheme=self.args.num_variants_per_split_scheme)
 
     def set_transforms(self):
         try:
@@ -238,7 +240,6 @@ class BaseAPIParser:
 
     def get_tester_kwargs(self):
         return {
-            "k": self.args.eval_k, 
             "reference_set": self.args.eval_reference_set,
             "normalize_embeddings": self.args.eval_normalize_embeddings,
             "use_trunk_output": self.args.eval_use_trunk_output,

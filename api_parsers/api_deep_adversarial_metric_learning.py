@@ -4,7 +4,7 @@ import architectures as arch
 from .api_train_with_classifier import APIMaybeExtendTrainWithClassifier
 
 
-class APIParserDeepAdversarialMetricLearning(APIMaybeExtendTrainWithClassifier):
+class APIDeepAdversarialMetricLearning(APIMaybeExtendTrainWithClassifier):
     def get_trainer_kwargs(self):
         trainer_kwargs = self.inheriter.get_trainer_kwargs()
         trainer_kwargs["g_alone_epochs"] = self.args.g_alone_epochs

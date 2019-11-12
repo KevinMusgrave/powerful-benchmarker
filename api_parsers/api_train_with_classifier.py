@@ -3,7 +3,7 @@
 from .base_api_parser import BaseAPIParser
 from utils import common_functions as c_f
 
-class APIParserTrainWithClassifier(BaseAPIParser):
+class APITrainWithClassifier(BaseAPIParser):
     def model_getter_dict(self):
         getter_dict = super().model_getter_dict()
         getter_dict["classifier"] = lambda model_type: self.get_embedder_model(
@@ -15,7 +15,7 @@ class APIParserTrainWithClassifier(BaseAPIParser):
 
 
 
-class APIMaybeExtendTrainWithClassifier(APIParserTrainWithClassifier):
+class APIMaybeExtendTrainWithClassifier(APITrainWithClassifier):
     def __init__(self, args):
         super().__init__(args)
         loss_weights = getattr(self.args, "loss_weights", None)

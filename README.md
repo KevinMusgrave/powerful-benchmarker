@@ -3,17 +3,7 @@
 ## See this [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing) for benchmark results (in progress)
 
 ## Dependencies
-Python 3
-- torch
-- torchvision
-- pretrainedmodels
-- numpy
-- matplotlib
-- scipy
-- pytorch_metric_learning
-- easy_module_attribute_getter
-- record_keeper
-- tensorboard
+This library was tested using Python 3.7. For package dependencies see [conda_env.yaml](conda_env.yaml). 
 
 ## Basic Usage
 First, open configs/config_general/default.yaml, and set pytorch_home and dataset_root.

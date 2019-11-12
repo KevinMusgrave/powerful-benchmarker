@@ -13,12 +13,14 @@ class SplitManager:
         train_transform=None,
         eval_transform=None,
         split_scheme_names=None,
+        num_variants_per_split_scheme=1,
         input_dataset_splits=None,
     ):
         self.original_dataset = dataset
         self.train_transform = train_transform
         self.eval_transform = eval_transform
         self.split_scheme_names = split_scheme_names
+        self.num_variants_per_split_scheme = num_variants_per_split_scheme
         self.input_dataset_splits = input_dataset_splits
         self.create_split_schemes()
 
@@ -34,9 +36,10 @@ class SplitManager:
         else:
             self.split_schemes = OrderedDict()
             for split_scheme_name in self.split_scheme_names:
-                self.split_schemes[split_scheme_name] = d_u.create_one_split_scheme(
-                    self.original_dataset, split_scheme_name
-                )
+                for i,start_idx in enumerate(np.linspace(0, 1, self.num_variants_per_split_scheme, endpoint=False)):
+                    self.split_schemes['%s_%d'%(split_scheme_name,i)] = d_u.create_one_split_scheme(
+                        self.original_dataset, split_scheme_name, start_idx)
+            self.split_scheme_names = list(self.split_schemes.keys())
 
     def set_curr_split_scheme(self, split_scheme_name):
         self.curr_split_scheme_name = split_scheme_name
@@ -86,9 +89,7 @@ class SplitManager:
     def set_label_map(self):
         self.label_map = {}
         for hierarchy_level, v in self.labels_to_indices.items():
-            self.label_map[hierarchy_level] = d_u.make_label_to_rank_dict(
-                list(v.keys())
-            )
+            self.label_map[hierarchy_level] = d_u.make_label_to_rank_dict(list(v.keys()))
 
     def map_labels(self, labels, hierarchy_level):
         try:
@@ -97,14 +98,10 @@ class SplitManager:
                 if v is None:
                     output[k] = None
                 else:
-                    output[k] = np.array(
-                        [self.label_map[hierarchy_level][x] for x in v], dtype=np.int
-                    )
+                    output[k] = np.array([self.label_map[hierarchy_level][x] for x in v], dtype=np.int)
             return output
         except BaseException:
-            return np.array(
-                [self.label_map[hierarchy_level][x] for x in labels], dtype=np.int
-            )
+            return np.array([self.label_map[hierarchy_level][x] for x in labels], dtype=np.int)
 
     def get_num_labels(self, hierarchy_level):
         return len(self.labels_to_indices[hierarchy_level])
