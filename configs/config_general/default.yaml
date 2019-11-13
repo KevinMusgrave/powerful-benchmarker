@@ -8,8 +8,9 @@ dataset:
 num_epochs_train: 4
 iterations_per_epoch: 100
 save_interval: 2
-split_schemes: 
-  - simple
+split:
+  schemes: 
+    - medium
 num_variants_per_split_scheme: 4
 
 label_hierarchy_level: 0

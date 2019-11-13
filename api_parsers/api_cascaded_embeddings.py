@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-
 import torch
 import architectures as arch
 from .api_train_with_classifier import APIMaybeExtendTrainWithClassifier

@@ -44,11 +44,18 @@ class BaseAPIParser:
         self.save_config_files()
         self.set_split_manager()
         self.make_sub_experiment_dirs()
+        best_accuracies = {}
         for split_scheme_name in self.split_manager.split_scheme_names:
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
             self.set_models_optimizers_losses()
             self.eval() if self.args.run_eval_only else self.train()
+            if self.ran_eval():
+                best_accuracies[split_scheme_name] = self.get_best_epoch_and_accuracy()
+        return best_accuracies
+
+    def ran_eval(self):
+        return self.args.run_eval_only or not self.args.skip_eval
 
     def beginning_of_training(self):
         return (not self.args.resume_training) and (not self.args.run_eval_only)
@@ -71,7 +78,7 @@ class BaseAPIParser:
         ]
 
     def save_config_files(self):
-        c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training)
+        c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training or self.args.run_eval_only)
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 
@@ -93,18 +100,18 @@ class BaseAPIParser:
         chosen_dataset, dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
         dataset_params["dataset_root"] = self.args.dataset_root
 
-        if self.args.split_schemes[0] == "fixed":
+        if self.args.split["schemes"][0] == "fixed":
             input_dataset_splits = {
                 "fixed": {
                     k: (chosen_dataset(split=k, **dataset_params), None)
-                    for k in self.args.split_schemes[1:]
+                    for k in self.args.split["schemes"][1:]
                 }
             }
             self.split_manager = split_manager.SplitManager(input_dataset_splits=input_dataset_splits)
         else:
             chosen_dataset = chosen_dataset(**dataset_params)
             self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
-                                                            split_scheme_names=self.args.split_schemes, 
+                                                            split_scheme_names=self.args.split["schemes"], 
                                                             num_variants_per_split_scheme=self.args.num_variants_per_split_scheme)
 
     def set_transforms(self):
@@ -190,15 +197,26 @@ class BaseAPIParser:
             embedder_model = architectures.misc_models.Identity()
         return trunk_model, embedder_model
 
-    def eval_model(self, epoch, load_model=False):
-        dataset_dict = self.split_manager.get_dataset_dict(is_training=False)
+    def get_best_epoch_and_accuracy(self):
+        split_name = "val" if "val" in self.split_manager.curr_split_scheme.keys() else "test"
+        return self.tester_obj.get_best_epoch_and_accuracy(split_name)
+
+    def get_splits_exclusion_list(self, splits_to_eval):
+        if not self.split_manager.curr_split_scheme_name.startswith('simple'):
+            if splits_to_eval is None or any(x in ["train", "val"] for x in splits_to_eval):
+                return ["test"]
+        return []
+
+    def eval_model(self, epoch, splits_to_eval=None, load_model=False):
+        splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
+        dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(resume_epoch=epoch)
         else:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model.to(self.device)
         embedder_model.to(self.device)
-        self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model)
+        self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval)
 
     def save_stuff_and_maybe_eval(self, epoch):
         if epoch % self.args.save_interval == 0:
@@ -220,9 +238,10 @@ class BaseAPIParser:
         resume_epoch = 0
         self.pickler_and_csver.load_records()
         if self.args.resume_training:
-            resume_epoch = c_f.latest_version(self.model_folder, "/trunk_*.pth")
-            for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
-                c_f.load_dict_of_models(obj_dict, resume_epoch, self.model_folder)
+            resume_epoch = c_f.latest_version(self.model_folder, "/trunk_*.pth") or 0
+            if resume_epoch > 0:
+                for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
+                    c_f.load_dict_of_models(obj_dict, resume_epoch, self.model_folder)
         return resume_epoch
 
     def set_models_optimizers_losses(self):
@@ -244,7 +263,6 @@ class BaseAPIParser:
             "normalize_embeddings": self.args.eval_normalize_embeddings,
             "use_trunk_output": self.args.eval_use_trunk_output,
             "batch_size": self.args.eval_batch_size,
-            "split_for_best_epoch": "val" if "val" in self.split_manager.curr_split_scheme.keys() else "test",
             "metric_for_best_epoch": self.args.eval_metric_for_best_epoch,
             "data_device": self.device,
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
@@ -303,5 +321,5 @@ class BaseAPIParser:
         else:
             epochs_list = [int(x) for x in self.args.run_eval_only]
         for epoch in epochs_list:
-            self.eval_model(epoch, load_model=True)
+            self.eval_model(epoch, splits_to_eval=self.args.splits_to_eval, load_model=True)
             self.pickler_and_csver.save_records()

@@ -2,7 +2,8 @@
 from easy_module_attribute_getter import YamlReader
 import argparse
 import api_parsers
-
+import logging
+logging.getLogger().setLevel(logging.INFO)
 
 def setup_argparser(config_foldernames):
     parser = argparse.ArgumentParser()
@@ -11,13 +12,14 @@ def setup_argparser(config_foldernames):
     parser.add_argument("--experiment_name", type=str, required=True)
     parser.add_argument("--resume_training", action="store_true")
     parser.add_argument("--run_eval_only", nargs="+", type=str, default=None)
+    parser.add_argument("--splits_to_eval", nargs="+", type=str, default=None)
     parser.add_argument("--root_config_folder", type=str, required=False, default="configs")
     for c in config_foldernames:
         parser.add_argument("--%s" % c, nargs="+", type=str, required=False, default=["default"])
     return parser
 
 def determine_where_to_get_yamls(args, config_foldernames):
-    if args.resume_training:
+    if args.resume_training or args.run_eval_only:
         config_paths = ['%s/%s.yaml'%(args.place_to_save_configs, v) for v in config_foldernames]
     else:
         config_paths = []
@@ -38,4 +40,5 @@ if __name__ == "__main__":
     YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
     args, loaded_yaml, args.dict_of_yamls = YR.load_yamls(**determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=1)
     api_parser = getattr(api_parsers, "API"+args.training_method)(args)
-    api_parser.run()
+    best_accuracies = api_parser.run()
+    print(best_accuracies)

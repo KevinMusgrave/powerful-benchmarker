@@ -1,7 +1,7 @@
-eval_reference_set: compared_to_self
+eval_reference_set: compared_to_sets_combined
 eval_normalize_embeddings: True
 eval_use_trunk_output: False
 eval_batch_size: 32
-eval_metric_for_best_epoch: recall_at_1
+eval_metric_for_best_epoch: ordered_r_precision
 eval_dataloader_num_workers: 32
 

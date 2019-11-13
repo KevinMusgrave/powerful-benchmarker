@@ -48,24 +48,20 @@ class SplitManager:
     def set_curr_split(self, split_name, is_training):
         """
         Sets self.dataset and self.labels to a specific split within the current
-        split_scheme. There is a special case for "distractors", because we
-        assume that the notion of splits and labels is irrelevant for distractors.
+        split_scheme.
         """
         self.curr_split_name = split_name
         self.is_training = is_training
-        if self.curr_split_name == "distractors":
-            self.dataset = self.distractors
-        else:
-            transform = self.train_transform if self.is_training else self.eval_transform
-            self.dataset, subset_indices = self.curr_split_scheme[self.curr_split_name]
-            self.set_dataset_transform(transform)
-            if self.is_training and not hasattr(self, "labels_to_indices"):
-                if self.input_dataset_splits is None:
-                    label_source = self.original_dataset.labels[subset_indices]
-                else:
-                    label_source = self.dataset.labels
-                self.set_labels_to_indices(label_source)
-                self.set_label_map()
+        transform = self.train_transform if self.is_training else self.eval_transform
+        self.dataset, subset_indices = self.curr_split_scheme[self.curr_split_name]
+        self.set_dataset_transform(transform)
+        if self.is_training:
+            if self.input_dataset_splits is None:
+                label_source = self.original_dataset.labels[subset_indices]
+            else:
+                label_source = self.dataset.labels
+            self.set_labels_to_indices(label_source)
+            self.set_label_map()
         print("SPLIT INFO: %s / %s / length %d" %
               (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
 
@@ -106,9 +102,10 @@ class SplitManager:
     def get_num_labels(self, hierarchy_level):
         return len(self.labels_to_indices[hierarchy_level])
 
-    def get_dataset_dict(self, is_training):
+    def get_dataset_dict(self, exclusion_list, is_training):
         dataset_dict = {}
         for split_name, dataset in self.curr_split_scheme.items():
-            self.set_curr_split(split_name, is_training)
-            dataset_dict[split_name] = self.dataset
+            if split_name not in exclusion_list:
+                self.set_curr_split(split_name, is_training)
+                dataset_dict[split_name] = self.dataset
         return dataset_dict
