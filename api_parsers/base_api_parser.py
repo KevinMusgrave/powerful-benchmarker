@@ -44,18 +44,11 @@ class BaseAPIParser:
         self.save_config_files()
         self.set_split_manager()
         self.make_sub_experiment_dirs()
-        best_accuracies = {}
         for split_scheme_name in self.split_manager.split_scheme_names:
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
             self.set_models_optimizers_losses()
             self.eval() if self.args.run_eval_only else self.train()
-            if self.ran_eval():
-                best_accuracies[split_scheme_name] = self.get_best_epoch_and_accuracy()
-        return best_accuracies
-
-    def ran_eval(self):
-        return self.args.run_eval_only or not self.args.skip_eval
 
     def beginning_of_training(self):
         return (not self.args.resume_training) and (not self.args.run_eval_only)
@@ -197,14 +190,9 @@ class BaseAPIParser:
             embedder_model = architectures.misc_models.Identity()
         return trunk_model, embedder_model
 
-    def get_best_epoch_and_accuracy(self):
-        split_name = "val" if "val" in self.split_manager.curr_split_scheme.keys() else "test"
-        return self.tester_obj.get_best_epoch_and_accuracy(split_name)
-
     def get_splits_exclusion_list(self, splits_to_eval):
-        if not self.split_manager.curr_split_scheme_name.startswith('simple'):
-            if splits_to_eval is None or any(x in ["train", "val"] for x in splits_to_eval):
-                return ["test"]
+        if splits_to_eval is None or any(x in ["train", "val"] for x in splits_to_eval):
+            return ["test"]
         return []
 
     def eval_model(self, epoch, splits_to_eval=None, load_model=False):
@@ -316,7 +304,9 @@ class BaseAPIParser:
             self.epoch += 1
 
     def eval(self):
-        if self.args.run_eval_only == ["all"]:
+        if self.args.run_eval_only == ["best"]:
+            epochs_list = [self.tester_obj.get_best_epoch_and_accuracy('val')[0]]
+        elif self.args.run_eval_only == ["all"]:
             epochs_list = range(self.args.save_interval, self.args.num_epochs_train + 1, self.args.save_interval)
         else:
             epochs_list = [int(x) for x in self.args.run_eval_only]

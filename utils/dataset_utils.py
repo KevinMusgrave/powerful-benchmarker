@@ -44,7 +44,7 @@ def get_label_based_split_scheme_ratios(split_scheme_name):
     classes, and tests on the remaining 75% of classes.
     """
     d = {
-        "simple": {"train": 0.5, "test": 0.5},
+        "old_approach": {"train": 0.5, "val": 0.5},
         "hard": {"train": 0.2, "val": 0.05, "test": 0.75},
         "medium": {"train": 0.4, "val": 0.1, "test": 0.5},
         "easy": {"train": 0.6, "val": 0.15, "test": 0.25},
@@ -116,7 +116,7 @@ def create_one_split_scheme(dataset, split_scheme_name, start_idx=0, hierarchy_l
         num_original_labels = len(sorted_label_set)
         class_ratios = get_label_based_split_scheme_ratios(split_scheme_name)
         split_lens = {k: int(num_original_labels * v) for k, v in class_ratios.items()}
-        split_lens["test"] += num_original_labels - sum(
+        split_lens["train"] += num_original_labels - sum(
             v for k, v in split_lens.items()
         )
         assert sum(v for _, v in split_lens.items()) == num_original_labels

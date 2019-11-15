@@ -40,5 +40,4 @@ if __name__ == "__main__":
     YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
     args, loaded_yaml, args.dict_of_yamls = YR.load_yamls(**determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=1)
     api_parser = getattr(api_parsers, "API"+args.training_method)(args)
-    best_accuracies = api_parser.run()
-    print(best_accuracies)
+    api_parser.run()
