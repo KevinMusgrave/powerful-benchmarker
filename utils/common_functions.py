@@ -56,7 +56,7 @@ def load_dict_of_models(input_dict, resume_epoch, folder):
         opt_cond = "optimizer" in k
         if opt_cond or len([i for i in v.parameters()]) > 0:
             model_path = experiment_filename(folder, k, resume_epoch)
-            logging.info("LOADING ", model_path)
+            logging.info("LOADING %s"%model_path)
             load_model(v, model_path)
 
 

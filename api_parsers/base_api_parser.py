@@ -130,7 +130,7 @@ class BaseAPIParser:
             if output_size:
                 model_args["layer_sizes"].append(output_size)
         model = model(**model_args)
-        logging.info("EMBEDDER MODEL ", model)
+        logging.info("EMBEDDER MODEL %s"%model)
         return model
 
     def get_trunk_model(self, model_type, force_pretrained=False):
