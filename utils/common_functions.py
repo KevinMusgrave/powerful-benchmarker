@@ -10,6 +10,7 @@ import torch
 from torch.autograd import Variable
 import yaml
 from easy_module_attribute_getter import utils as emag_utils
+import logging
 
 def experiment_filename(folder, basename, identifier, extension=".pth"):
     if identifier is None:
@@ -55,7 +56,7 @@ def load_dict_of_models(input_dict, resume_epoch, folder):
         opt_cond = "optimizer" in k
         if opt_cond or len([i for i in v.parameters()]) > 0:
             model_path = experiment_filename(folder, k, resume_epoch)
-            print("LOADING ", model_path)
+            logging.info("LOADING ", model_path)
             load_model(v, model_path)
 
 

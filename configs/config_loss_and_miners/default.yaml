@@ -7,7 +7,7 @@ loss_funcs:
 
 sampler:
   MPerClassSampler:
-    m: 5
+    m: 8
 
 mining_funcs:
   post_gradient_miner: 

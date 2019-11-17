@@ -11,7 +11,7 @@ import torch
 import architectures
 import os
 import shutil
-
+import logging
 
 class BaseAPIParser:
 
@@ -55,7 +55,7 @@ class BaseAPIParser:
 
     def make_dir(self):
         if os.path.isdir(self.experiment_folder):
-            print("Experiment name already taken!")
+            logging.info("Experiment name already taken!")
             sys.exit()
         c_f.makedir_if_not_there(self.experiment_folder)
 
@@ -84,7 +84,7 @@ class BaseAPIParser:
                     param_source = possible_params[basename]
                     break
             o, s, g = self.pytorch_getter.get_optimizer(param_source, yaml_dict=v)
-            print("%s\n%s" % (k, o))
+            logging.info("%s\n%s" % (k, o))
             if o is not None: self.optimizers[k] = o
             if s is not None: self.lr_schedulers[k + "_scheduler"] = s
             if g is not None: self.gradient_clippers[k + "_grad_clipper"] = g
@@ -130,7 +130,7 @@ class BaseAPIParser:
             if output_size:
                 model_args["layer_sizes"].append(output_size)
         model = model(**model_args)
-        print("EMBEDDER MODEL ", model)
+        logging.info("EMBEDDER MODEL ", model)
         return model
 
     def get_trunk_model(self, model_type, force_pretrained=False):

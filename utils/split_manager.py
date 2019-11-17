@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 from utils import dataset_utils as d_u
-
+import logging
 
 class SplitManager:
     def __init__(
@@ -62,7 +62,7 @@ class SplitManager:
                 label_source = self.dataset.labels
             self.set_labels_to_indices(label_source)
             self.set_label_map()
-        print("SPLIT INFO: %s / %s / length %d" %
+        logging.info("SPLIT: %s / %s / length %d" %
               (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
 
     def set_transforms(self, train_transform, eval_transform):
