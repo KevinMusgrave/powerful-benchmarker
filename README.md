@@ -14,6 +14,7 @@
 - pretrainedmodels
 - pytorch_metric_learning
 - record_keeper
+
 For conda users, package dependencies are also provided in [conda_env.yaml](conda_env.yaml) and [conda_env_all_packages.yaml](conda_env_all_packages.yaml)  
 
 ## Organize the datasets (after downloading them)
@@ -36,7 +37,7 @@ Download the datasets here:
 - [Cars196](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
 - [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
 
-## Set file paths
+## Set default file paths
 1. Open ```configs/config_general/default.yaml```:
     - set ```pytorch_home``` to where you want to save downloaded pretrained models.
     - set ```dataset_root``` to where your datasets are located. 
@@ -69,6 +70,50 @@ To view experiment data, go to the parent of ```root_experiment_folder``` and st
 tensorboard --logdir <root_experiment_folder>
 ```
 Then in your browser, go to ```localhost:6006``` and to see loss histories, optimizer learning rates, train/val accuracy etc. All experiment data is also automatically saved in pickle and CSV format in the ```saved_pkls``` folder.
+
+## Override config options at the command line
+The default config files use a batch size of 128. What if you want to use a batch size of 256? Just write the flag at the command line:
+```
+python run.py --experiment_name test2 --batch_size 256
+```
+All options in the config files can be overriden via the command line. This includes nested config options. For example, the default setting for ```mining_funcs``` (located in ```config/config_loss_and_miners/default.yaml```) is:
+```yaml
+mining_funcs:
+  post_gradient_miner: 
+    MultiSimilarityMiner: 
+      epsilon: 0.1
+```
+If you want to use PairMarginMiner instead, you can do:
+```
+python run.py \
+--experiment_name test2 \
+--mining_funcs~OVERRIDE~ {post_gradient_miner: PairMarginMiner: {pos_margin: 0.5, neg_margin: 0.5}}}
+```
+Or if you don't want to use a miner at all:
+```
+python run.py \
+--experiment_name test2 \
+--mining_funcs~OVERRIDE~ {}
+```
+The ```~OVERRIDE~``` suffix is required to completely override complex config options. The reason is that by default, complex options are merged. For example, the default optimizers are:
+```
+optimizers:
+  trunk_optimizer:
+    Adam:
+      lr: 0.00001
+      weight_decay: 0.00005
+  embedder_optimizer:
+    Adam:
+      lr: 0.00001
+      weight_decay: 0.00005
+```
+If you want to add an optimizer for your loss function's parameters, just exclude the ```~OVERRIDE~``` suffix.
+```
+python run.py \
+--experiment_name test2 \
+--optimizers {hyperparam_optimizer: {SGD: {lr: 0.01}}} 
+```
+Now the ```optimizers``` parameter contains 3 optimizers because the command line flag was merged with the flag in the yaml file. To see more details about this functionality, check out [easy_module_attribute_getter](https://github.com/KevinMusgrave/easy_module_attribute_getter).
 
 ## Config options
 ### config_general
