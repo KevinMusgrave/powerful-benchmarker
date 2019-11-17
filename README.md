@@ -1,23 +1,74 @@
-# powerful_benchmarker
+# Benchmarking Metric-Learning Algorithms
 
 ## See this [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing) for benchmark results (in progress)
 
 ## Dependencies
-This library was tested using Python 3.7. For package dependencies see [conda_env.yaml](conda_env.yaml). 
+- Python 3.7
+- pytorch
+- torchvision
+- scikit-learn
+- faiss-gpu
+- tensorboard
+- easy_module_attribute_getter
+- matplotlib
+- pretrainedmodels
+- pytorch_metric_learning
+- record_keeper
+For conda users, package dependencies are also provided in [conda_env.yaml](conda_env.yaml) and [conda_env_all_packages.yaml](conda_env_all_packages.yaml)  
 
-## Basic Usage
-First, open configs/config_general/default.yaml, and set pytorch_home and dataset_root.
-Next, open run.py and change the default value for the "--root_experiment_folder" flag. This is where you want all experiment data to be saved.
+## Organize the datasets (after downloading them)
+```
+<dataset_root>
+|-cub2011
+  |-attributes.txt
+  |-CUB_200_2011
+    |-images
+|-cars196
+  |-cars_annos.mat
+  |-car_ims
+|-Stanford_Online_Products
+  |-bicycle_final
+  |-cabinet_final
+  ...
+```
+Download the datasets here:
+- [CUB200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html)
+- [Cars196](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
+- [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
 
-Assuming you have the CUB200 dataset stored at dataset_root, you should be able to run the following command, which will run an experiment using the default config files in the configs folder. The experiment data will be saved in <your_root_experiment_folder>/test1.
+## Set file paths
+1. Open ```configs/config_general/default.yaml```:
+    - set ```pytorch_home``` to where you want to save downloaded pretrained models.
+    - set ```dataset_root``` to where your datasets are located. 
+2. Open run.py:
+    - Set the default value for the ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
+
+## Try a basic command
+The following command will run an experiment using the default config files in the configs folder.
 ```
 python run.py --experiment_name test1 
 ```
-To view experiment data, go to the parent folder of your root experiment folder and start tensorboard. 
+Experiment data is saved in the following format:
 ```
-tensorboard --logdir <your_root_experiment_folder> --port=<port_you_want_to_use>
+<root_experiment_folder>
+|-<experiment_name>
+  |-configs
+    |-config_eval.yaml
+    |-config_general.yaml
+    |-config_loss_and_miners.yaml
+    |-config_models.yaml
+    |-config_optimizers.yaml
+    |-config_transforms.yaml
+  |-<split scheme name>
+    |-saved_models
+    |-saved_pkls
+    |-tensorboard_logs
 ```
-Then in your browser, go to localhost:<port_you_want_to_use> and you will see experiment data, like loss histories, optimizer learning rates, train/test accuracy etc. All experiment data is also automatically saved in pickle and CSV format in each experiment folder.
+To view experiment data, go to the parent of ```root_experiment_folder``` and start tensorboard: 
+```
+tensorboard --logdir <root_experiment_folder>
+```
+Then in your browser, go to ```localhost:6006``` and to see loss histories, optimizer learning rates, train/val accuracy etc. All experiment data is also automatically saved in pickle and CSV format in the ```saved_pkls``` folder.
 
 ## Config options
 ### config_general
