@@ -2,6 +2,8 @@
 
 ## See this [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing) for benchmark results (in progress)
 
+## See [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) for a list of currently available losses, miners, samplers, training methods, and testing methods.
+
 ## Dependencies
 - Python 3.7
 - pytorch
@@ -69,7 +71,21 @@ To view experiment data, go to the parent of ```root_experiment_folder``` and st
 ```
 tensorboard --logdir <root_experiment_folder>
 ```
-Then in your browser, go to ```localhost:6006``` and to see loss histories, optimizer learning rates, train/val accuracy etc. All experiment data is also automatically saved in pickle and CSV format in the ```saved_pkls``` folder.
+Then in your browser, go to ```localhost:6006``` and to see standard things like loss histories, optimizer learning rates, and train/val accuracy. It also includes other interesting information that can help you understand the training process. For example, taken alone, this contrastive loss history plot makes it look like training never progressed:  
+
+![loss_history_example](readme_imgs/loss_history_example.png)
+
+But take a look at the number of pairs that violate the margin:
+
+![nonzero_pairs_example](readme_imgs/nonzero_pairs_example.png)
+
+And look at the number of hard postive and hard negative pairs that the miner is able to extract:
+
+![miner_info_example](readme_imgs/miner_info_example.png)
+
+To learn more about where this info comes from, check out [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) and [record_keeper](https://github.com/KevinMusgrave/record_keeper)
+
+In addition to tensorboard, all experiment data is automatically saved in pickle and CSV format in the ```saved_pkls``` subfolder.
 
 ## Override config options at the command line
 The default config files use a batch size of 128. What if you want to use a batch size of 256? Just write the flag at the command line:
@@ -143,7 +159,7 @@ Now in your experiments folder you'll see the original config files, and a new f
   |-configs
     |-config_eval.yaml
     ...
-    |-resume_training_0
+    |-resume_training_config_diffs_1
   ...
 ```
 This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. Every time you resume training, a new folder will be created, showing what parameters changed since the original run.
