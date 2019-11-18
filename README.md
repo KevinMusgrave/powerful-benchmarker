@@ -82,7 +82,7 @@ To view experiment data, go to the parent of ```root_experiment_folder``` and st
 ```
 tensorboard --logdir <root_experiment_folder>
 ```
-Then in your browser, go to ```localhost:6006``` and to see standard things like loss histories, optimizer learning rates, and train/val accuracy. It also includes other interesting information that can help you understand the training process. For example, taken alone, this contrastive loss history plot makes it look like training never progressed:  
+Then in your browser, go to ```localhost:6006``` to see things like loss histories, optimizer learning rates, and train/val accuracy. The tensorboard also includes other interesting information that can help you understand the training process. For example, taken alone, this contrastive loss history plot makes it look like training never progressed:  
 
 ![loss_history_example](readme_imgs/loss_history_example.png)
 
