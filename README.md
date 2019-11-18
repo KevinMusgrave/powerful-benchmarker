@@ -1,4 +1,4 @@
-# Benchmarking Metric-Learning Algorithms
+# Benchmarking Metric-Learning Algorithms the Right Way
 
 ## See this [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing) for benchmark results (in progress)
 
@@ -114,6 +114,39 @@ python run.py \
 --optimizers {hyperparam_optimizer: {SGD: {lr: 0.01}}} 
 ```
 Now the ```optimizers``` parameter contains 3 optimizers because the command line flag was merged with the flag in the yaml file. To see more details about this functionality, check out [easy_module_attribute_getter](https://github.com/KevinMusgrave/easy_module_attribute_getter).
+
+## Combine yaml files at the command line
+The config files are currently separated into 6 folders, for readability. Suppose you want to try Deep Adversarial Metric Learning. You can write a new yaml file in the config_general folder that contains the necessary parameters. But there is no need to rewrite generic parameters like pytorch_home and num_epochs_train. Instead, just tell the program to use both the default config file and your new config file:
+```
+python run.py --experiment_name test3 --config_general default daml
+```
+With this command, ```configs/config_general/default.yaml``` will be loaded first, and then ```configs/config_general/daml.yaml``` will be merged into it. 
+
+It turns out that [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) allows you to run deep adversarial metric learning with a classifier layer. So you can write another yaml file containing the classifier layer parameters and optimizer, and then specify it on the command line:
+```
+python run.py --experiment_name test4 --config_general default daml train_with_classifier
+```
+
+## Resume training
+To resume training from the most recently saved model, you just need to specify ```--experiment_name``` and ```--resume_training```.
+```
+python run.py --experiment_name test4 --resume_training
+```
+Let's say you finished training for 100 epochs, and decide you want to train for another 50 epochs, for a total of 150. You would run:
+```
+python run.py --experiment_name test4 --resume_training --num_epochs_train 150
+```
+Now in your experiments folder you'll see the original config files, and a new folder starting with ```resume_training```.
+```
+<root_experiment_folder>
+|-<experiment_name>
+  |-configs
+    |-config_eval.yaml
+    ...
+    |-resume_training_0
+  ...
+```
+This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. Every time you resume training, a new folder will be created, showing what parameters changed since the original run.
 
 ## Config options
 ### config_general
