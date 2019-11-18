@@ -4,6 +4,17 @@
 
 ## See [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) for a list of currently available losses, miners, samplers, training methods, and testing methods.
 
+## Why use this tool?
+1. Flexibility and power:
+    - Configure most aspects of your experiment easily with config files and/or the command-line. Extend existing config files by merging them with new ones, or by merging/overriding config options via the command line.
+    - Mix and match losses, mining functions, samplers, and training methods.
+2. Detailed record keeping:
+    - View in-depth information about the training process on Tensorboard, and save data in pickle and csv format.
+    - View the history (if any) of config options that were changed during the course of an experiment. 
+3. Better performance metrics
+    - Use metrics that are more informative than Recall@1,2,4,8.
+    - Measure accuracy on multiple class-based train/val/test splits.
+
 ## Dependencies
 - Python 3.7
 - pytorch
@@ -186,7 +197,7 @@ To remedy this situation, this benchmarker allows the user to specify the split 
 | medium | 40/10/50 | train/val/test |
 | easy | 60/15/25 | train/val/test |
 
-To further increase the robustness of accuracy measurements, you can use the ```num_variants_per_split_scheme``` option to specify the number of ways the dataset will be split. For example, if you use the ```old_approach``` with ```num_variants_per_split_scheme: 2```, then the experiment will train a model on the first 50% of classes, and then train another model on the second 50% of classes. Each experiment's data will be kept in a separate subfolder.   
+To further increase the validity of accuracy measurements, you can use the ```num_variants_per_split_scheme``` option to specify the number of ways the dataset will be split. For example, if you use the ```old_approach``` with ```num_variants_per_split_scheme: 2```, then the experiment will train a model on the first 50% of classes, and then train another model on the second 50% of classes. Each experiment's data will be kept in a separate subfolder.   
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
