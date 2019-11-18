@@ -148,8 +148,34 @@ Now in your experiments folder you'll see the original config files, and a new f
 ```
 This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. Every time you resume training, a new folder will be created, showing what parameters changed since the original run.
 
-## Config options
-### config_general
+## Evaluation options
+By default, your model will be saved and evaluated on the training and validation sets every ```save_interval``` epochs. If you'd like to save the models but skip evaluation during training, set ```skip_eval``` to True. 
+
+To get accuracy for specific splits, use the ```--splits_to_eval``` flag and pass in a space-delimited list of split names. For example ```--splits_to_eval train test```
+
+To run evaluation only, use the ```--run_eval_only``` flag and pass in one of the following options:
+- best (gets accuracy for the model that performed best on the validation set. This assumes you already calculated validation set accuracy)
+- all (get accuracy for all saved models)
+- a space-delimited list of integers, which are the model numbers you want to get accuracy for.
+
+## Split schemes
+One weakness of many metric-learning papers is that they have been training and testing on the same handful of datasets for years. They have also been splitting data into a 50/50 train/test split scheme, instead of train/val/test. This has likely lead to overfitting on the "test" set, as people have tuned hyperparameters and created algorithms with direct feedback from the "test" set.
+
+To remedy this situation, this benchmarker allows the user to specify the split scheme via the ```split``` option. Currently there are 4 options. Each one splits data based on class labels. For example, the ```old_approach``` uses the first 50% of class labels for the training set, and the other 50% of labels for the "test" set (which should really be called the validation set).
+
+| split scheme name | class split percentages | split names |
+|-------------------|-------------------------|-------------|
+| old_approach | 50/50 | train/val |
+| hard | 20/5/75 | train/val/test |
+| medium | 40/10/50 | train/val/test |
+| easy | 60/15/25 | train/val/test |
+
+To further increase the robustness of accuracy measurements, you can use the ```num_variants_per_split_scheme``` option to specify the number of ways the dataset will be split. For example, if you use the ```old_approach``` with ```num_variants_per_split_scheme: 2```, then the experiment will train a model on the first 50% of classes, and then train another model on the second 50% of classes. Each experiment's data will be kept in a separate subfolder.   
+
+## Config options guide
+Below is the format for the various config files. Click on the links to see the default yaml file for each category.
+
+### [config_general](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_general/default.yaml)
 ```yaml
 pytorch_home: <Path where you save pretrained pytorch models>
 dataset_root: <Path where you keep your datasets>
@@ -173,7 +199,7 @@ skip_eval: <boolean>
 check_pretrained_accuracy: <boolean>
 
 ```
-### config_models
+### [config_models](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_models/default.yaml)
 ```yaml
 models:
   trunk:
@@ -187,7 +213,7 @@ models:
 batch_size: <number>
 freeze_batchnorm: <boolean>
 ```
-### config_loss_and_miners
+### [config_loss_and_miners](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_loss_and_miners/default.yaml)
 ```yaml 
 loss_funcs:
   <name>: 
@@ -208,7 +234,7 @@ mining_funcs:
       ...
   ...
 ```
-### config_optimizers
+### [config_optimizers](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_optimizers/default.yaml)
 ```yaml
 optimizers:
   trunk_optimizer:
@@ -221,7 +247,7 @@ optimizers:
       ...
   ...
 ```
-### config_transforms
+### [config_transforms](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_transforms/default.yaml)
 ```yaml
 transforms:
   train:
@@ -236,7 +262,7 @@ transforms:
       ...
     ...
 ```
-### config_eval
+### [config_eval](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_eval/default.yaml)
 ```yaml
 eval_reference_set: <name> #options: compared_to_self, compared_to_sets_combined, compared_to_training_set
 eval_normalize_embeddings: <boolean>
