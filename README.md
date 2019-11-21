@@ -196,7 +196,7 @@ num_variants_per_split_scheme: <number of ways the dataset will be split, per sp
 label_hierarchy_level: <number>
 dataloader_num_workers: <number>
 skip_eval: <boolean>
-check_pretrained_accuracy: <boolean>
+check_untrained_accuracy: <boolean>
 
 ```
 ### [config_models](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_models/default.yaml)
@@ -268,6 +268,6 @@ eval_reference_set: <name> #options: compared_to_self, compared_to_sets_combined
 eval_normalize_embeddings: <boolean>
 eval_use_trunk_output: <boolean>
 eval_batch_size: <number>
-eval_metric_for_best_epoch: <name> #options: NMI, recall_at_1, r_precision, ordered_r_precision
+eval_metric_for_best_epoch: <name> #options: NMI, recall_at_1, r_precision, mean_average_r_precision
 eval_dataloader_num_workers: <number>
 ```

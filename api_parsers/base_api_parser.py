@@ -107,14 +107,18 @@ class BaseAPIParser:
                                                             split_scheme_names=self.args.split["schemes"], 
                                                             num_variants_per_split_scheme=self.args.num_variants_per_split_scheme)
 
-    def set_transforms(self):
+    def get_transforms(self):
         try:
             model_transform_properties = {k:getattr(self.models["trunk"], k) for k in ["mean", "std", "input_space", "input_range"]}
         except:
             model_transform_properties = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
-        transforms = {}
+        transforms = {"train": None, "eval": None}
         for k, v in self.args.transforms.items():
             transforms[k] = self.pytorch_getter.get_composed_img_transform(v, **model_transform_properties)
+        return transforms
+
+    def set_transforms(self):
+        transforms = self.get_transforms()
         self.split_manager.set_transforms(transforms["train"], transforms["eval"])
 
     def set_dataset(self):
@@ -133,11 +137,8 @@ class BaseAPIParser:
         logging.info("EMBEDDER MODEL %s"%model)
         return model
 
-    def get_trunk_model(self, model_type, force_pretrained=False):
-        additional_params = {}
-        if force_pretrained:
-            additional_params["pretrained"] = 'imagenet'
-        model = self.pytorch_getter.get("model", yaml_dict=model_type, additional_params=additional_params)
+    def get_trunk_model(self, model_type):
+        model = self.pytorch_getter.get("model", yaml_dict=model_type)
         self.base_model_output_size = c_f.get_last_linear(model).in_features
         c_f.set_last_linear(model, architectures.misc_models.Identity())
         return model
@@ -177,10 +178,10 @@ class BaseAPIParser:
             self.models[k] = v(self.args.models[k])
 
     def load_model_for_eval(self, resume_epoch=None):
-        pretrained = resume_epoch == -1
-        trunk_model = self.get_trunk_model(self.args.models["trunk"], force_pretrained=pretrained)
+        untrained = resume_epoch == -1
+        trunk_model = self.get_trunk_model(self.args.models["trunk"])
         embedder_model = self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size)
-        if not pretrained:
+        if not untrained:
             c_f.load_dict_of_models(
                 {"trunk": trunk_model, "embedder": embedder_model},
                 resume_epoch,
@@ -211,7 +212,7 @@ class BaseAPIParser:
             for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
                 c_f.save_dict_of_models(obj_dict, epoch, self.model_folder)
             if not self.args.skip_eval:
-                if epoch == self.args.save_interval and self.args.check_pretrained_accuracy:
+                if epoch == self.args.save_interval and self.args.check_untrained_accuracy:
                     self.eval_model(-1, load_model=True)
                 self.eval_model(epoch)
             self.pickler_and_csver.save_records()

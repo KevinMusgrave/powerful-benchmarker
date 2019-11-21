@@ -16,4 +16,4 @@ num_variants_per_split_scheme: 4
 label_hierarchy_level: 0
 dataloader_num_workers: 32
 skip_eval: False
-check_pretrained_accuracy: False
+check_untrained_accuracy: False

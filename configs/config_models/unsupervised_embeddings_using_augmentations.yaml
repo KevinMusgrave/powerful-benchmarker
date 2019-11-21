@@ -1,0 +1,10 @@
+models:
+  trunk:
+    bninception:
+      pretrained: null
+  embedder:
+    MLP:
+      layer_sizes:
+        - 512
+batch_size: 128
+freeze_batchnorm: False
