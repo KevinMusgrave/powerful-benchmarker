@@ -19,9 +19,9 @@ def experiment_filename(folder, basename, identifier, extension=".pth"):
         return "%s/%s_%s%s" % (folder, basename, str(identifier), extension)
 
 
-def load_model(model_def, model_filename):
+def load_model(model_def, model_filename, device):
     try:
-        model_def.load_state_dict(torch.load(model_filename))
+        model_def.load_state_dict(torch.load(model_filename, map_location=device))
     except BaseException:
         # original saved file with DataParallel
         state_dict = torch.load(model_filename)
@@ -51,13 +51,13 @@ def save_dict_of_models(input_dict, epoch, folder):
             save_model_or_optimizer(v, k, model_path)
 
 
-def load_dict_of_models(input_dict, resume_epoch, folder):
+def load_dict_of_models(input_dict, resume_epoch, folder, device):
     for k, v in input_dict.items():
         opt_cond = "optimizer" in k
         if opt_cond or len([i for i in v.parameters()]) > 0:
             model_path = experiment_filename(folder, k, resume_epoch)
             logging.info("LOADING %s"%model_path)
-            load_model(v, model_path)
+            load_model(v, model_path, device)
 
 
 def move_optimizer_to_gpu(optimizer, device):
@@ -82,7 +82,7 @@ def load_yaml(fname):
 
 
 def write_yaml(fname, input_dict):
-    with open(fname, 'w') as outfile:
+    with open(fname, 'a') as outfile:
         yaml.dump(input_dict, outfile, default_flow_style=False, sort_keys=False)
 
 
@@ -96,6 +96,7 @@ def latest_version(folder, string_to_glob):
 
 def save_config_files(config_folder, dict_of_yamls, resume_training):
     makedir_if_not_there(config_folder)
+    new_dir = None
     for k, v in dict_of_yamls.items():
         k_split = k.split('/')
         config_category_name = os.path.splitext(k_split[-1])[0] if resume_training else k_split[-2] 
@@ -111,11 +112,11 @@ def save_config_files(config_folder, dict_of_yamls, resume_training):
                 if (k2 not in curr_yaml) or (v2 != curr_yaml[k2]):
                     yaml_diff[k2] = v2
             if yaml_diff != {}:
-                latest = latest_version(config_folder, "resume_training_config_diffs*")
-                if latest is None:
-                    latest = 0
-                new_dir = '%s/%s_%d' % (config_folder, "resume_training_config_diffs", latest+1)
-                makedir_if_not_there(new_dir)
+                if new_dir is None:
+                    latest = latest_version(config_folder, "resume_training_config_diffs*")
+                    if latest is None: latest = 0
+                    new_dir = '%s/%s_%d' % (config_folder, "resume_training_config_diffs", latest+1)
+                    makedir_if_not_there(new_dir)
                 fname = '%s/%s.yaml' % (new_dir, config_category_name)
                 write_yaml(fname, yaml_diff)
 

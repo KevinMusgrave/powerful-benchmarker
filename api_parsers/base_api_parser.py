@@ -186,6 +186,7 @@ class BaseAPIParser:
                 {"trunk": trunk_model, "embedder": embedder_model},
                 resume_epoch,
                 self.model_folder,
+                self.device
             )
         else:
             embedder_model = architectures.misc_models.Identity()
@@ -230,7 +231,7 @@ class BaseAPIParser:
             resume_epoch = c_f.latest_version(self.model_folder, "/trunk_*.pth") or 0
             if resume_epoch > 0:
                 for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
-                    c_f.load_dict_of_models(obj_dict, resume_epoch, self.model_folder)
+                    c_f.load_dict_of_models(obj_dict, resume_epoch, self.model_folder, self.device)
         return resume_epoch
 
     def set_models_optimizers_losses(self):
@@ -296,6 +297,7 @@ class BaseAPIParser:
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
         self.trainer.num_epochs = self.epoch - 1
         while self.epoch <= self.args.num_epochs_train:
+            self.split_manager.set_curr_split("train", is_training=True)
             self.set_devices()
             self.trainer.num_epochs += self.args.save_interval
             self.trainer.epoch = self.epoch

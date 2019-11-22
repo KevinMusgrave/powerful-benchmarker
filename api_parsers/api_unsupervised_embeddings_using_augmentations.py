@@ -5,4 +5,5 @@ class APIUnsupervisedEmbeddingsUsingAugmentations(BaseAPIParser):
         trainer_kwargs = super().get_trainer_kwargs()
         transforms = self.get_transforms()
         trainer_kwargs["transforms"] = [transforms[k] for k in transforms.keys() if k.startswith("augmentation")]
+        trainer_kwargs["sampler"] = None
         return trainer_kwargs
