@@ -1,0 +1,14 @@
+transforms:
+  train:
+    Resize:
+      size: 256 256
+    RandomCrop:
+      size: 224
+    RandomHorizontalFlip:
+      p: 0.5
+
+  eval:
+    Resize:
+      size: 256 256
+    CenterCrop:
+      size: 224

@@ -1,0 +1,10 @@
+models:
+  trunk:
+    resnet50:
+      pretrained: True
+  embedder:
+    MLP:
+      layer_sizes:
+        - 512
+batch_size: 128
+freeze_batchnorm: False

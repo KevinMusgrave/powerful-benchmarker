@@ -79,6 +79,7 @@ class BaseAPIParser:
         self.optimizers, self.lr_schedulers, self.gradient_clippers = {}, {}, {}
         for k, v in self.args.optimizers.items():
             basename = k.replace("_optimizer", '')
+            param_source = None
             for possible_params in [self.models, self.loss_funcs]:
                 if basename in possible_params:
                     param_source = possible_params[basename]
@@ -256,6 +257,7 @@ class BaseAPIParser:
             "metric_for_best_epoch": self.args.eval_metric_for_best_epoch,
             "data_device": self.device,
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
+            "pca": self.args.eval_pca,
             "record_keeper": self.record_keeper
         }
 

@@ -17,6 +17,6 @@ class APIDeepAdversarialMetricLearning(APIMaybeExtendTrainWithClassifier):
             [self.base_model_output_size * 3,
              self.base_model_output_size,
              self.base_model_output_size], 
-            penultimate_relu=True
+            final_relu=True
         )
 

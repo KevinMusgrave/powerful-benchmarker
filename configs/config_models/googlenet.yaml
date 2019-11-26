@@ -1,0 +1,12 @@
+models:
+  trunk:
+    googlenet:
+      pretrained: True
+      aux_logits: False
+      transform_input: False
+  embedder:
+    MLP:
+      layer_sizes:
+        - 512
+batch_size: 128
+freeze_batchnorm: False

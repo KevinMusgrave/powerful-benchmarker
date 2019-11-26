@@ -57,12 +57,12 @@ class ListOfModels(nn.Module):
 class MLP(nn.Module):
     # layer_sizes[0] is the dimension of the input
     # layer_sizes[-1] is the dimension of the output
-    def __init__(self, layer_sizes, penultimate_relu=False):
+    def __init__(self, layer_sizes, final_relu=False):
         super().__init__()
         layer_list = []
         layer_sizes = [int(x) for x in layer_sizes]
         num_layers = len(layer_sizes) - 1
-        final_relu_layer = num_layers if penultimate_relu else num_layers - 1
+        final_relu_layer = num_layers if final_relu else num_layers - 1
         for i in range(len(layer_sizes) - 1):
             input_size = layer_sizes[i]
             curr_size = layer_sizes[i + 1]

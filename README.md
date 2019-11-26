@@ -138,7 +138,7 @@ If you want to add an optimizer for your loss function's parameters, just exclud
 ```
 python run.py \
 --experiment_name test2 \
---optimizers {hyperparam_optimizer: {SGD: {lr: 0.01}}} 
+--optimizers {metric_loss_optimizer: {SGD: {lr: 0.01}}} 
 ```
 Now the ```optimizers``` parameter contains 3 optimizers because the command line flag was merged with the flag in the yaml file. To see more details about this functionality, check out [easy_module_attribute_getter](https://github.com/KevinMusgrave/easy_module_attribute_getter).
 

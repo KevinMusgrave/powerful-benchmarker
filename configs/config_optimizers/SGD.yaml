@@ -1,0 +1,13 @@
+optimizers:
+  trunk_optimizer:
+    SGD:
+      lr: 0.00001
+      weight_decay: 0.00005
+      momentum: 0.9
+      nesterov: True
+  embedder_optimizer:
+    SGD:
+      lr: 0.00001
+      weight_decay: 0.00005
+      momentum: 0.9
+      nesterov: True
