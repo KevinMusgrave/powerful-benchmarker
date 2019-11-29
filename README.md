@@ -298,3 +298,6 @@ eval_batch_size: <number>
 eval_metric_for_best_epoch: <name> #options: NMI, recall_at_1, r_precision, mean_average_r_precision
 eval_dataloader_num_workers: <number>
 ```
+
+## Acknowledgements
+Thank you to Ser-Nam Lim at Facebook AI, and my research advisor, Professor Serge Belongie. This project began during my internship at Facebook AI where I received valuable feedback from Ser-Nam, and his team of computer vision and machine learning engineers and research scientists.
