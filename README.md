@@ -1,6 +1,7 @@
 # Benchmarking Metric-Learning Algorithms the Right Way
 
-## See this [Google Spreadsheet](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing) for benchmark results (in progress)
+## [Benchmark results (in progress)](https://drive.google.com/open?id=1Y_stkiqlHA7HTMNrhyPCnYhR0oevphRR): 
+- [Train/val 50/50](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing)
 
 ## See [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) for a list of currently available losses, miners, samplers, training methods, and testing methods.
 
@@ -295,8 +296,9 @@ eval_reference_set: <name> #options: compared_to_self, compared_to_sets_combined
 eval_normalize_embeddings: <boolean>
 eval_use_trunk_output: <boolean>
 eval_batch_size: <number>
-eval_metric_for_best_epoch: <name> #options: NMI, recall_at_1, r_precision, mean_average_r_precision
+eval_metric_for_best_epoch: <name> #options: NMI, precision_at_1, r_precision, mean_average_r_precision
 eval_dataloader_num_workers: <number>
+eval_pca: <number> or null #options: number of dimensions to reduce embeddings to via PCA, or null if you don't want to use PCA.
 ```
 
 ## Acknowledgements
