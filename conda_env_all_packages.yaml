@@ -1,4 +1,4 @@
-name: powerful_benchmarker2
+name: powerful_benchmarker
 channels:
   - pytorch
   - defaults
@@ -72,5 +72,5 @@ dependencies:
     - pyyaml==5.1.2
     - record-keeper
     - tqdm==4.38.0
-prefix: /home/tkm45/anaconda3/envs/powerful_benchmarker2
+prefix: /home/tkm45/anaconda3/envs/powerful_benchmarker
 

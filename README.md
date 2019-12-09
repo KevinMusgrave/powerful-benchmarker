@@ -299,6 +299,7 @@ eval_batch_size: <number>
 eval_metric_for_best_epoch: <name> #options: NMI, precision_at_1, r_precision, mean_average_r_precision
 eval_dataloader_num_workers: <number>
 eval_pca: <number> or null #options: number of dimensions to reduce embeddings to via PCA, or null if you don't want to use PCA.
+eval_size_of_tsne: <number> #The number of samples per split that you want to visualize via TSNE. Set to 0 if you don't want a TSNE plot.
 ```
 
 ## Acknowledgements
