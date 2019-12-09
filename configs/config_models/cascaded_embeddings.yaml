@@ -5,7 +5,7 @@ models:
   embedder:
     MLP:
       layer_sizes:
-        - 512
+        - 128
 batch_size: 80
 freeze_batchnorm: True
 layers_to_extract:

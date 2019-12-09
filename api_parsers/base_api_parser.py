@@ -14,7 +14,6 @@ import shutil
 import logging
 
 class BaseAPIParser:
-
     def __init__(self, args):
         os.environ["TORCH_HOME"] = args.pytorch_home
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -181,8 +180,8 @@ class BaseAPIParser:
     def load_model_for_eval(self, resume_epoch=None):
         untrained = resume_epoch == -1
         trunk_model = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"]))
-        embedder_model = torch.nn.DataParallel(self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size))
         if not untrained:
+            embedder_model = torch.nn.DataParallel(self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size))
             c_f.load_dict_of_models(
                 {"trunk": trunk_model, "embedder": embedder_model},
                 resume_epoch,

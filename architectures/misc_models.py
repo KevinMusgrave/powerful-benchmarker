@@ -10,6 +10,8 @@ class LayerExtractor(nn.Module):
         self.skip_layers = skip_layers
         self.insert_functions = insert_functions
         self.pooler = nn.AdaptiveAvgPool2d((1, 1))
+        for k in ["mean", "std", "input_space", "input_range"]:
+            setattr(self, k, getattr(convnet, k, None))
 
     def forward(self, x):
         return self.layer_by_layer(x)
@@ -44,7 +46,6 @@ class ListOfModels(nn.Module):
         if self.input_sizes is None:
             for m in self.list_of_models:
                 outputs.append(m(x))
-            return torch.cat(outputs, dim=-1)
         else:
             s = 0
             for i, y in enumerate(self.input_sizes):

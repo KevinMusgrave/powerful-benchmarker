@@ -12,6 +12,10 @@ class APICascadedEmbeddings(APIMaybeExtendTrainWithClassifier):
         trainer_kwargs["embedding_sizes"] = self.all_embedding_sizes
         return trainer_kwargs
 
+    def get_classifier_model(self, model_type, output_size):
+        input_size = c_f.get_last_linear(self.models["embedder"].list_of_models[0]).out_features
+        return super().get_embedder_model(model_type, input_size, output_size)
+
     def get_embedder_model(self, model_type, input_size=None, output_size=None):
         embedders = []
         for i in input_size:
@@ -20,14 +24,13 @@ class APICascadedEmbeddings(APIMaybeExtendTrainWithClassifier):
         model = arch.misc_models.ListOfModels(embedders, input_size)
         return model
 
-    def get_trunk_model(self, model_type, force_pretrained=False):
-        self.models["trunk"] = self.inheriter.get_trunk_model(model_type, force_pretrained=force_pretrained)
+    def get_trunk_model(self, model_type):
+        model = self.inheriter.get_trunk_model(model_type)
         self.set_transforms()
-        self.set_transforms = lambda: None
         sample_input = pml_c_f.try_keys(self.dataset[0], ["data", "image"]).unsqueeze(0)
         (model_name, _), = model_type.items()
         model = arch.misc_models.LayerExtractor(
-            self.models["trunk"],
+            model,
             self.args.layers_to_extract,
             self.get_skip_layer_names(model_name),
             self.get_insert_functions(model_name),
