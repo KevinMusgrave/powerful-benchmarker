@@ -38,6 +38,6 @@ if __name__ == "__main__":
     YR = YamlReader(argparser=argparser)
     YR.args.experiment_folder = "%s/%s" % (YR.args.root_experiment_folder, YR.args.experiment_name)
     YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
-    args, loaded_yaml, args.dict_of_yamls = YR.load_yamls(**determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=1)
+    args, loaded_yaml, args.dict_of_yamls = YR.load_yamls(**determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=float('inf'))
     api_parser = getattr(api_parsers, "API"+args.training_method)(args)
     api_parser.run()

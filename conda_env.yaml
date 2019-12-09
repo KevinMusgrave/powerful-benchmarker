@@ -1,4 +1,4 @@
-name: powerful_benchmarker_env
+name: powerful_benchmarker
 channels:
   - defaults
 dependencies:
@@ -10,5 +10,6 @@ dependencies:
   - tensorboard
   - future
   - pytorch==1.2.0
-prefix: /home/tkm45/anaconda3/envs/powerful_benchmarker_env
+  - pandas
+prefix: /home/tkm45/anaconda3/envs/powerful_benchmarker
 

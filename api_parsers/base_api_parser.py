@@ -180,8 +180,8 @@ class BaseAPIParser:
 
     def load_model_for_eval(self, resume_epoch=None):
         untrained = resume_epoch == -1
-        trunk_model = self.get_trunk_model(self.args.models["trunk"])
-        embedder_model = self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size)
+        trunk_model = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"]))
+        embedder_model = torch.nn.DataParallel(self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size))
         if not untrained:
             c_f.load_dict_of_models(
                 {"trunk": trunk_model, "embedder": embedder_model},
@@ -190,7 +190,7 @@ class BaseAPIParser:
                 self.device
             )
         else:
-            embedder_model = architectures.misc_models.Identity()
+            embedder_model = torch.nn.DataParallel(architectures.misc_models.Identity())
         return trunk_model, embedder_model
 
     def get_splits_exclusion_list(self, splits_to_eval):
@@ -205,8 +205,7 @@ class BaseAPIParser:
             trunk_model, embedder_model = self.load_model_for_eval(resume_epoch=epoch)
         else:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
-        trunk_model.to(self.device)
-        embedder_model.to(self.device)
+        trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
         self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval)
 
     def save_stuff_and_maybe_eval(self, epoch):
@@ -258,6 +257,7 @@ class BaseAPIParser:
             "data_device": self.device,
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
             "pca": self.args.eval_pca,
+            "size_of_tsne": self.args.eval_size_of_tsne,
             "record_keeper": self.record_keeper
         }
 
