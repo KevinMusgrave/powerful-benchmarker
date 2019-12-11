@@ -49,6 +49,9 @@ class BaseAPIParser:
             self.set_models_optimizers_losses()
             self.eval() if self.args.run_eval_only else self.train()
 
+    def is_training(self):
+        return not self.args.run_eval_only
+
     def beginning_of_training(self):
         return (not self.args.resume_training) and (not self.args.run_eval_only)
 
@@ -70,7 +73,8 @@ class BaseAPIParser:
         ]
 
     def save_config_files(self):
-        c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training or self.args.run_eval_only)
+        if self.is_training():
+            c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training, self.args.reproduce_results)
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 

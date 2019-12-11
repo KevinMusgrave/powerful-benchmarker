@@ -81,8 +81,8 @@ def load_yaml(fname):
     return loaded_yaml
 
 
-def write_yaml(fname, input_dict):
-    with open(fname, 'a') as outfile:
+def write_yaml(fname, input_dict, open_as):
+    with open(fname, open_as) as outfile:
         yaml.dump(input_dict, outfile, default_flow_style=False, sort_keys=False)
 
 
@@ -94,17 +94,19 @@ def latest_version(folder, string_to_glob):
     return max(version)
 
 
-def save_config_files(config_folder, dict_of_yamls, resume_training):
+def save_config_files(config_folder, dict_of_yamls, resume_training, reproduce_results):
     makedir_if_not_there(config_folder)
     new_dir = None
     for k, v in dict_of_yamls.items():
         k_split = k.split('/')
-        config_category_name = os.path.splitext(k_split[-1])[0] if resume_training else k_split[-2] 
+        config_category_name = k_split[-2] 
+        if not config_category_name.startswith('config_'):
+            config_category_name = os.path.splitext(k_split[-1])[0]
         fname = '%s/%s.yaml' % (config_folder, config_category_name)
         if not resume_training:
             if os.path.isfile(fname):
-                v = emag_utils.merge_two_dicts(load_yaml(fname), v, max_merge_depth=1)
-            write_yaml(fname, v)
+                v = emag_utils.merge_two_dicts(load_yaml(fname), v, max_merge_depth=0 if reproduce_results else float('inf'))
+            write_yaml(fname, v, 'w')
         else:
             curr_yaml = load_yaml(fname)
             yaml_diff = {}
@@ -118,7 +120,7 @@ def save_config_files(config_folder, dict_of_yamls, resume_training):
                     new_dir = '%s/%s_%d' % (config_folder, "resume_training_config_diffs", latest+1)
                     makedir_if_not_there(new_dir)
                 fname = '%s/%s.yaml' % (new_dir, config_category_name)
-                write_yaml(fname, yaml_diff)
+                write_yaml(fname, yaml_diff, 'a')
 
 
 def get_last_linear(input_model, return_name=False):
