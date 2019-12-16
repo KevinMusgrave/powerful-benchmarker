@@ -1,16 +1,1 @@
 training_method: TrainWithClassifier
-loss_weights:
-  metric_loss: 0
-  classifier_loss: 1
-models:
-  classifier:
-    MLP:
-      layer_sizes: []
-loss_funcs:
-  classifier_loss: 
-    CrossEntropyLoss:
-optimizers:
-  classifier_optimizer:
-    Adam: 
-      lr: 0.00001
-      weight_decay: 0.00005

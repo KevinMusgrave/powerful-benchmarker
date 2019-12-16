@@ -1,21 +1,4 @@
 training_method: DeepAdversarialMetricLearning
-loss_weights:
-  metric_loss: 1
-  synth_loss: 0.1
-  g_adv_loss: 0.1
-  g_hard_loss: 0.1
-  g_reg_loss: 0.1
-loss_funcs:
-  synth_loss:
-    TripletMarginLoss:
-      margin: 0.05
-  g_adv_loss:
-    TripletMarginLoss:
-      margin: 0.05
-optimizers:
-  generator_optimizer:
-    Adam:
-      lr: 0.00001
-      weight_decay: 0.00005
 g_alone_epochs: 0
 metric_alone_epochs: 0
+g_triplets_per_anchor: 100

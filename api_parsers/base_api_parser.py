@@ -261,7 +261,8 @@ class BaseAPIParser:
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
             "pca": self.args.eval_pca,
             "size_of_tsne": self.args.eval_size_of_tsne,
-            "record_keeper": self.record_keeper
+            "record_keeper": self.record_keeper,
+            "data_and_label_getter": lambda data: (data["data"], data["label"]) 
         }
 
     def get_trainer_kwargs(self):
@@ -284,7 +285,8 @@ class BaseAPIParser:
             "freeze_trunk_batchnorm": self.args.freeze_batchnorm,
             "label_hierarchy_level": self.args.label_hierarchy_level,
             "dataloader_num_workers": self.args.dataloader_num_workers,
-            "loss_weights": getattr(self.args, "loss_weights", None) 
+            "loss_weights": getattr(self.args, "loss_weights", None),
+            "data_and_label_getter": lambda data: (data["data"], data["label"]) 
         }
 
     def set_dataparallel(self):

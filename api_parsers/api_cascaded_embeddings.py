@@ -27,7 +27,7 @@ class APICascadedEmbeddings(APIMaybeExtendTrainWithClassifier):
     def get_trunk_model(self, model_type):
         model = self.inheriter.get_trunk_model(model_type)
         self.set_transforms()
-        sample_input = pml_c_f.try_keys(self.dataset[0], ["data", "image"]).unsqueeze(0)
+        sample_input = self.dataset[0]["data"].unsqueeze(0)
         (model_name, _), = model_type.items()
         model = arch.misc_models.LayerExtractor(
             model,

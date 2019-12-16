@@ -1,0 +1,6 @@
+loss_funcs:
+  classifier_loss: 
+    CrossEntropyLoss:
+loss_weights:
+  metric_loss: 0
+  classifier_loss: 1

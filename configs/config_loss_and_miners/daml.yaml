@@ -1,0 +1,13 @@
+loss_weights:
+  metric_loss: 1
+  synth_loss: 0.1
+  g_adv_loss: 0.1
+  g_hard_loss: 0.1
+  g_reg_loss: 0.1
+loss_funcs:
+  synth_loss:
+    TripletMarginLoss:
+      margin: 0.01
+  g_adv_loss:
+    TripletMarginLoss:
+      margin: 0.01
