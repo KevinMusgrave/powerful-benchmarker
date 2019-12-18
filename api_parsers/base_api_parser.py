@@ -12,6 +12,8 @@ import architectures
 import os
 import shutil
 import logging
+import numpy as np
+from collections import defaultdict
 
 class BaseAPIParser:
     def __init__(self, args):
@@ -44,6 +46,7 @@ class BaseAPIParser:
         self.save_config_files()
         self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
+        self.set_meta_record_keeper()
         for split_scheme_name in self.split_manager.split_scheme_names:
             num_epochs = self.num_epochs[split_scheme_name]
             if self.latest_sub_experiment_epochs[split_scheme_name] >= num_epochs:
@@ -52,6 +55,8 @@ class BaseAPIParser:
             self.set_curr_folders()
             self.set_models_optimizers_losses()
             self.eval(num_epochs) if self.args.run_eval_only else self.train(num_epochs)
+            self.update_meta_record_keeper(split_scheme_name)
+        self.record_meta_logs()
 
     def is_training(self):
         return not self.args.run_eval_only
@@ -71,8 +76,7 @@ class BaseAPIParser:
                 c_f.makedir_if_not_there(s % (self.experiment_folder, r))
 
     def set_curr_folders(self):
-        dir_dict = self.get_sub_experiment_dir_paths()
-        self.model_folder, self.pkl_folder, self.tensorboard_folder = dir_dict[self.split_manager.curr_split_scheme_name]
+        self.model_folder, self.pkl_folder, self.tensorboard_folder = self.get_sub_experiment_dir_paths()[self.split_manager.curr_split_scheme_name]
 
     def get_sub_experiment_dir_paths(self):
         sub_experiment_dir_paths = {}
@@ -238,11 +242,36 @@ class BaseAPIParser:
                 self.eval_model(epoch)
             self.pickler_and_csver.save_records()
 
+    def get_record_keeper(self, pkl_folder, tensorboard_folder):
+        pickler_and_csver = record_keeper_package.PicklerAndCSVer(pkl_folder)
+        tensorboard_writer = SummaryWriter(log_dir=tensorboard_folder)
+        record_keeper = record_keeper_package.RecordKeeper(tensorboard_writer, pickler_and_csver, ["record_these", "learnable_param_names"])
+        return record_keeper, pickler_and_csver, tensorboard_writer
+
     def set_record_keeper(self):
-        self.pickler_and_csver = record_keeper_package.PicklerAndCSVer(self.pkl_folder)
-        self.tensorboard_writer = SummaryWriter(log_dir=self.tensorboard_folder)
-        self.record_keeper = record_keeper_package.RecordKeeper(
-            self.tensorboard_writer, self.pickler_and_csver, ["record_these", "learnable_param_names"])
+        self.record_keeper, self.pickler_and_csver, _ = self.get_record_keeper(self.pkl_folder, self.tensorboard_folder)
+
+    def set_meta_record_keeper(self):
+        if self.args.num_variants_per_split_scheme > 1:
+            _, pkl_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
+            self.meta_record_keeper, self.meta_pickler_and_csver, _ = self.get_record_keeper(pkl_folder, tensorboard_folder)
+            self.meta_accuracies = defaultdict(dict)
+
+    def update_meta_record_keeper(self, split_scheme_name):
+        if hasattr(self, "meta_accuracies"):
+            best_split_accuracy = self.tester_obj.get_best_epoch_and_accuracy('val')[1]
+            if best_split_accuracy is not None:
+                self.meta_accuracies["average_best"][split_scheme_name] = best_split_accuracy
+            untrained_accuracy = self.tester_obj.get_accuracy_of_epoch('val', -1)
+            if untrained_accuracy is not None:
+                self.meta_accuracies["untrained"][split_scheme_name] = untrained_accuracy
+
+    def record_meta_logs(self):
+        if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
+            group_name = "meta_" + self.tester_obj.record_group_name('val')
+            averages = {"%s_%s"%(k, self.args.eval_metric_for_best_epoch): np.mean(list(v.values())) for k, v in self.meta_accuracies.items()}
+            self.meta_record_keeper.update_records(averages, global_iteration=None, input_group_name_for_non_objects=group_name)
+            self.meta_pickler_and_csver.save_records()
 
     def maybe_load_models_and_records(self):
         resume_epoch = 0
