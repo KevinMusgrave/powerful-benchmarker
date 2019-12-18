@@ -55,7 +55,7 @@ class SplitManager:
         transform = self.train_transform if self.is_training else self.eval_transform
         self.dataset, subset_indices = self.curr_split_scheme[self.curr_split_name]
         self.set_dataset_transform(transform)
-        if self.is_training and not getattr(self, "labels_to_indices", None):
+        if self.is_training:
             if self.input_dataset_splits is None:
                 label_source = self.original_dataset.labels[subset_indices]
             else:

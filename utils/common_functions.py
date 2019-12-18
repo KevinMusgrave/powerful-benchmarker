@@ -4,6 +4,7 @@ import collections
 import errno
 import glob
 import os
+import itertools
 
 import numpy as np
 import torch
@@ -106,7 +107,7 @@ def get_all_resume_training_config_diffs(config_folder, split_scheme_names, num_
     folder_base_name = "resume_training_config_diffs_"
     full_base_path = "%s/%s" % (config_folder, folder_base_name)
     config_diffs = sorted(glob.glob("%s*"%full_base_path))
-    split_scheme_names = ["%s_%d"%(split_scheme,i) for (split_scheme,i) in zip(split_scheme_names, range(num_variants_per_split_scheme))]
+    split_scheme_names = ["%s_%d"%(split_scheme,i) for (split_scheme,i) in list(itertools.product(split_scheme_names, range(num_variants_per_split_scheme)))]
     resume_training_dict = {}
     for k in config_diffs:
         latest_epochs = [int(x) for x in k.replace(full_base_path,"").split('_')]

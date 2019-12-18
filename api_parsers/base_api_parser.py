@@ -46,7 +46,7 @@ class BaseAPIParser:
         self.make_sub_experiment_dirs()
         for split_scheme_name in self.split_manager.split_scheme_names:
             num_epochs = self.num_epochs[split_scheme_name]
-            if self.latest_sub_experiment_epochs[split_scheme_name] > num_epochs:
+            if self.latest_sub_experiment_epochs[split_scheme_name] >= num_epochs:
                 continue
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
