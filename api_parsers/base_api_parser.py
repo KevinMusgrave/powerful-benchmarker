@@ -40,14 +40,18 @@ class BaseAPIParser:
     def run(self):
         if self.beginning_of_training():
             self.make_dir()
-        self.save_config_files()
         self.set_split_manager()
+        self.save_config_files()
+        self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
         for split_scheme_name in self.split_manager.split_scheme_names:
+            num_epochs = self.num_epochs[split_scheme_name]
+            if self.latest_sub_experiment_epochs[split_scheme_name] > num_epochs:
+                continue
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
             self.set_models_optimizers_losses()
-            self.eval() if self.args.run_eval_only else self.train()
+            self.eval(num_epochs) if self.args.run_eval_only else self.train(num_epochs)
 
     def is_training(self):
         return not self.args.run_eval_only
@@ -67,14 +71,26 @@ class BaseAPIParser:
                 c_f.makedir_if_not_there(s % (self.experiment_folder, r))
 
     def set_curr_folders(self):
-        r = self.split_manager.curr_split_scheme_name
-        self.model_folder, self.pkl_folder, self.tensorboard_folder = [
-            s % (self.experiment_folder, r) for s in self.sub_experiment_dirs
-        ]
+        dir_dict = self.get_sub_experiment_dir_paths()
+        self.model_folder, self.pkl_folder, self.tensorboard_folder = dir_dict[self.split_manager.curr_split_scheme_name]
+
+    def get_sub_experiment_dir_paths(self):
+        sub_experiment_dir_paths = {}
+        for k in self.split_manager.split_scheme_names:
+            sub_experiment_dir_paths[k] = [s % (self.experiment_folder, k) for s in self.sub_experiment_dirs]
+        return sub_experiment_dir_paths
+
+    def set_num_epochs_dict(self):
+        if isinstance(self.args.num_epochs_train, int):
+            self.num_epochs = {k: self.args.num_epochs_train for k in self.split_manager.split_scheme_names}
+        else:
+            self.num_epochs = self.args.num_epochs_train
 
     def save_config_files(self):
+        self.latest_sub_experiment_epochs = c_f.latest_sub_experiment_epochs(self.get_sub_experiment_dir_paths())
+        latest_epochs = list(self.latest_sub_experiment_epochs.values())
         if self.is_training():
-            c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training, self.args.reproduce_results)
+            c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training, self.args.reproduce_results, latest_epochs)
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 
@@ -95,6 +111,7 @@ class BaseAPIParser:
 
     def set_split_manager(self):
         chosen_dataset, dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
+        dataset_params = copy.deepcopy(dataset_params)
         dataset_params["dataset_root"] = self.args.dataset_root
 
         if self.args.split["schemes"][0] == "fixed":
@@ -277,7 +294,6 @@ class BaseAPIParser:
             "dataset": self.dataset,
             "data_device": self.device,
             "record_keeper": self.record_keeper,
-            "num_epochs": self.args.num_epochs_train,
             "iterations_per_epoch": self.args.iterations_per_epoch,
             "label_mapper": self.split_manager.map_labels,
             "lr_schedulers": self.lr_schedulers,
@@ -300,24 +316,21 @@ class BaseAPIParser:
         for v in self.optimizers.values():
             c_f.move_optimizer_to_gpu(v, self.device)
 
-    def train(self):
+    def train(self, num_epochs):
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
-        self.trainer.num_epochs = self.epoch - 1
-        while self.epoch <= self.args.num_epochs_train:
+        while self.epoch <= num_epochs:
             self.split_manager.set_curr_split("train", is_training=True)
             self.set_devices()
-            self.trainer.num_epochs += self.args.save_interval
-            self.trainer.epoch = self.epoch
-            self.trainer.train()
-            self.epoch = self.trainer.epoch - 1
+            self.trainer.train(self.epoch, self.args.save_interval)
+            self.epoch = self.trainer.epoch
             self.save_stuff_and_maybe_eval(self.epoch)
             self.epoch += 1
 
-    def eval(self):
+    def eval(self, num_epochs):
         if self.args.run_eval_only == ["best"]:
             epochs_list = [self.tester_obj.get_best_epoch_and_accuracy('val')[0]]
         elif self.args.run_eval_only == ["all"]:
-            epochs_list = range(self.args.save_interval, self.args.num_epochs_train + 1, self.args.save_interval)
+            epochs_list = range(self.args.save_interval, num_epochs + 1, self.args.save_interval)
         else:
             epochs_list = [int(x) for x in self.args.run_eval_only]
         for epoch in epochs_list:

@@ -94,7 +94,27 @@ def latest_version(folder, string_to_glob):
     return max(version)
 
 
-def save_config_files(config_folder, dict_of_yamls, resume_training, reproduce_results):
+def latest_sub_experiment_epochs(sub_experiment_dir_dict):
+    latest_epochs = {}
+    for sub_experiment_name, folders in sub_experiment_dir_dict.items():
+        model_folder = folders[0]
+        latest_epochs[sub_experiment_name] = latest_version(model_folder, "/trunk_*.pth") or 0
+    return latest_epochs
+
+
+def get_all_resume_training_config_diffs(config_folder, split_scheme_names, num_variants_per_split_scheme):
+    folder_base_name = "resume_training_config_diffs_"
+    full_base_path = "%s/%s" % (config_folder, folder_base_name)
+    config_diffs = sorted(glob.glob("%s*"%full_base_path))
+    split_scheme_names = ["%s_%d"%(split_scheme,i) for (split_scheme,i) in zip(split_scheme_names, range(num_variants_per_split_scheme))]
+    resume_training_dict = {}
+    for k in config_diffs:
+        latest_epochs = [int(x) for x in k.replace(full_base_path,"").split('_')]
+        resume_training_dict[k] = {split_scheme:epoch for (split_scheme,epoch) in zip(split_scheme_names,latest_epochs)}
+    return resume_training_dict
+
+
+def save_config_files(config_folder, dict_of_yamls, resume_training, reproduce_results, latest_epochs):
     makedir_if_not_there(config_folder)
     new_dir = None
     for k, v in dict_of_yamls.items():
@@ -114,14 +134,10 @@ def save_config_files(config_folder, dict_of_yamls, resume_training, reproduce_r
                 if (k2 not in curr_yaml) or (v2 != curr_yaml[k2]):
                     yaml_diff[k2] = v2
             if yaml_diff != {}:
-                if new_dir is None:
-                    latest = latest_version(config_folder, "resume_training_config_diffs*")
-                    if latest is None: latest = 0
-                    new_dir = '%s/%s_%d' % (config_folder, "resume_training_config_diffs", latest+1)
-                    makedir_if_not_there(new_dir)
+                new_dir = '%s/resume_training_config_diffs_'%(config_folder) + '_'.join([str(epoch) for epoch in latest_epochs])
+                makedir_if_not_there(new_dir)
                 fname = '%s/%s.yaml' % (new_dir, config_category_name)
                 write_yaml(fname, yaml_diff, 'a')
-
 
 def get_last_linear(input_model, return_name=False):
     for name in ["fc", "last_linear"]:
