@@ -14,7 +14,7 @@ def setup_argparser(config_foldernames):
     parser.add_argument("--experiment_name", type=str, required=True)
     parser.add_argument("--resume_training", action="store_true")
     parser.add_argument("--run_eval_only", nargs="+", type=str, default=None)
-    parser.add_argument("--splits_to_eval", nargs="+", type=str, default=None)
+    parser.add_argument("--splits_to_eval", nargs="+", type=str, default=["train", "val"])
     parser.add_argument("--reproduce_results", type=str, default=None)
     parser.add_argument("--root_config_folder", type=str, required=False, default="configs")
     for c in config_foldernames:

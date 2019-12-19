@@ -254,6 +254,7 @@ label_hierarchy_level: <number>
 dataloader_num_workers: <number>
 skip_eval: <boolean>
 check_untrained_accuracy: <boolean>
+patience: <int> #Training will stop if validation accuracy has not improved after this number of epochs. If null, then it is ignored.
 
 ```
 ### [config_models](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_models/default.yaml)

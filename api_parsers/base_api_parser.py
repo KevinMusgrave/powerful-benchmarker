@@ -49,12 +49,13 @@ class BaseAPIParser:
         self.set_meta_record_keeper()
         for split_scheme_name in self.split_manager.split_scheme_names:
             num_epochs = self.num_epochs[split_scheme_name]
-            if self.latest_sub_experiment_epochs[split_scheme_name] >= num_epochs:
-                continue
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
             self.set_models_optimizers_losses()
-            self.eval(num_epochs) if self.args.run_eval_only else self.train(num_epochs)
+            if self.args.run_eval_only:
+                self.eval(num_epochs)
+            elif self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs:
+                self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
         self.record_meta_logs()
 
@@ -255,27 +256,33 @@ class BaseAPIParser:
         if len(self.split_manager.split_scheme_names) > 1:
             _, pkl_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
             self.meta_record_keeper, self.meta_pickler_and_csver, _ = self.get_record_keeper(pkl_folder, tensorboard_folder)
-            self.meta_accuracies = defaultdict(dict)
+            self.meta_accuracies = defaultdict(lambda: defaultdict(dict))
+            c_f.makedir_if_not_there(pkl_folder)
+            c_f.makedir_if_not_there(tensorboard_folder)
 
     def update_meta_record_keeper(self, split_scheme_name):
         if hasattr(self, "meta_accuracies"):
-            best_split_accuracy = self.tester_obj.get_best_epoch_and_accuracy('val')[1]
-            if best_split_accuracy is not None:
-                self.meta_accuracies["average_best"][split_scheme_name] = best_split_accuracy
-            untrained_accuracy = self.tester_obj.get_accuracy_of_epoch('val', -1)
-            if untrained_accuracy is not None:
-                self.meta_accuracies["untrained"][split_scheme_name] = untrained_accuracy
+            for split in self.args.splits_to_eval:
+                best_split_accuracy = self.tester_obj.get_best_epoch_and_accuracy(split)[1]
+                if best_split_accuracy is not None:
+                    self.meta_accuracies[split]["average_best"][split_scheme_name] = best_split_accuracy
+                untrained_accuracy = self.tester_obj.get_accuracy_of_epoch(split, -1)
+                if untrained_accuracy is not None:
+                    self.meta_accuracies[split]["untrained"][split_scheme_name] = untrained_accuracy
 
     def record_meta_logs(self):
         if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
-            group_name = "meta_" + self.tester_obj.record_group_name('val')
-            averages = {"%s_%s"%(k, self.args.eval_metric_for_best_epoch): np.mean(list(v.values())) for k, v in self.meta_accuracies.items()}
-            self.meta_record_keeper.update_records(averages, global_iteration=None, input_group_name_for_non_objects=group_name)
+            for split in self.args.splits_to_eval:
+                group_name = "meta_" + self.tester_obj.record_group_name(split)
+                averages = {"%s_%s"%(k, self.args.eval_metric_for_best_epoch): np.mean(list(v.values())) for k, v in self.meta_accuracies[split].items()}
+                len_of_existing_record = len(self.meta_record_keeper.get_record(group_name)[list(averages.keys())[0]])
+                self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
             self.meta_pickler_and_csver.save_records()
 
     def maybe_load_models_and_records(self):
         resume_epoch = 0
         self.pickler_and_csver.load_records()
+        self.meta_pickler_and_csver.load_records()
         if self.args.resume_training:
             resume_epoch = c_f.latest_version(self.model_folder, "/trunk_*.pth") or 0
             if resume_epoch > 0:
@@ -345,6 +352,13 @@ class BaseAPIParser:
         for v in self.optimizers.values():
             c_f.move_optimizer_to_gpu(v, self.device)
 
+    def check_patience(self):
+        if not self.args.skip_eval and self.args.patience is not None:
+            best_epoch = self.tester_obj.get_best_epoch_and_accuracy('val')[0]
+            if self.epoch - best_epoch > self.args.patience:
+                logging.info("Validation accuracy has plateaued. Exiting.")
+                sys.exit()
+
     def train(self, num_epochs):
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
         while self.epoch <= num_epochs:
@@ -353,6 +367,7 @@ class BaseAPIParser:
             self.trainer.train(self.epoch, self.args.save_interval)
             self.epoch = self.trainer.epoch
             self.save_stuff_and_maybe_eval(self.epoch)
+            self.check_patience()
             self.epoch += 1
 
     def eval(self, num_epochs):

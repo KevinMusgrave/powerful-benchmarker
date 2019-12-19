@@ -11,9 +11,10 @@ save_interval: 2
 split:
   schemes: 
     - medium
-num_variants_per_split_scheme: 4
+num_variants_per_split_scheme: 5
 
 label_hierarchy_level: 0
 dataloader_num_workers: 32
 skip_eval: False
 check_untrained_accuracy: False
+patience: null
