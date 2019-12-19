@@ -78,6 +78,9 @@ Experiment data is saved in the following format:
     |-saved_models
     |-saved_pkls
     |-tensorboard_logs
+  |-meta_logs
+    |-saved_pkls
+    |-tensorboard_logs
 ```
 To view experiment data, go to the parent of ```root_experiment_folder``` and start tensorboard: 
 ```
@@ -141,7 +144,17 @@ python run.py \
 --experiment_name test2 \
 --optimizers {metric_loss_optimizer: {SGD: {lr: 0.01}}} 
 ```
-Now the ```optimizers``` parameter contains 3 optimizers because the command line flag was merged with the flag in the yaml file. To see more details about this functionality, check out [easy_module_attribute_getter](https://github.com/KevinMusgrave/easy_module_attribute_getter).
+Now the ```optimizers``` parameter contains 3 optimizers because the command line flag was merged with the flag in the yaml file. 
+
+What if you want to change the learning rate of the trunk_optimizer, but keep all other parameters the same?
+```
+python run.py \
+--experiment_name test2 \
+--optimizers {trunk_optimizer: {Adam: {lr: 0.01}}} 
+```
+Now trunk_optimizer has lr set to 0.01, but it still has weight_decay set to 0.00005 as specified in the config file.
+
+To see more details about this functionality, check out [easy_module_attribute_getter](https://github.com/KevinMusgrave/easy_module_attribute_getter).
 
 ## Combine yaml files at the command line
 The config files are currently separated into 6 folders, for readability. Suppose you want to try Deep Adversarial Metric Learning. You can write a new yaml file in the config_general folder that contains the necessary parameters. But there is no need to rewrite generic parameters like pytorch_home and num_epochs_train. Instead, just tell the program to use both the default config file and your new config file:
@@ -171,10 +184,22 @@ Now in your experiments folder you'll see the original config files, and a new f
   |-configs
     |-config_eval.yaml
     ...
-    |-resume_training_config_diffs_1
+    |-resume_training_config_diffs_<underscore delimited numbers>
   ...
 ```
-This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. Every time you resume training, a new folder will be created, showing what parameters changed since the original run.
+This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. 
+
+The underscore delimited numbers in the folder name, indicate which models were loaded for each [split scheme](#split-schemes). For example, let's say you are using the medium split scheme with 3 variants. The training process has finished 50, 30, and 0 epochs of split schemes ```medium_0```, ```medium_1```, and ```medium_2```. You decide to stop training, and resume training with a different batch size. The config diff folder will be named ```resume_training_config_diffs_50_30_0```.
+
+## Reproducing benchmark results
+To reproduce an experiment from the benchmark spreadsheets, use the ```--reproduce_results``` flag:
+1. In the benchmark spreadsheet, click on the google drive link under the "config files" column.
+2. Download the folders you want (for example ```cub200_old_approach_triplet_batch_all```), into some folder on your computer. For example, I downloaded into ```/home/tkm45/experiments_to_reproduce```
+3. Then run:
+```
+python run.py --reproduce_results /home/tkm45/experiments_to_reproduce/cub200_old_approach_triplet_batch_all \
+--experiment_name cub200_old_approach_triplet_batch_all_reproduced
+```
 
 ## Evaluation options
 By default, your model will be saved and evaluated on the training and validation sets every ```save_interval``` epochs. If you'd like to save the models but skip evaluation during training, set ```skip_eval``` to True. 
@@ -199,6 +224,9 @@ To remedy this situation, this benchmarker allows the user to specify the split 
 | easy | 60/15/25 | train/val/test |
 
 To further increase the validity of accuracy measurements, you can use the ```num_variants_per_split_scheme``` option to specify the number of ways the dataset will be split. For example, if you use the ```old_approach``` with ```num_variants_per_split_scheme: 2```, then the experiment will train a model on the first 50% of classes, and then train another model on the second 50% of classes. Each experiment's data will be kept in a separate subfolder.   
+
+## Meta logs
+When you use more than one split scheme, or you use 1 split scheme with multiple variants, a new set of meta records will be created. The meta records show the average of the best accuracies of your training runs. In other words, it's a summary of the performance across the various split schemes. You can find these records on tensorboard and in the meta_logs folder.
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.

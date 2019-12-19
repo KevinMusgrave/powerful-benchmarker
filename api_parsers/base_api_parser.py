@@ -252,7 +252,7 @@ class BaseAPIParser:
         self.record_keeper, self.pickler_and_csver, _ = self.get_record_keeper(self.pkl_folder, self.tensorboard_folder)
 
     def set_meta_record_keeper(self):
-        if self.args.num_variants_per_split_scheme > 1:
+        if len(self.split_manager.split_scheme_names) > 1:
             _, pkl_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
             self.meta_record_keeper, self.meta_pickler_and_csver, _ = self.get_record_keeper(pkl_folder, tensorboard_folder)
             self.meta_accuracies = defaultdict(dict)
