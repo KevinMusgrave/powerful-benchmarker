@@ -190,7 +190,7 @@ Now in your experiments folder you'll see the original config files, and a new f
 ```
 This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. 
 
-The underscore delimited numbers in the folder name, indicate which models were loaded for each [split scheme](#split-schemes). For example, let's say you are using the medium split scheme with 3 variants. The training process has finished 50, 30, and 0 epochs of split schemes ```medium_0```, ```medium_1```, and ```medium_2```. You decide to stop training, and resume training with a different batch size. The config diff folder will be named ```resume_training_config_diffs_50_30_0```.
+The underscore delimited numbers in the folder name, indicate which models were loaded for each [split scheme](#split-schemes). For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named ```resume_training_config_diffs_50_30_0```.
 
 ## Reproducing benchmark results
 To reproduce an experiment from the benchmark spreadsheets, use the ```--reproduce_results``` flag:
@@ -212,22 +212,24 @@ To run evaluation only, use the ```--run_eval_only``` flag and pass in one of th
 - all (get accuracy for all saved models)
 - a space-delimited list of integers, which are the model numbers you want to get accuracy for.
 
-## Split schemes
+## Split schemes and cross validation
 One weakness of many metric-learning papers is that they have been training and testing on the same handful of datasets for years. They have also been splitting data into a 50/50 train/test split scheme, instead of train/val/test. This has likely lead to overfitting on the "test" set, as people have tuned hyperparameters and created algorithms with direct feedback from the "test" set.
 
-To remedy this situation, this benchmarker allows the user to specify the split scheme via the ```split``` option. Currently there are 4 options. Each one splits data based on class labels. For example, the ```old_approach``` uses the first 50% of class labels for the training set, and the other 50% of labels for the "test" set (which should really be called the validation set).
+To remedy this situation, this benchmarker allows the user to specify the split scheme with the ```test_set_specs``` and ```num_cross_validation_folds``` options. Here's an example config:
+```yaml
+test_set_specs:
+  size: 0.5
+  start_idx: 0.1
+num_cross_validation_folds: 10
+```
+Translation:
+- The test set consists of classes with labels in ```[num_labels * start_idx, num_labels * (start_idx+size)]```. Note that if we set start_idx to 0.9, the range would wrap around to the beginning (0.9 to 1, 0 to 0.4). 
+- The remaining classes will be used for k-fold cross validation, where k = num_cross_validation_folds
 
-| split scheme name | class split percentages | split names |
-|-------------------|-------------------------|-------------|
-| old_approach | 50/50 | train/val |
-| hard | 20/5/75 | train/val/test |
-| medium | 40/10/50 | train/val/test |
-| easy | 60/15/25 | train/val/test |
-
-To further increase the validity of accuracy measurements, you can use the ```num_variants_per_split_scheme``` option to specify the number of ways the dataset will be split. For example, if you use the ```old_approach``` with ```num_variants_per_split_scheme: 2```, then the experiment will train a model on the first 50% of classes, and then train another model on the second 50% of classes. Each experiment's data will be kept in a separate subfolder.   
+If instead you still want to use the old 50/50 train/test split, then set ```special_split_scheme_name``` to ```old_approach```. Otherwise, leave it as ```null```. 
 
 ## Meta logs
-When you use more than one split scheme, or you use 1 split scheme with multiple variants, a new set of meta records will be created. The meta records show the average of the best accuracies of your training runs. In other words, it's a summary of the performance across the various split schemes. You can find these records on tensorboard and in the meta_logs folder.
+When doing cross validation, a new set of meta records will be created. The meta records show the average of the best accuracies of your training runs. You can find these records on tensorboard and in the meta_logs folder.
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
@@ -246,9 +248,11 @@ dataset:
 num_epochs_train: <how long to train for>
 iterations_per_epoch: <how long an "epoch" lasts>
 save_interval: <how often (in number of epochs) models will be saved and evaluated>
-split:
-  schemes: <list>
-num_variants_per_split_scheme: <number of ways the dataset will be split, per split scheme> 
+special_split_scheme_name: <string> #options: old_approach or predefined. Leave as null if you want to do cross validation.
+test_set_specs:
+  size: <number> #number in (0, 1), which is the percent of classes that will be used in the test set.
+  start_idx: <number> #number in (0, 1), which is the percent that specifies the starting class index for the test set
+num_cross_validation_folds: <int> #number of folds (excluding the test set) that are created for cross validation.
 
 label_hierarchy_level: <number>
 dataloader_num_workers: <number>
