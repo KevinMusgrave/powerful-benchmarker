@@ -3,6 +3,6 @@ eval_normalize_embeddings: True
 eval_use_trunk_output: False
 eval_batch_size: 32
 eval_metric_for_best_epoch: mean_average_r_precision
-eval_dataloader_num_workers: 32
+eval_dataloader_num_workers: 4
 eval_pca: null
 eval_size_of_tsne: 0

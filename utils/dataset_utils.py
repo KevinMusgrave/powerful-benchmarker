@@ -6,6 +6,17 @@ import numpy as np
 import torch.utils.data
 
 
+def get_labels_by_hierarchy(labels, hierarchy_level):
+    if labels.ndim == 2:
+        labels = labels[:, hierarchy_level]
+    return labels
+
+def get_base_split_name(size, start_idx, fold=''):
+    size = int(size*100)
+    start_idx = int(start_idx*100)
+    return 'test%02d%02dfold%s'%(size, start_idx, fold)
+
+
 def get_labels_to_indices(labels):
     """
     Creates labels_to_indices, which is a dictionary mapping each label
@@ -28,28 +39,6 @@ def get_labels_to_indices(labels):
             v1[k2] = np.array(v2, dtype=np.int)
 
     return labels_to_indices
-
-
-def get_label_based_split_scheme_ratios(split_scheme_name):
-    """
-    Args:
-        split_scheme_name: type string, the name of the split scheme to be returned
-    Returns:
-        A dict which maps train/val/test to percentages of the dataset classes
-        that will be used for a particular split
-    In most metric learning papers, the datasets are split into train and test,
-    where train and test take the first and second half of classes respectively.
-    To better evaluate algorithms, we want to try different split schemes.
-    For example the hard split trains on 20% of classes, validates on 5% of
-    classes, and tests on the remaining 75% of classes.
-    """
-    d = {
-        "old_approach": {"train": 0.5, "val": 0.5},
-        "hard": {"train": 0.2, "val": 0.05, "test": 0.75},
-        "medium": {"train": 0.4, "val": 0.1, "test": 0.5},
-        "easy": {"train": 0.6, "val": 0.15, "test": 0.25},
-    }
-    return d[split_scheme_name]
 
 
 def create_subset(dataset, idx_to_keep):
@@ -78,24 +67,48 @@ def create_label_based_subset(dataset, labels, class_rule):
     return create_subset(dataset, idx_to_keep), idx_to_keep
 
 
-def numeric_class_rule(rule_params, mode="range"):
+def numeric_class_rule(a, b, exclusion_rule=None):
     """
     Args:
         rule_params: a list, the purpose of which is determined by the mode specified
     Returns:
         a function that takes a label as input, and returns True if that label
                     should be included in a subset dataset.
-    Currently there is only the "range" mode, but that might change later.
     """
-    ### maybe add other modes later
-    a, b = rule_params
+    exclusion_rule = (lambda label: True) if exclusion_rule is None else exclusion_rule
+
     if a < b:
-        return lambda label: a <= label <= b
+        range_rule = lambda label: (a <= label <= b)
     elif a > b:
-        return lambda label: label >= a or label <= b
+        range_rule = lambda label: (label >= a or label <= b)
+    return lambda label: (range_rule(label) and exclusion_rule(label))
 
 
-def create_one_split_scheme(dataset, split_scheme_name, start_idx=0, hierarchy_level=0):
+def get_wrapped_range(start_idx, length_of_range, length_of_list):
+    s = start_idx % length_of_list
+    e = (start_idx + length_of_range - 1) % length_of_list
+    return s, e
+
+def get_single_class_rule(start_idx, split_length, sorted_label_set, exclusion_rule=None):
+    s, e = get_wrapped_range(start_idx, split_length, len(sorted_label_set))
+    s = sorted_label_set[s]
+    e = sorted_label_set[e]
+    return numeric_class_rule(s, e, exclusion_rule)
+
+def get_class_rules(start_idx, split_lengths, sorted_label_set, exclusion_rule=None):
+    class_rules = {}
+    for k, v in split_lengths.items():
+        class_rules[k] = get_single_class_rule(start_idx, v, sorted_label_set, exclusion_rule)
+        start_idx += v
+    return class_rules
+
+def split_lengths_from_ratios(class_ratios, num_labels):
+    split_lengths = {k: int(num_labels * v) for k, v in class_ratios.items()}
+    split_lengths["train"] += num_labels - sum(v for k, v in split_lengths.items())
+    assert sum(v for _, v in split_lengths.items()) == num_labels
+    return split_lengths
+
+def create_one_split_scheme(dataset, scheme_name=None, fold=None, total_folds=None, test_size=None, test_start_idx=None, hierarchy_level=0):
     """
     Args:
         dataset: type torch.utils.data.Dataset, the dataset to return a subset of
@@ -105,30 +118,35 @@ def create_one_split_scheme(dataset, split_scheme_name, start_idx=0, hierarchy_l
                 and the value is a tuple: (subset_dataset, subset_labels)
     """
     traintest_dict = OrderedDict()
-    if split_scheme_name == "predefined":
+    if scheme_name == "predefined":
         for k, v in dataset.predefined_splits.items():
             traintest_dict[k] = torch.utils.data.Subset(dataset, v), v
     else:
-        labels = dataset.labels
-        if labels.ndim == 2:
-            labels = labels[:, hierarchy_level]
+        labels = get_labels_by_hierarchy(dataset.labels, hierarchy_level)
         sorted_label_set = sorted(list(set(labels)))
-        num_original_labels = len(sorted_label_set)
-        class_ratios = get_label_based_split_scheme_ratios(split_scheme_name)
-        split_lens = {k: int(num_original_labels * v) for k, v in class_ratios.items()}
-        split_lens["train"] += num_original_labels - sum(
-            v for k, v in split_lens.items()
-        )
-        assert sum(v for _, v in split_lens.items()) == num_original_labels
+        num_labels = len(sorted_label_set)
 
-        start_idx = int(start_idx*len(sorted_label_set))
-        for k, v in split_lens.items():
-            s = sorted_label_set[start_idx % len(sorted_label_set)]
-            e = sorted_label_set[(start_idx + v - 1) % len(sorted_label_set)]
-            class_rule = numeric_class_rule([s, e], mode="range")
-            traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
-            start_idx += v
-        # add other split schemes if we want
+        if scheme_name == "old_approach":
+            split_lengths = split_lengths_from_ratios({"train": 0.5, "val": 0.5}, num_labels)
+            for k, class_rule in get_class_rules(0, split_lengths, sorted_label_set).items():
+                traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
+        else:
+            val_ratio = (1./total_folds)*(1-test_size)
+            train_ratio = (1. - val_ratio)*(1-test_size)
+            class_ratios = {"train": train_ratio, "val": val_ratio, "test": test_size}
+            split_lengths = split_lengths_from_ratios(class_ratios, num_labels)
+
+            test_class_rule = get_single_class_rule(int(test_start_idx*num_labels), split_lengths["test"], sorted_label_set)
+            traintest_dict["test"] = create_label_based_subset(dataset, labels, test_class_rule)
+            split_lengths.pop("test", None)
+            exclusion_rule = lambda label: not test_class_rule(label)
+            sorted_label_set = sorted([x for x in sorted_label_set if exclusion_rule(x)])
+            num_labels = len(sorted_label_set)
+
+            start_idx = int((float(fold)/total_folds)*num_labels)
+            class_rules = get_class_rules(start_idx, split_lengths, sorted_label_set, exclusion_rule)
+            for k, class_rule in class_rules.items():
+                traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
 
     return traintest_dict
 

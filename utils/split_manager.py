@@ -5,6 +5,7 @@ from collections import OrderedDict
 import numpy as np
 from utils import dataset_utils as d_u
 import logging
+import itertools
 
 class SplitManager:
     def __init__(
@@ -12,17 +13,27 @@ class SplitManager:
         dataset=None,
         train_transform=None,
         eval_transform=None,
-        split_scheme_names=None,
-        num_variants_per_split_scheme=1,
-        input_dataset_splits=None,
+        test_set_specs=None,
+        num_cross_validation_folds=1,
+        special_split_scheme_name=None,
+        hierarchy_level=0
     ):
         self.original_dataset = dataset
         self.train_transform = train_transform
         self.eval_transform = eval_transform
-        self.split_scheme_names = split_scheme_names
-        self.num_variants_per_split_scheme = num_variants_per_split_scheme
-        self.input_dataset_splits = input_dataset_splits
+        self.test_set_specs = test_set_specs
+        self.num_cross_validation_folds = num_cross_validation_folds
+        self.special_split_scheme_name = special_split_scheme_name
+        self.hierarchy_level = hierarchy_level
         self.create_split_schemes()
+
+    def assert_splits_are_disjoint(self):
+        for (split_scheme_name, split_scheme) in self.split_schemes.items():
+            labels = []
+            for split, (_, subset_indices) in split_scheme.items():
+                labels.append(set(d_u.get_labels_by_hierarchy(self.original_dataset.labels[subset_indices], self.hierarchy_level)))
+            for (x,y) in itertools.combinations(labels, 2):
+                assert x.isdisjoint(y)
 
     def create_split_schemes(self):
         """
@@ -30,16 +41,21 @@ class SplitManager:
         Each value is a dictionary with "train", "val", "test" keys, corresponding
         to subsets of self.original_dataset
         """
-        if self.input_dataset_splits is not None:
-            self.split_schemes = self.input_dataset_splits
-            self.split_scheme_names = list(self.split_schemes.keys())
+        self.split_schemes = OrderedDict()
+        if self.special_split_scheme_name:
+            self.split_schemes[self.special_split_scheme_name] = d_u.create_one_split_scheme(self.original_dataset, 
+                                                                                            scheme_name=self.special_split_scheme_name)
         else:
-            self.split_schemes = OrderedDict()
-            for split_scheme_name in self.split_scheme_names:
-                for i,start_idx in enumerate(np.linspace(0, 1, self.num_variants_per_split_scheme, endpoint=False)):
-                    self.split_schemes['%s_%d'%(split_scheme_name,i)] = d_u.create_one_split_scheme(
-                        self.original_dataset, split_scheme_name, start_idx)
-            self.split_scheme_names = list(self.split_schemes.keys())
+            for fold in range(self.num_cross_validation_folds):
+                name = d_u.get_base_split_name(**self.test_set_specs, fold=fold)
+                self.split_schemes[name] = d_u.create_one_split_scheme(self.original_dataset, 
+                                                                        fold=fold,
+                                                                        total_folds=self.num_cross_validation_folds,
+                                                                        test_size=self.test_set_specs["size"], 
+                                                                        test_start_idx=self.test_set_specs["start_idx"],
+                                                                        hierarchy_level=self.hierarchy_level)
+        self.assert_splits_are_disjoint()
+        self.split_scheme_names = list(self.split_schemes.keys())
 
     def set_curr_split_scheme(self, split_scheme_name):
         self.curr_split_scheme_name = split_scheme_name
@@ -56,14 +72,10 @@ class SplitManager:
         self.dataset, subset_indices = self.curr_split_scheme[self.curr_split_name]
         self.set_dataset_transform(transform)
         if self.is_training:
-            if self.input_dataset_splits is None:
-                label_source = self.original_dataset.labels[subset_indices]
-            else:
-                label_source = self.dataset.labels
+            label_source = self.original_dataset.labels[subset_indices]
             self.set_labels_to_indices(label_source)
             self.set_label_map()
-        logging.info("SPLIT: %s / %s / length %d" %
-              (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
+        logging.info("SPLIT: %s / %s / length %d" % (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
 
     def set_transforms(self, train_transform, eval_transform):
         self.train_transform = train_transform
@@ -74,10 +86,7 @@ class SplitManager:
             self.set_dataset_transform(self.eval_transform)
 
     def set_dataset_transform(self, transform):
-        if self.input_dataset_splits is None:
-            self.dataset.dataset.transform = transform
-        else:
-            self.dataset.transform = transform  
+        self.dataset.dataset.transform = transform
 
     def set_labels_to_indices(self, labels):
         self.labels_to_indices = d_u.get_labels_to_indices(labels)

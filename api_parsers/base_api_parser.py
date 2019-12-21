@@ -58,6 +58,7 @@ class BaseAPIParser:
                 self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
         self.record_meta_logs()
+        self.flush_tensorboard()
 
     def is_training(self):
         return not self.args.run_eval_only
@@ -115,23 +116,11 @@ class BaseAPIParser:
             if g is not None: self.gradient_clippers[k + "_grad_clipper"] = g
 
     def set_split_manager(self):
-        chosen_dataset, dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
-        dataset_params = copy.deepcopy(dataset_params)
-        dataset_params["dataset_root"] = self.args.dataset_root
-
-        if self.args.split["schemes"][0] == "fixed":
-            input_dataset_splits = {
-                "fixed": {
-                    k: (chosen_dataset(split=k, **dataset_params), None)
-                    for k in self.args.split["schemes"][1:]
-                }
-            }
-            self.split_manager = split_manager.SplitManager(input_dataset_splits=input_dataset_splits)
-        else:
-            chosen_dataset = chosen_dataset(**dataset_params)
-            self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
-                                                            split_scheme_names=self.args.split["schemes"], 
-                                                            num_variants_per_split_scheme=self.args.num_variants_per_split_scheme)
+        chosen_dataset = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, additional_params={"dataset_root":self.args.dataset_root})
+        self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
+                                                        test_set_specs=self.args.test_set_specs, 
+                                                        num_cross_validation_folds=self.args.num_cross_validation_folds,
+                                                        special_split_scheme_name=self.args.special_split_scheme_name)
 
     def get_transforms(self):
         try:
@@ -243,6 +232,13 @@ class BaseAPIParser:
                 self.eval_model(epoch)
             self.pickler_and_csver.save_records()
 
+    def flush_tensorboard(self):
+        self.tensorboard_writer.flush()
+        self.tensorboard_writer.close()
+        if hasattr(self, "meta_tensorboard_writer"):
+            self.meta_tensorboard_writer.flush()
+            self.meta_tensorboard_writer.close()
+
     def get_record_keeper(self, pkl_folder, tensorboard_folder):
         pickler_and_csver = record_keeper_package.PicklerAndCSVer(pkl_folder)
         tensorboard_writer = SummaryWriter(log_dir=tensorboard_folder)
@@ -250,12 +246,12 @@ class BaseAPIParser:
         return record_keeper, pickler_and_csver, tensorboard_writer
 
     def set_record_keeper(self):
-        self.record_keeper, self.pickler_and_csver, _ = self.get_record_keeper(self.pkl_folder, self.tensorboard_folder)
+        self.record_keeper, self.pickler_and_csver, self.tensorboard_writer = self.get_record_keeper(self.pkl_folder, self.tensorboard_folder)
 
     def set_meta_record_keeper(self):
         if len(self.split_manager.split_scheme_names) > 1:
             _, pkl_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
-            self.meta_record_keeper, self.meta_pickler_and_csver, _ = self.get_record_keeper(pkl_folder, tensorboard_folder)
+            self.meta_record_keeper, self.meta_pickler_and_csver, self.meta_tensorboard_writer = self.get_record_keeper(pkl_folder, tensorboard_folder)
             self.meta_accuracies = defaultdict(lambda: defaultdict(dict))
             c_f.makedir_if_not_there(pkl_folder)
             c_f.makedir_if_not_there(tensorboard_folder)
@@ -282,7 +278,8 @@ class BaseAPIParser:
     def maybe_load_models_and_records(self):
         resume_epoch = 0
         self.pickler_and_csver.load_records()
-        self.meta_pickler_and_csver.load_records()
+        if hasattr(self, "meta_pickler_and_csver"):
+            self.meta_pickler_and_csver.load_records()
         if self.args.resume_training:
             resume_epoch = c_f.latest_version(self.model_folder, "/trunk_*.pth") or 0
             if resume_epoch > 0:
@@ -352,12 +349,13 @@ class BaseAPIParser:
         for v in self.optimizers.values():
             c_f.move_optimizer_to_gpu(v, self.device)
 
-    def check_patience(self):
+    def patience_remaining(self):
         if not self.args.skip_eval and self.args.patience is not None:
             best_epoch = self.tester_obj.get_best_epoch_and_accuracy('val')[0]
             if self.epoch - best_epoch > self.args.patience:
                 logging.info("Validation accuracy has plateaued. Exiting.")
-                sys.exit()
+                return False
+        return True
 
     def train(self, num_epochs):
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
@@ -367,7 +365,10 @@ class BaseAPIParser:
             self.trainer.train(self.epoch, self.args.save_interval)
             self.epoch = self.trainer.epoch
             self.save_stuff_and_maybe_eval(self.epoch)
-            self.check_patience()
+            if not self.patience_remaining():
+            	return
+            if not self.args.skip_eval:
+                self.trainer.step_lr_plateau_schedulers(self.tester_obj.get_accuracy_of_epoch('val', self.epoch))
             self.epoch += 1
 
     def eval(self, num_epochs):

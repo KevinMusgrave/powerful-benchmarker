@@ -1,6 +1,3 @@
-pytorch_home: /home/tkm45/NEW_STUFF/pytorch_models
-dataset_root: /scratch
-
 training_method: MetricLossOnly
 testing_method: GlobalEmbeddingSpaceTester
 dataset:  
@@ -8,13 +5,15 @@ dataset:
 num_epochs_train: 4
 iterations_per_epoch: 100
 save_interval: 2
-split:
-  schemes: 
-    - medium
-num_variants_per_split_scheme: 5
+
+special_split_scheme_name: null
+test_set_specs:
+  size: 0.5
+  start_idx: 0.5
+num_cross_validation_folds: 5
 
 label_hierarchy_level: 0
-dataloader_num_workers: 32
+dataloader_num_workers: 4
 skip_eval: False
 check_untrained_accuracy: False
 patience: null

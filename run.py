@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 from easy_module_attribute_getter import YamlReader
-from utils import common_functions as c_f
+from utils import common_functions as c_f, dataset_utils as d_u
 import argparse
 import api_parsers
 import logging
@@ -9,6 +9,8 @@ logging.getLogger().setLevel(logging.INFO)
 
 def setup_argparser(config_foldernames):
     parser = argparse.ArgumentParser()
+    parser.add_argument("--pytorch_home", type=str, default="/home/tkm45/NEW_STUFF/pytorch_models")
+    parser.add_argument("--dataset_root", type=str, default="/scratch")
     parser.add_argument("--root_experiment_folder", type=str,
                         default="/home/tkm45/NEW_STUFF/experiments")
     parser.add_argument("--experiment_name", type=str, required=True)
@@ -49,10 +51,16 @@ def reproduce_results(YR, config_foldernames):
         default_configs.append("%s/%s/default.yaml"%(YR.args.root_config_folder, k)) #append default config file
     for k in config_foldernames:
         experiment_configs.append('%s/%s.yaml'%(configs_folder, k)) #append experiment config file
-    args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs)
+    args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0)
 
     # check if there were config diffs if training was resumed
-    resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, YR.args.split["schemes"], YR.args.num_variants_per_split_scheme)
+    if YR.args.special_split_scheme_name:
+        num_folds = 1
+        base_split_name = YR.args.special_split_scheme_name
+    else:
+        num_folds = YR.args.num_cross_validation_folds
+        base_split_name = d_u.get_base_split_name(**YR.args.test_set_specs)
+    resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, base_split_name, num_folds)
     if len(resume_training_dict) > 0:
         for sub_folder, num_epochs_dict in resume_training_dict.items():
             # train until the next config diff was made
@@ -63,7 +71,7 @@ def reproduce_results(YR, config_foldernames):
             # load the default configs, the experiment specific configs, plus the config diffs 
             for k in glob.glob("%s/*"%sub_folder):
                 experiment_configs.append(k)
-            args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs)
+            args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0)
             # remove default configs from dict_of_yamls to avoid saving these as config diffs
             for d in default_configs:
                 args.dict_of_yamls.pop(d, None)
