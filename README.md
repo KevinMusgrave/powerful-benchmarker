@@ -53,11 +53,11 @@ Download the datasets here:
 - [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
 
 ## Set default file paths
-1. Open ```configs/config_general/default.yaml```:
-    - set ```pytorch_home``` to where you want to save downloaded pretrained models.
-    - set ```dataset_root``` to where your datasets are located. 
-2. Open run.py:
-    - Set the default value for the ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
+Open [run.py](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/run.py#L12):
+- Set the default value for ```--pytorch_home``` to where you want to save downloaded pretrained models.
+- Set the default value for ```--dataset_root``` to where your datasets are located. 
+- Set the default value for ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
+
 
 ## Try a basic command
 The following command will run an experiment using the default config files in the configs folder.
