@@ -44,21 +44,33 @@ def save_model_or_optimizer(model, model_name, filepath):
         torch.save(model.state_dict(), filepath)
 
 
-def save_dict_of_models(input_dict, epoch, folder):
+def operate_on_dict_of_models(input_dict, suffix, folder, operation, logging_string=''):
     for k, v in input_dict.items():
         opt_cond = "optimizer" in k
         if opt_cond or len([i for i in v.parameters()]) > 0:
-            model_path = experiment_filename(folder, k, epoch)
-            save_model_or_optimizer(v, k, model_path)
+            model_path = experiment_filename(folder, k, suffix)
+            if logging_string != '':
+                logging.info("%s %s"%(logging_string, model_path))
+            operation(k, v, model_path)
 
+def save_dict_of_models(input_dict, suffix, folder):
+    def operation(k, v, model_path):
+        save_model_or_optimizer(v, k, model_path)
+    operate_on_dict_of_models(input_dict, suffix, folder, operation)
 
-def load_dict_of_models(input_dict, resume_epoch, folder, device):
-    for k, v in input_dict.items():
-        opt_cond = "optimizer" in k
-        if opt_cond or len([i for i in v.parameters()]) > 0:
-            model_path = experiment_filename(folder, k, resume_epoch)
-            logging.info("LOADING %s"%model_path)
-            load_model(v, model_path, device)
+def load_dict_of_models(input_dict, suffix, folder, device):
+    def operation(k, v, model_path):
+        load_model(v, model_path, device)
+    operate_on_dict_of_models(input_dict, suffix, folder, operation, "LOADING")
+            
+def delete_dict_of_models(input_dict, suffix, folder):
+    def operation(k, v, model_path):
+        try:
+            os.remove(model_path)
+        except:
+            pass
+    operate_on_dict_of_models(input_dict, suffix, folder, operation)
+            
 
 
 def move_optimizer_to_gpu(optimizer, device):
@@ -91,6 +103,7 @@ def latest_version(folder, string_to_glob):
     items = glob.glob("%s/%s" % (folder, string_to_glob))
     if items == []:
         return None
+    items = [x for x in items if not x.endswith("best.pth")]
     version = [int(x.split("_")[-1].split(".")[0]) for x in items]
     return max(version)
 

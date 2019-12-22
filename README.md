@@ -203,14 +203,11 @@ python run.py --reproduce_results /home/tkm45/experiments_to_reproduce/cub200_ol
 ```
 
 ## Evaluation options
-By default, your model will be saved and evaluated on the training and validation sets every ```save_interval``` epochs. If you'd like to save the models but skip evaluation during training, set ```skip_eval``` to True. 
+By default, your model will be saved and evaluated on the training and validation sets every ```save_interval``` epochs.
 
 To get accuracy for specific splits, use the ```--splits_to_eval``` flag and pass in a space-delimited list of split names. For example ```--splits_to_eval train test```
 
-To run evaluation only, use the ```--run_eval_only``` flag and pass in one of the following options:
-- best (gets accuracy for the model that performed best on the validation set. This assumes you already calculated validation set accuracy)
-- all (get accuracy for all saved models)
-- a space-delimited list of integers, which are the model numbers you want to get accuracy for.
+To run evaluation only, use the ```--evaluate``` flag.
 
 ## Split schemes and cross validation
 One weakness of many metric-learning papers is that they have been training and testing on the same handful of datasets for years. They have also been splitting data into a 50/50 train/test split scheme, instead of train/val/test. This has likely lead to overfitting on the "test" set, as people have tuned hyperparameters and created algorithms with direct feedback from the "test" set.
@@ -257,7 +254,6 @@ num_cross_validation_folds: <int> #number of folds (excluding the test set) that
 
 label_hierarchy_level: <number>
 dataloader_num_workers: <number>
-skip_eval: <boolean>
 check_untrained_accuracy: <boolean>
 patience: <int> #Training will stop if validation accuracy has not improved after this number of epochs. If null, then it is ignored.
 

@@ -11,11 +11,10 @@ def setup_argparser(config_foldernames):
     parser = argparse.ArgumentParser()
     parser.add_argument("--pytorch_home", type=str, default="/home/tkm45/NEW_STUFF/pytorch_models")
     parser.add_argument("--dataset_root", type=str, default="/scratch")
-    parser.add_argument("--root_experiment_folder", type=str,
-                        default="/home/tkm45/NEW_STUFF/experiments")
+    parser.add_argument("--root_experiment_folder", type=str, default="/home/tkm45/NEW_STUFF/experiments")
     parser.add_argument("--experiment_name", type=str, required=True)
     parser.add_argument("--resume_training", action="store_true")
-    parser.add_argument("--run_eval_only", nargs="+", type=str, default=None)
+    parser.add_argument("--evaluate", action="store_true")
     parser.add_argument("--splits_to_eval", nargs="+", type=str, default=["train", "val"])
     parser.add_argument("--reproduce_results", type=str, default=None)
     parser.add_argument("--root_config_folder", type=str, required=False, default="configs")
@@ -31,7 +30,7 @@ def setup_yaml_reader(config_foldernames):
     return YR
 
 def determine_where_to_get_yamls(args, config_foldernames):
-    if args.resume_training or args.run_eval_only:
+    if args.resume_training or args.evaluate:
         config_paths = ['%s/%s.yaml'%(args.place_to_save_configs, v) for v in config_foldernames]
     else:
         config_paths = []

@@ -52,7 +52,7 @@ class BaseAPIParser:
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
             self.set_models_optimizers_losses()
-            if self.args.run_eval_only:
+            if self.args.evaluate:
                 self.eval(num_epochs)
             elif self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs:
                 self.train(num_epochs)
@@ -61,10 +61,10 @@ class BaseAPIParser:
         self.flush_tensorboard()
 
     def is_training(self):
-        return not self.args.run_eval_only
+        return not self.args.evaluate
 
     def beginning_of_training(self):
-        return (not self.args.resume_training) and (not self.args.run_eval_only)
+        return (not self.args.resume_training) and (not self.args.evaluate)
 
     def make_dir(self):
         if os.path.isdir(self.experiment_folder):
@@ -197,14 +197,14 @@ class BaseAPIParser:
         for k, v in self.model_getter_dict().items():
             self.models[k] = v(self.args.models[k])
 
-    def load_model_for_eval(self, resume_epoch=None):
-        untrained = resume_epoch == -1
+    def load_model_for_eval(self, suffix):
+        untrained = suffix == "-1"
         trunk_model = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"]))
         if not untrained:
             embedder_model = torch.nn.DataParallel(self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size))
             c_f.load_dict_of_models(
                 {"trunk": trunk_model, "embedder": embedder_model},
-                resume_epoch,
+                suffix,
                 self.model_folder,
                 self.device
             )
@@ -217,24 +217,33 @@ class BaseAPIParser:
             return ["test"]
         return []
 
-    def eval_model(self, epoch, splits_to_eval=None, load_model=False):
+    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False):
         splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
         dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
         if load_model:
-            trunk_model, embedder_model = self.load_model_for_eval(resume_epoch=epoch)
+            trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
         else:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
         self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval)
 
-    def save_stuff_and_maybe_eval(self, epoch):
-        if epoch % self.args.save_interval == 0:
-            for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
-                c_f.save_dict_of_models(obj_dict, epoch, self.model_folder)
-            if not self.args.skip_eval:
-                if epoch == self.args.save_interval and self.args.check_untrained_accuracy:
-                    self.eval_model(-1, load_model=True)
-                self.eval_model(epoch)
+    def save_stuff(self, curr_suffix, prev_suffix=None):
+        for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
+            c_f.save_dict_of_models(obj_dict, curr_suffix, self.model_folder)
+            if prev_suffix is not None:
+                c_f.delete_dict_of_models(obj_dict, prev_suffix, self.model_folder) 
+
+    def save_stuff_and_maybe_eval(self):
+        if self.epoch % self.args.save_interval == 0:
+            self.save_stuff(self.epoch, self.epoch-self.args.save_interval)
+            if self.epoch == self.args.save_interval and self.args.check_untrained_accuracy:
+                self.eval_model(-1, "-1", load_model=True)
+                self.save_stuff("best")
+            self.eval_model(self.epoch, str(self.epoch))
+            self.set_best_epoch_and_curr_accuracy()
+            if self.epoch == self.best_epoch:
+                logging.info("New best accuracy!")
+                self.save_stuff("best")
             self.pickler_and_csver.save_records()
 
     def flush_tensorboard(self):
@@ -354,10 +363,13 @@ class BaseAPIParser:
         for v in self.optimizers.values():
             c_f.move_optimizer_to_gpu(v, self.device)
 
+    def set_best_epoch_and_curr_accuracy(self):
+        self.curr_accuracy = self.tester_obj.get_accuracy_of_epoch('val', self.epoch)
+        self.best_epoch = self.tester_obj.get_best_epoch_and_accuracy('val')[0]
+
     def patience_remaining(self):
-        if not self.args.skip_eval and self.args.patience is not None:
-            best_epoch = self.tester_obj.get_best_epoch_and_accuracy('val')[0]
-            if self.epoch - best_epoch > self.args.patience:
+        if self.args.patience is not None:
+            if self.epoch - self.best_epoch > self.args.patience:
                 logging.info("Validation accuracy has plateaued. Exiting.")
                 return False
         return True
@@ -369,20 +381,13 @@ class BaseAPIParser:
             self.set_devices()
             self.trainer.train(self.epoch, self.args.save_interval)
             self.epoch = self.trainer.epoch
-            self.save_stuff_and_maybe_eval(self.epoch)
+            self.save_stuff_and_maybe_eval()
             if not self.patience_remaining():
             	return
-            if not self.args.skip_eval:
-                self.trainer.step_lr_plateau_schedulers(self.tester_obj.get_accuracy_of_epoch('val', self.epoch))
+            self.trainer.step_lr_plateau_schedulers(self.curr_accuracy)
             self.epoch += 1
 
     def eval(self, num_epochs):
-        if self.args.run_eval_only == ["best"]:
-            epochs_list = [self.tester_obj.get_best_epoch_and_accuracy('val')[0]]
-        elif self.args.run_eval_only == ["all"]:
-            epochs_list = range(self.args.save_interval, num_epochs + 1, self.args.save_interval)
-        else:
-            epochs_list = [int(x) for x in self.args.run_eval_only]
-        for epoch in epochs_list:
-            self.eval_model(epoch, splits_to_eval=self.args.splits_to_eval, load_model=True)
-            self.pickler_and_csver.save_records()
+        epoch = self.tester_obj.get_best_epoch_and_accuracy('val')[0]
+        self.eval_model(epoch, "best", splits_to_eval=self.args.splits_to_eval)
+        self.pickler_and_csver.save_records()
