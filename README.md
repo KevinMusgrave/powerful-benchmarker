@@ -217,14 +217,15 @@ One weakness of many metric-learning papers is that they have been training and 
 
 To remedy this situation, this benchmarker allows the user to specify the split scheme with the ```test_set_specs``` and ```num_cross_validation_folds``` options. Here's an example config:
 ```yaml
-test_set_specs:
-  size: 0.5
-  start_idx: 0.1
-num_cross_validation_folds: 10
+test_size: 0.5
+test_start_idx: 0.5
+num_training_partitions: 10
+num_training_sets: 5
 ```
 Translation:
 - The test set consists of classes with labels in ```[num_labels * start_idx, num_labels * (start_idx+size)]```. Note that if we set start_idx to 0.9, the range would wrap around to the beginning (0.9 to 1, 0 to 0.4). 
-- The remaining classes will be used for k-fold cross validation, where k = num_cross_validation_folds
+- The remaining classes will be split into 10 equal sized partitions. 
+- 5 of those partitions will be used for training. In other words, 5-fold cross validation will be performed, but the size of the partitions will be the same as if 10-fold cross validation was being performed.
 
 If instead you still want to use the old 50/50 train/test split, then set ```special_split_scheme_name``` to ```old_approach```. Otherwise, leave it as ```null```. 
 

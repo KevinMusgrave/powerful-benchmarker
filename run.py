@@ -55,12 +55,12 @@ def reproduce_results(YR, config_foldernames):
 
     # check if there were config diffs if training was resumed
     if YR.args.special_split_scheme_name:
-        num_folds = 1
+        num_training_sets = 1
         base_split_name = YR.args.special_split_scheme_name
     else:
-        num_folds = YR.args.num_cross_validation_folds
-        base_split_name = d_u.get_base_split_name(**YR.args.test_set_specs)
-    resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, base_split_name, num_folds)
+        num_training_sets = YR.args.num_training_sets
+        base_split_name = d_u.get_base_split_name(YR.args.test_size, YR.args.test_start_idx, YR.args.num_training_partitions)
+    resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, base_split_name, num_training_sets)
     if len(resume_training_dict) > 0:
         for sub_folder, num_epochs_dict in resume_training_dict.items():
             # train until the next config diff was made

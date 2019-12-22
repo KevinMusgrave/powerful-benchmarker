@@ -103,12 +103,12 @@ def latest_sub_experiment_epochs(sub_experiment_dir_dict):
     return latest_epochs
 
 
-def get_all_resume_training_config_diffs(config_folder, split_scheme_name, num_folds):
+def get_all_resume_training_config_diffs(config_folder, split_scheme_name, num_training_sets):
     folder_base_name = "resume_training_config_diffs_"
     full_base_path = "%s/%s" % (config_folder, folder_base_name)
     config_diffs = sorted(glob.glob("%s*"%full_base_path))
-    if num_folds > 1:
-        split_scheme_names = ["%s%d"%(split_scheme,i) for (split_scheme,i) in list(itertools.product(split_scheme_name, range(num_folds)))]
+    if num_training_sets > 1:
+        split_scheme_names = ["%s%d"%(split_scheme,i) for (split_scheme,i) in list(itertools.product(split_scheme_name, range(num_training_sets)))]
     else:
         split_scheme_names = [split_scheme_name]
     resume_training_dict = {}

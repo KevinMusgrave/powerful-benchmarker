@@ -13,16 +13,20 @@ class SplitManager:
         dataset=None,
         train_transform=None,
         eval_transform=None,
-        test_set_specs=None,
-        num_cross_validation_folds=1,
+        test_size=None,
+        test_start_idx=None,
+        num_training_partitions=2,
+        num_training_sets=1,
         special_split_scheme_name=None,
         hierarchy_level=0
     ):
         self.original_dataset = dataset
         self.train_transform = train_transform
         self.eval_transform = eval_transform
-        self.test_set_specs = test_set_specs
-        self.num_cross_validation_folds = num_cross_validation_folds
+        self.test_size = test_size
+        self.test_start_idx = test_start_idx
+        self.num_training_partitions = num_training_partitions
+        self.num_training_sets = num_training_sets
         self.special_split_scheme_name = special_split_scheme_name
         self.hierarchy_level = hierarchy_level
         self.create_split_schemes()
@@ -46,13 +50,13 @@ class SplitManager:
             self.split_schemes[self.special_split_scheme_name] = d_u.create_one_split_scheme(self.original_dataset, 
                                                                                             scheme_name=self.special_split_scheme_name)
         else:
-            for fold in range(self.num_cross_validation_folds):
-                name = d_u.get_base_split_name(**self.test_set_specs, fold=fold)
+            for partition in range(self.num_training_sets):
+                name = d_u.get_base_split_name(self.test_size, self.test_start_idx, self.num_training_partitions, partition=partition)
                 self.split_schemes[name] = d_u.create_one_split_scheme(self.original_dataset, 
-                                                                        fold=fold,
-                                                                        total_folds=self.num_cross_validation_folds,
-                                                                        test_size=self.test_set_specs["size"], 
-                                                                        test_start_idx=self.test_set_specs["start_idx"],
+                                                                        partition=partition,
+                                                                        num_training_partitions=self.num_training_partitions,
+                                                                        test_size=self.test_size, 
+                                                                        test_start_idx=self.test_start_idx,
                                                                         hierarchy_level=self.hierarchy_level)
         self.assert_splits_are_disjoint()
         self.split_scheme_names = list(self.split_schemes.keys())

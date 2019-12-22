@@ -7,10 +7,10 @@ iterations_per_epoch: 100
 save_interval: 2
 
 special_split_scheme_name: null
-test_set_specs:
-  size: 0.5
-  start_idx: 0.5
-num_cross_validation_folds: 5
+test_size: 0.5
+test_start_idx: 0.5
+num_training_partitions: 5
+num_training_sets: 5
 
 label_hierarchy_level: 0
 dataloader_num_workers: 4

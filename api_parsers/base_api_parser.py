@@ -118,8 +118,10 @@ class BaseAPIParser:
     def set_split_manager(self):
         chosen_dataset = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, additional_params={"dataset_root":self.args.dataset_root})
         self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
-                                                        test_set_specs=self.args.test_set_specs, 
-                                                        num_cross_validation_folds=self.args.num_cross_validation_folds,
+                                                        test_size=self.args.test_size,
+                                                        test_start_idx=self.args.test_start_idx, 
+                                                        num_training_partitions=self.args.num_training_partitions,
+                                                        num_training_sets=self.args.num_training_sets,
                                                         special_split_scheme_name=self.args.special_split_scheme_name)
 
     def get_transforms(self):
@@ -173,7 +175,10 @@ class BaseAPIParser:
         return None
 
     def set_sampler(self):
-        self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels_to_indices":self.split_manager.labels_to_indices})
+        if self.args.sampler is None:
+            self.sampler = None
+        else:
+            self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels_to_indices":self.split_manager.labels_to_indices})
 
     def set_loss_function(self):
         self.loss_funcs = self.pytorch_getter.get_multiple("loss", yaml_dict=self.args.loss_funcs)

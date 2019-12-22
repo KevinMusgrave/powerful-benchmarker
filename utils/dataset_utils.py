@@ -11,10 +11,10 @@ def get_labels_by_hierarchy(labels, hierarchy_level):
         labels = labels[:, hierarchy_level]
     return labels
 
-def get_base_split_name(size, start_idx, fold=''):
-    size = int(size*100)
-    start_idx = int(start_idx*100)
-    return 'test%02d%02dfold%s'%(size, start_idx, fold)
+def get_base_split_name(test_size, test_start_idx, num_training_partitions, partition=''):
+    test_size = int(test_size*100)
+    test_start_idx = int(test_start_idx*100)
+    return 'Test%02d%02d_TotalPartitions%d_Partition%s'%(test_size, test_start_idx, num_training_partitions, partition)
 
 
 def get_labels_to_indices(labels):
@@ -108,7 +108,7 @@ def split_lengths_from_ratios(class_ratios, num_labels):
     assert sum(v for _, v in split_lengths.items()) == num_labels
     return split_lengths
 
-def create_one_split_scheme(dataset, scheme_name=None, fold=None, total_folds=None, test_size=None, test_start_idx=None, hierarchy_level=0):
+def create_one_split_scheme(dataset, scheme_name=None, partition=None, num_training_partitions=None, test_size=None, test_start_idx=None, hierarchy_level=0):
     """
     Args:
         dataset: type torch.utils.data.Dataset, the dataset to return a subset of
@@ -131,7 +131,7 @@ def create_one_split_scheme(dataset, scheme_name=None, fold=None, total_folds=No
             for k, class_rule in get_class_rules(0, split_lengths, sorted_label_set).items():
                 traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
         else:
-            val_ratio = (1./total_folds)*(1-test_size)
+            val_ratio = (1./num_training_partitions)*(1-test_size)
             train_ratio = (1. - val_ratio)*(1-test_size)
             class_ratios = {"train": train_ratio, "val": val_ratio, "test": test_size}
             split_lengths = split_lengths_from_ratios(class_ratios, num_labels)
@@ -143,7 +143,7 @@ def create_one_split_scheme(dataset, scheme_name=None, fold=None, total_folds=No
             sorted_label_set = sorted([x for x in sorted_label_set if exclusion_rule(x)])
             num_labels = len(sorted_label_set)
 
-            start_idx = int((float(fold)/total_folds)*num_labels)
+            start_idx = int((float(partition)/num_training_partitions)*num_labels)
             class_rules = get_class_rules(start_idx, split_lengths, sorted_label_set, exclusion_rule)
             for k, class_rule in class_rules.items():
                 traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
