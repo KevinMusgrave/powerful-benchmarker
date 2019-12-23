@@ -54,7 +54,7 @@ class BaseAPIParser:
             self.set_models_optimizers_losses()
             if self.args.evaluate:
                 self.eval(num_epochs)
-            elif self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs:
+            elif self.should_train(num_epochs, split_scheme_name):
                 self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
         self.record_meta_logs()
@@ -122,7 +122,8 @@ class BaseAPIParser:
                                                         test_start_idx=self.args.test_start_idx, 
                                                         num_training_partitions=self.args.num_training_partitions,
                                                         num_training_sets=self.args.num_training_sets,
-                                                        special_split_scheme_name=self.args.special_split_scheme_name)
+                                                        special_split_scheme_name=self.args.special_split_scheme_name,
+                                                        hierarchy_level=self.args.label_hierarchy_level)
 
     def get_transforms(self):
         try:
@@ -175,7 +176,7 @@ class BaseAPIParser:
         return None
 
     def set_sampler(self):
-        if self.args.sampler is None:
+        if self.args.sampler in [None, {}]:
             self.sampler = None
         else:
             self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels_to_indices":self.split_manager.labels_to_indices})
@@ -373,6 +374,13 @@ class BaseAPIParser:
                 logging.info("Validation accuracy has plateaued. Exiting.")
                 return False
         return True
+
+    def should_train(self, num_epochs, split_scheme_name):
+        self.set_best_epoch_and_curr_accuracy()
+        if self.best_epoch is None:
+            return True
+        else:
+            return self.patience_remaining() and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
     def train(self, num_epochs):
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())

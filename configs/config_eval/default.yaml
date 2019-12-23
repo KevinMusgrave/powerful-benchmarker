@@ -1,4 +1,4 @@
-eval_reference_set: compared_to_sets_combined
+eval_reference_set: compared_to_self
 eval_normalize_embeddings: True
 eval_use_trunk_output: False
 eval_batch_size: 32

@@ -14,7 +14,7 @@ def get_labels_by_hierarchy(labels, hierarchy_level):
 def get_base_split_name(test_size, test_start_idx, num_training_partitions, partition=''):
     test_size = int(test_size*100)
     test_start_idx = int(test_start_idx*100)
-    return 'Test%02d%02d_TotalPartitions%d_Partition%s'%(test_size, test_start_idx, num_training_partitions, partition)
+    return 'Test%02d_%02d_Partitions%d_%s'%(test_size, test_start_idx, num_training_partitions, partition)
 
 
 def get_labels_to_indices(labels):

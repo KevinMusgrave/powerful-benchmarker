@@ -3,6 +3,7 @@
 from collections import OrderedDict
 
 import numpy as np
+import torch
 from utils import dataset_utils as d_u
 import logging
 import itertools
@@ -58,7 +59,8 @@ class SplitManager:
                                                                         test_size=self.test_size, 
                                                                         test_start_idx=self.test_start_idx,
                                                                         hierarchy_level=self.hierarchy_level)
-        self.assert_splits_are_disjoint()
+        if self.special_split_scheme_name != "predefined": 
+            self.assert_splits_are_disjoint()
         self.split_scheme_names = list(self.split_schemes.keys())
 
     def set_curr_split_scheme(self, split_scheme_name):
@@ -101,16 +103,7 @@ class SplitManager:
             self.label_map[hierarchy_level] = d_u.make_label_to_rank_dict(list(v.keys()))
 
     def map_labels(self, labels, hierarchy_level):
-        try:
-            output = {}
-            for k, v in labels.items():
-                if v is None:
-                    output[k] = None
-                else:
-                    output[k] = np.array([self.label_map[hierarchy_level][x] for x in v], dtype=np.int)
-            return output
-        except BaseException:
-            return np.array([self.label_map[hierarchy_level][x] for x in labels], dtype=np.int)
+        return np.array([self.label_map[hierarchy_level][x] for x in labels], dtype=np.int)
 
     def get_num_labels(self, hierarchy_level):
         return len(self.labels_to_indices[hierarchy_level])
