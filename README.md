@@ -247,10 +247,10 @@ num_epochs_train: <how long to train for>
 iterations_per_epoch: <how long an "epoch" lasts>
 save_interval: <how often (in number of epochs) models will be saved and evaluated>
 special_split_scheme_name: <string> #options: old_approach or predefined. Leave as null if you want to do cross validation.
-test_set_specs:
-  size: <number> #number in (0, 1), which is the percent of classes that will be used in the test set.
-  start_idx: <number> #number in (0, 1), which is the percent that specifies the starting class index for the test set
-num_cross_validation_folds: <int> #number of folds (excluding the test set) that are created for cross validation.
+test_size: <number> #number in (0, 1), which is the percent of classes that will be used in the test set.
+test_start_idx: <number> #number in (0, 1), which is the percent that specifies the starting class index for the test set
+num_training_partitions: <int> #number of partitions (excluding the test set) that are created for cross validation.
+num_training_sets: <int> #number of partitions that are actually used as training sets cross validation.
 
 label_hierarchy_level: <number>
 dataloader_num_workers: <number>

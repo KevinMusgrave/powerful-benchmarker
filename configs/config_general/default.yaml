@@ -14,5 +14,5 @@ num_training_sets: 5
 
 label_hierarchy_level: 0
 dataloader_num_workers: 4
-check_untrained_accuracy: False
+check_untrained_accuracy: True
 patience: null

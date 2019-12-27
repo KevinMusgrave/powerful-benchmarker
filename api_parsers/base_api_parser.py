@@ -53,7 +53,7 @@ class BaseAPIParser:
             self.set_curr_folders()
             self.set_models_optimizers_losses()
             if self.args.evaluate:
-                self.eval(num_epochs)
+                self.eval()
             elif self.should_train(num_epochs, split_scheme_name):
                 self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
@@ -218,7 +218,7 @@ class BaseAPIParser:
             return ["test"]
         return []
 
-    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False):
+    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, **kwargs):
         splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
         dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
         if load_model:
@@ -226,7 +226,7 @@ class BaseAPIParser:
         else:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
-        self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval)
+        self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval, **kwargs)
 
     def save_stuff(self, curr_suffix, prev_suffix=None):
         for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
@@ -327,7 +327,8 @@ class BaseAPIParser:
             "pca": self.args.eval_pca,
             "size_of_tsne": self.args.eval_size_of_tsne,
             "record_keeper": self.record_keeper,
-            "data_and_label_getter": lambda data: (data["data"], data["label"]) 
+            "data_and_label_getter": lambda data: (data["data"], data["label"]),
+            "label_hierarchy_level": self.args.label_hierarchy_level 
         }
 
     def get_trainer_kwargs(self):
@@ -391,11 +392,15 @@ class BaseAPIParser:
             self.epoch = self.trainer.epoch
             self.save_stuff_and_maybe_eval()
             if not self.patience_remaining():
-            	return
+                return
             self.trainer.step_lr_plateau_schedulers(self.curr_accuracy)
             self.epoch += 1
 
-    def eval(self, num_epochs):
-        epoch = self.tester_obj.get_best_epoch_and_accuracy('val')[0]
-        self.eval_model(epoch, "best", splits_to_eval=self.args.splits_to_eval)
+    def eval(self, **kwargs):
+        best_epoch = -1
+        for group_name, value in self.record_keeper.pickler_and_csver.records.items():
+            if group_name.startswith("accuracies") and group_name.endswith("VAL"):
+                best_epoch = max(best_epoch, value["best_epoch"][-1])
+        for name, epoch in {"-1": -1, "best": best_epoch}.items():
+            self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True, **kwargs)
         self.pickler_and_csver.save_records()
