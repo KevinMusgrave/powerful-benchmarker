@@ -1,5 +1,7 @@
 training_method: MetricLossOnly
 testing_method: GlobalEmbeddingSpaceTester
+meta_testing_method: null
+
 dataset:  
   CUB200:
 num_epochs_train: 4
@@ -9,8 +11,8 @@ save_interval: 2
 special_split_scheme_name: null
 test_size: 0.5
 test_start_idx: 0.5
-num_training_partitions: 5
-num_training_sets: 5
+num_training_partitions: 4
+num_training_sets: 4
 
 label_hierarchy_level: 0
 dataloader_num_workers: 4

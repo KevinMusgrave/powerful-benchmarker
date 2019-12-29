@@ -1,4 +1,5 @@
 import sys
+sys.path.append("/home/tkm45/NEW_STUFF/GitHubProjects/pytorch_metric_learning")
 import record_keeper as record_keeper_package
 from easy_module_attribute_getter import PytorchGetter
 import datasets
@@ -47,6 +48,14 @@ class BaseAPIParser:
         self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
         self.set_meta_record_keeper()
+        if self.args.evaluate and self.args.meta_testing_method:
+            self.meta_eval()
+        else:
+            self.run_for_each_split_scheme()
+            self.record_meta_logs()
+        self.flush_tensorboard()
+
+    def run_for_each_split_scheme(self):
         for split_scheme_name in self.split_manager.split_scheme_names:
             num_epochs = self.num_epochs[split_scheme_name]
             self.split_manager.set_curr_split_scheme(split_scheme_name)
@@ -57,8 +66,6 @@ class BaseAPIParser:
             elif self.should_train(num_epochs, split_scheme_name):
                 self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
-        self.record_meta_logs()
-        self.flush_tensorboard()
 
     def is_training(self):
         return not self.args.evaluate
@@ -127,7 +134,10 @@ class BaseAPIParser:
 
     def get_transforms(self):
         try:
-            model_transform_properties = {k:getattr(self.models["trunk"], k) for k in ["mean", "std", "input_space", "input_range"]}
+            trunk = self.models["trunk"]
+            if isinstance(trunk, torch.nn.DataParallel):
+                trunk = trunk.module
+            model_transform_properties = {k:getattr(trunk, k) for k in ["mean", "std", "input_space", "input_range"]}
         except:
             model_transform_properties = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
         transforms = {"train": None, "eval": None}
@@ -136,12 +146,10 @@ class BaseAPIParser:
         return transforms
 
     def set_transforms(self):
+        logging.info("Setting dataset so that transform can be set")
+        self.split_manager.set_curr_split("train", is_training=True)
         transforms = self.get_transforms()
         self.split_manager.set_transforms(transforms["train"], transforms["eval"])
-
-    def set_dataset(self):
-        self.split_manager.set_curr_split("train", is_training=True)
-        self.dataset = self.split_manager.dataset
 
     def get_embedder_model(self, model_type, input_size=None, output_size=None):
         model, model_args = self.pytorch_getter.get("model", yaml_dict=model_type, return_uninitialized=True)
@@ -218,14 +226,19 @@ class BaseAPIParser:
             return ["test"]
         return []
 
+    def eval_assertions(self, dataset_dict):
+        for v in dataset_dict.values():
+            assert v.dataset.transform is self.split_manager.eval_transform
+
     def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, **kwargs):
-        splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
-        dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
         else:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
+        splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
+        dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
+        self.eval_assertions(dataset_dict)
         self.tester_obj.test(dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval, **kwargs)
 
     def save_stuff(self, curr_suffix, prev_suffix=None):
@@ -237,6 +250,7 @@ class BaseAPIParser:
     def save_stuff_and_maybe_eval(self):
         if self.epoch % self.args.save_interval == 0:
             self.save_stuff(self.epoch, self.epoch-self.args.save_interval)
+            torch.cuda.empty_cache()
             if self.epoch == self.args.save_interval and self.args.check_untrained_accuracy:
                 self.eval_model(-1, "-1", load_model=True)
                 self.save_stuff("best")
@@ -246,13 +260,14 @@ class BaseAPIParser:
                 logging.info("New best accuracy!")
                 self.save_stuff("best")
             self.pickler_and_csver.save_records()
+            torch.cuda.empty_cache()
 
     def flush_tensorboard(self):
-        self.tensorboard_writer.flush()
-        self.tensorboard_writer.close()
-        if hasattr(self, "meta_tensorboard_writer"):
-            self.meta_tensorboard_writer.flush()
-            self.meta_tensorboard_writer.close()
+        for writer in ["tensorboard_writer", "meta_tensorboard_writer"]:
+            w = getattr(self, writer, None)
+            if w:
+                w.flush()
+                w.close()
 
     def get_record_keeper(self, pkl_folder, tensorboard_folder):
         pickler_and_csver = record_keeper_package.PicklerAndCSVer(pkl_folder)
@@ -303,7 +318,6 @@ class BaseAPIParser:
         return resume_epoch
 
     def set_models_optimizers_losses(self):
-        self.set_dataset()
         self.set_model()
         self.set_transforms()
         self.set_sampler()
@@ -340,7 +354,7 @@ class BaseAPIParser:
             "collate_fn": None,
             "loss_funcs": self.loss_funcs,
             "mining_funcs": self.mining_funcs,
-            "dataset": self.dataset,
+            "dataset": self.split_manager.dataset,
             "data_device": self.device,
             "record_keeper": self.record_keeper,
             "iterations_per_epoch": self.args.iterations_per_epoch,
@@ -383,10 +397,15 @@ class BaseAPIParser:
         else:
             return self.patience_remaining() and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
+    def training_assertions(self):
+        assert self.trainer.dataset is self.split_manager.curr_split_scheme["train"][0]
+        assert self.trainer.dataset.dataset.transform is self.split_manager.train_transform
+
     def train(self, num_epochs):
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
         while self.epoch <= num_epochs:
             self.split_manager.set_curr_split("train", is_training=True)
+            self.training_assertions()
             self.set_devices()
             self.trainer.train(self.epoch, self.args.save_interval)
             self.epoch = self.trainer.epoch
@@ -403,4 +422,39 @@ class BaseAPIParser:
                 best_epoch = max(best_epoch, value["best_epoch"][-1])
         for name, epoch in {"-1": -1, "best": best_epoch}.items():
             self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True, **kwargs)
+        self.pickler_and_csver.save_records()
+
+    def meta_ConcatenateEmbeddings(self, model_suffix): 
+        list_of_trunks, list_of_embedders = [], []
+        for split_scheme_name in self.split_manager.split_scheme_names:
+            self.split_manager.set_curr_split_scheme(split_scheme_name)
+            self.set_curr_folders()
+            trunk_model, embedder_model = self.load_model_for_eval(suffix=model_suffix)
+            list_of_trunks.append(trunk_model.module)
+            list_of_embedders.append(embedder_model.module)
+        embedder_input_sizes = [self.base_model_output_size] * len(list_of_trunks)
+        if isinstance(embedder_input_sizes[0], list):
+            embedder_input_sizes = [np.sum(x) for x in embedder_input_sizes]
+        operation_before_concat = (lambda x: torch.nn.functional.normalize(x, p=2, dim=1)) if self.args.eval_normalize_embeddings else None
+        trunk = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_trunks))
+        embedder = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_embedders, embedder_input_sizes, operation_before_concat))
+        return trunk, embedder
+
+    def meta_eval(self, **kwargs):
+        assert self.args.splits_to_eval == ["test"]
+        meta_model_getter = getattr(self, "meta_"+self.args.meta_testing_method)
+        self.models = {}
+        self.record_keeper = self.meta_record_keeper
+        self.pickler_and_csver = self.meta_pickler_and_csver
+        self.tester_obj = self.pytorch_getter.get("tester", 
+                                                self.args.testing_method, 
+                                                self.get_tester_kwargs(), 
+                                                additional_params={"record_group_name_prefix": meta_model_getter.__name__})
+        group_name = self.tester_obj.record_group_name("test")
+        curr_records = self.meta_record_keeper.get_record(group_name)
+        iteration = len(list(list(curr_records.values())[0].values())) - 1 if len(curr_records) > 0 else 0 #this abomination is necessary
+        for name, i in {"-1": -1, "best": iteration}.items():
+            self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
+            self.set_transforms()
+            self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False, **kwargs)
         self.pickler_and_csver.save_records()

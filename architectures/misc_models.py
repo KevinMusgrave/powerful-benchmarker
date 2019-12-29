@@ -36,21 +36,26 @@ class LayerExtractor(nn.Module):
 
 
 class ListOfModels(nn.Module):
-    def __init__(self, list_of_models, input_sizes=None):
+    def __init__(self, list_of_models, input_sizes=None, operation_before_concat=None):
         super().__init__()
         self.list_of_models = nn.ModuleList(list_of_models)
         self.input_sizes = input_sizes
+        self.operation_before_concat = (lambda x: x) if not operation_before_concat else operation_before_concat
+        for k in ["mean", "std", "input_space", "input_range"]:
+            setattr(self, k, getattr(list_of_models[0], k, None))
 
     def forward(self, x):
         outputs = []
         if self.input_sizes is None:
             for m in self.list_of_models:
-                outputs.append(m(x))
+                curr_output = self.operation_before_concat(m(x))
+                outputs.append(curr_output)
         else:
             s = 0
             for i, y in enumerate(self.input_sizes):
                 curr_input = x[:, s : s + y]
-                outputs.append(self.list_of_models[i](curr_input))
+                curr_output = self.operation_before_concat(self.list_of_models[i](curr_input))
+                outputs.append(curr_output)
                 s += y
         return torch.cat(outputs, dim=-1)
 

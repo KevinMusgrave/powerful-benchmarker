@@ -30,6 +30,7 @@ class SplitManager:
         self.num_training_sets = num_training_sets
         self.special_split_scheme_name = special_split_scheme_name
         self.hierarchy_level = hierarchy_level
+        self.is_training = True
         self.create_split_schemes()
 
     def assert_splits_are_disjoint(self):
@@ -109,6 +110,7 @@ class SplitManager:
         return len(self.labels_to_indices[hierarchy_level])
 
     def get_dataset_dict(self, exclusion_list, is_training):
+        logging.info("COLLECTING DATASETS FOR EVAL")
         dataset_dict = {}
         for split_name, dataset in self.curr_split_scheme.items():
             if split_name not in exclusion_list:

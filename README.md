@@ -234,11 +234,9 @@ Below is the format for the various config files. Click on the links to see the 
 
 ### [config_general](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_general/default.yaml)
 ```yaml
-pytorch_home: <Path where you save pretrained pytorch models>
-dataset_root: <Path where you keep your datasets>
-
 training_method: <type> #options: MetricLossOnly, TrainWithClassifier, CascadedEmbeddings, DeepAdversarialMetricLearning
 testing_method: <type> #options: GlobalEmbeddingSpaceTester, WithSameParentLabelTester
+meta_testing_method: <type> #options: null or ConcatenateEmbeddings
 dataset:  
   <type>: #options: CUB200, Cars196, StanfordOnlineProducts
     <kwarg>: <value>
