@@ -224,6 +224,8 @@ Translation:
 - The remaining classes will be split into 10 equal sized partitions. 
 - 5 of those partitions will be used for training. In other words, 5-fold cross validation will be performed, but the size of the partitions will be the same as if 10-fold cross validation was being performed.
 
+When evaluating the cross-validated models, the best model from each fold will be loaded, and the results be averaged. Alternatively, you can set the config option ```meta_testing_method``` to ```ConcatenateEmbeddings```. This will load the best model from each fold, but treat them as one model during evaluation on the test set, by concatenating their outputs.
+
 If instead you still want to use the old 50/50 train/test split, then set ```special_split_scheme_name``` to ```old_approach```. Otherwise, leave it as ```null```. 
 
 ## Meta logs

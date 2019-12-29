@@ -1,5 +1,4 @@
 import sys
-sys.path.append("/home/tkm45/NEW_STUFF/GitHubProjects/pytorch_metric_learning")
 import record_keeper as record_keeper_package
 from easy_module_attribute_getter import PytorchGetter
 import datasets
