@@ -41,7 +41,7 @@ def determine_where_to_get_yamls(args, config_foldernames):
 
 def run(args):
     api_parser = getattr(api_parsers, "API"+args.training_method)(args)
-    api_parser.run()
+    return api_parser.run()
 
 def reproduce_results(YR, config_foldernames):
     configs_folder = '%s/configs'%YR.args.reproduce_results
@@ -79,7 +79,7 @@ def reproduce_results(YR, config_foldernames):
 
 def run_new_experiment(YR, config_foldernames):
     args, _, args.dict_of_yamls = YR.load_yamls(**determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=float('inf'))
-    run(args)
+    return run(args)
 
 
 if __name__ == "__main__":

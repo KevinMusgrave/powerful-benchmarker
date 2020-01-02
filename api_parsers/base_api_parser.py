@@ -14,6 +14,7 @@ import shutil
 import logging
 import numpy as np
 from collections import defaultdict
+import inspect
 
 class BaseAPIParser:
     def __init__(self, args):
@@ -53,6 +54,7 @@ class BaseAPIParser:
             self.run_for_each_split_scheme()
             self.record_meta_logs()
         self.flush_tensorboard()
+        return self.return_val_accuracy()
 
     def run_for_each_split_scheme(self):
         for split_scheme_name in self.split_manager.split_scheme_names:
@@ -178,8 +180,7 @@ class BaseAPIParser:
             if "mining_function" in miner_params:
                 miner_args = miner_params["mining_function"]
                 miner_params["mining_function"] = self.get_mining_function(miner_args)
-            miner = miner(**miner_params)
-            return miner
+            return miner(**miner_params)
         return None
 
     def set_sampler(self):
@@ -188,8 +189,17 @@ class BaseAPIParser:
         else:
             self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels_to_indices":self.split_manager.labels_to_indices})
 
+    def get_loss_function(self, loss_type):
+        loss, loss_params = self.pytorch_getter.get("loss", yaml_dict=loss_type, return_uninitialized=True)
+        loss_params = copy.deepcopy(loss_params)
+        if "num_classes" in str(inspect.signature(loss.__init__)):
+            loss_params["num_classes"] = self.split_manager.get_num_labels(self.args.label_hierarchy_level)
+        return loss(**loss_params)        
+
     def set_loss_function(self):
-        self.loss_funcs = self.pytorch_getter.get_multiple("loss", yaml_dict=self.args.loss_funcs)
+        self.loss_funcs = {}
+        for k, v in self.args.loss_funcs.items():
+            self.loss_funcs[k] = self.get_loss_function(v)
 
     def set_mining_function(self):
         self.mining_funcs = {}
@@ -249,7 +259,6 @@ class BaseAPIParser:
     def save_stuff_and_maybe_eval(self):
         if self.epoch % self.args.save_interval == 0:
             self.save_stuff(self.epoch, self.epoch-self.args.save_interval)
-            torch.cuda.empty_cache()
             if self.epoch == self.args.save_interval and self.args.check_untrained_accuracy:
                 self.eval_model(-1, "-1", load_model=True)
                 self.save_stuff("best")
@@ -259,7 +268,6 @@ class BaseAPIParser:
                 logging.info("New best accuracy!")
                 self.save_stuff("best")
             self.pickler_and_csver.save_records()
-            torch.cuda.empty_cache()
 
     def flush_tensorboard(self):
         for writer in ["tensorboard_writer", "meta_tensorboard_writer"]:
@@ -303,6 +311,12 @@ class BaseAPIParser:
                 len_of_existing_record = len(self.meta_record_keeper.get_record(group_name)[list(averages.keys())[0]])
                 self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
             self.meta_pickler_and_csver.save_records()
+
+    def return_val_accuracy(self):
+        if hasattr(self, "meta_record_keeper"):
+            group_name = "meta_" + self.tester_obj.record_group_name("val")
+            return self.meta_record_keeper.get_record(group_name)["average_best_%s"%self.args.eval_metric_for_best_epoch][-1]
+        return self.tester_obj.get_best_epoch_and_accuracy("val")[1]
 
     def maybe_load_models_and_records(self):
         resume_epoch = 0

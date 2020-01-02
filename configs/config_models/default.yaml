@@ -5,6 +5,6 @@ models:
   embedder:
     MLP:
       layer_sizes:
-        - 512
+        - 128
 batch_size: 128
 freeze_batchnorm: True
