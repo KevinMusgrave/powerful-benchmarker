@@ -235,9 +235,9 @@ When doing cross validation, a new set of meta records will be created. The meta
 ## Bayesian optimization to tune hyperparameters
 **This requires the [BayesianOptimization package](https://github.com/fmfn/BayesianOptimization), which can be intalled using pip**
 
-You can use bayesian optimization via the ```run_bayesian_optimization.py``` script. In your config files or at the command line, append ```~BAYESIAN~``` to any parameter that you want to tune. You must also specify two flags at the command line: ```--bayesian_optimization_init_points``` and ```--bayesian_optimization_n_iter```, which correspond to ```init_points``` and ```n_iter``` as described [here](https://github.com/fmfn/BayesianOptimization#2-getting-started).
+You can use bayesian optimization via the ```run_bayesian_optimization.py``` script. In your config files or at the command line, append ```~BAYESIAN~``` to any parameter that you want to tune, followed by a lower and upper bound in square brackets. You must also specify two flags at the command line: ```--bayesian_optimization_init_points``` and ```--bayesian_optimization_n_iter```, which correspond to ```init_points``` and ```n_iter``` as described [here](https://github.com/fmfn/BayesianOptimization#2-getting-started).
 
-Here is an example script which uses bayesian optimization to tune 3 hyperparameters for multi similarity loss, and 1 hyperparameter for the multi similarity miner.
+Here is an example script which uses bayesian optimization to tune 3 hyperparameters for the multi similarity loss, and 1 hyperparameter for the multi similarity miner.
 ```
 python run_bayesian_optimization.py --bayesian_optimization_init_points 8 --bayesian_optimization_n_iter 80 \
 --loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~BAYESIAN~: [0.01, 100], beta~BAYESIAN~: [0.01, 100], base~BAYESIAN~: [0, 1]}}} \
