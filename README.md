@@ -243,9 +243,16 @@ python run_bayesian_optimization.py --bayesian_optimization_init_points 8 --baye
 --loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~BAYESIAN~: [0.01, 100], beta~BAYESIAN~: [0.01, 100], base~BAYESIAN~: [0, 1]}}} \
 --mining_funcs~OVERRIDE~ {post_gradient_miner: {MultiSimilarityMiner: {epsilon~BAYESIAN~: [0, 1]}}} \
 --experiment_name cub200_test5050_multi_similarity_with_ms_miner \
---root_experiment_folder /home/tkm45/experiments/cub200_test5050_multi_similarity_with_ms_miner/ \
+--root_experiment_folder /home/tkm45/experiments/cub200_test5050_multi_similarity_with_ms_miner/
 ```
 
+Note that you may want to set ```root_experiment_folder``` differently from usual, because every step in bayesian optimization will create a new experiment folder with the following format:
+
+```<root_experiment_folder> / <experiment_name><iteration>```
+
+The bayesian optimizer will also save logs in ```root_experiment_folder```.
+
+If you stop and want to resume bayesian optimization, simply use ```run_bayesian_optimization.py``` with the same ```root_experiment_folder``` and ```experiment_name``` you were using before. (Do not use the ```resume_training``` flag.) 
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
