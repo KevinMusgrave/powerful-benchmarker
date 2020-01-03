@@ -24,6 +24,7 @@ def get_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, bayes
 
 def read_yaml_and_find_bayes(config_foldernames):
     YR = run.setup_yaml_reader(config_foldernames)
+    YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(**run.determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=float('inf'))
     bayes_params = {}
     get_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
     return YR, bayes_params
@@ -43,7 +44,7 @@ def run_bayesian_optimization(config_foldernames):
         experiment_number = len(glob.glob("%s/%s*"%(YR.args.root_experiment_folder, YR.args.experiment_name)))
         YR.args.experiment_folder = "%s/%s%d" % (YR.args.root_experiment_folder, YR.args.experiment_name, experiment_number)
         YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
-        return run.run_new_experiment(YR, config_foldernames)
+        return run.run(YR.args)
     return rbo
 
 def get_bayesian_logger_paths(root_experiment_folder):
@@ -59,11 +60,9 @@ if __name__ == "__main__":
     YR, bayes_params = read_yaml_and_find_bayes(config_foldernames)
     bayesian_logger_path, existing_logger_paths = get_bayesian_logger_paths(YR.args.root_experiment_folder)
     optimizer = BayesianOptimization(f=run_bayesian_optimization(config_foldernames), pbounds=bayes_params)
-    try:
+    if len(existing_logger_paths) > 0:
         load_logs(optimizer, logs=existing_logger_paths)
         logging.info("LOADED PREVIOUS BAYESIAN OPTIMIZER LOGS")
-    except:
-        pass
     bayesian_logger = JSONLogger(path=bayesian_logger_path)
     optimizer.subscribe(Events.OPTMIZATION_STEP, bayesian_logger)
 
