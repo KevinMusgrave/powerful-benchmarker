@@ -12,9 +12,10 @@ def get_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywo
     for k, v in args_dict.items():
         if not isinstance(v, dict):
             for keyword in keywords:
-                if k.endswith(keyword):
+                if k.endswith(keyword) and ("dict_of_yamls" not in parent_key):
                     assert isinstance(v, list)
-                    bayes_params["%s/%s"%(parent_key, k)] = v
+                    param_name = k if parent_key == '' else "%s/%s"%(parent_key, k)
+                    bayes_params[param_name] = v
         else:
             next_parent_key = k if parent_key == '' else "%s/%s"%(parent_key, k)
             get_optimizable_params_and_bounds(v, bayes_params, next_parent_key, keywords)
@@ -31,24 +32,29 @@ def read_yaml_and_find_bayes(config_foldernames):
     get_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
     return YR, bayes_params
 
+def replace_with_optimizer_values(param_path, input_dict, optimizer_value):
+    curr_dict = input_dict
+    for p in param_path:
+        actual_key = p
+        for keyword, function in [("~BAYESIAN~", lambda x: float(x)), ("~LOG_BAYESIAN~", lambda x: float(10**x))]:
+            if actual_key.endswith(keyword):
+                actual_key = re.sub('\%s$'%keyword, '', actual_key)
+                conversion = function
+        if actual_key in curr_dict:
+            if isinstance(curr_dict[actual_key], dict):
+                curr_dict = curr_dict[actual_key]
+            else:
+                curr_dict[actual_key] = conversion(optimizer_value)
+
 
 def run_bayesian_optimization(config_foldernames):
     def rbo(**kwargs):
         YR, _ = read_yaml_and_find_bayes(config_foldernames)
         for key, value in kwargs.items():
             param_path = key.split("/")
-            curr_dict = YR.args.__dict__
-            for p in param_path:
-                actual_key = p
-                for keyword, function in [("~BAYESIAN~", lambda x: float(x)), ("~LOG_BAYESIAN~", lambda x: float(10**x))]:
-                    if p.endswith(keyword):
-                        actual_key = re.sub('\%s$'%keyword, '', p)
-                        conversion = function
-                if isinstance(curr_dict[actual_key], dict):
-                    curr_dict = curr_dict[actual_key]
-                else:
-                    curr_dict[actual_key] = conversion(value)
-
+            replace_with_optimizer_values(param_path, YR.args.__dict__, value)
+            for sub_dict in YR.args.dict_of_yamls.values():
+                replace_with_optimizer_values(param_path, sub_dict, value)
         experiment_number = len(glob.glob("%s/%s*"%(YR.args.root_experiment_folder, YR.args.experiment_name)))
         YR.args.experiment_folder = "%s/%s%d" % (YR.args.root_experiment_folder, YR.args.experiment_name, experiment_number)
         YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
@@ -74,7 +80,10 @@ if __name__ == "__main__":
     bayesian_logger = JSONLogger(path=bayesian_logger_path)
     optimizer.subscribe(Events.OPTMIZATION_STEP, bayesian_logger)
 
-    optimizer.maximize(init_points=YR.args.bayesian_optimization_init_points, n_iter=YR.args.bayesian_optimization_n_iter)
+    num_explored_points = len(optimizer._space)
+    init_points = max(0, YR.args.bayesian_optimization_init_points - num_explored_points)
+    n_iter = YR.args.bayesian_optimization_n_iter - num_explored_points
+    optimizer.maximize(init_points=init_points, n_iter=n_iter)
 
     logging.info("DONE BAYESIAN OPTIMIZATION")
     logging.info("BEST RESULT:")
