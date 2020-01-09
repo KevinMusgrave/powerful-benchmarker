@@ -58,11 +58,14 @@ def run_experiment(config_foldernames, parameters):
 def get_log_path(root_experiment_folder):
     return "%s/bayesian_optimization_logs.json"%(root_experiment_folder)
 
-def get_ax_client(root_experiment_folder):
-    log_path = get_log_path(root_experiment_folder)
+def get_ax_client(YR, bayes_params):
+    log_path = get_log_path(YR.args.root_experiment_folder)
     if os.path.isfile(log_path):
-        return AxClient.load_from_json_file(filepath=log_path)
-    return AxClient(), log_path
+        ax_client = AxClient.load_from_json_file(filepath=log_path)
+    else:
+        ax_client = AxClient()
+        ax_client.create_experiment(parameters=bayes_params, name=YR.args.experiment_name, minimize=False, objective_name=YR.args.eval_metric_for_best_epoch)
+    return ax_client, log_path
 
 def plot_progress(ax_client, root_experiment_folder, experiment_name):
     html_elements = []
@@ -79,13 +82,12 @@ if __name__ == "__main__":
                           "config_loss_and_miners", "config_transforms", "config_eval"]
 
     YR, bayes_params = read_yaml_and_find_bayes(config_foldernames)
-    ax_client, log_path = get_ax_client(YR.args.root_experiment_folder)
-    ax_client.create_experiment(parameters=bayes_params, name=YR.args.experiment_name, minimize=False, objective_name=YR.args.eval_metric_for_best_epoch)
-
+    ax_client, log_path = get_ax_client(YR, bayes_params)
     num_explored_points = len(ax_client.experiment.trials) if ax_client.experiment.trials else 0
     n_iter = YR.args.bayesian_optimization_n_iter - num_explored_points
 
     for i in range(num_explored_points, n_iter):
+        logging.info("Optimization iteration %d"%i)
         parameters, trial_index = ax_client.get_next_trial()
         ax_client.complete_trial(trial_index=trial_index, raw_data=run_experiment(config_foldernames, parameters))
         ax_client.save_to_json_file(filepath=log_path)

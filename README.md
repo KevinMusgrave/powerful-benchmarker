@@ -358,3 +358,16 @@ eval_size_of_tsne: <number> #The number of samples per split that you want to vi
 
 ## Acknowledgements
 Thank you to Ser-Nam Lim at Facebook AI, and my research advisor, Professor Serge Belongie. This project began during my internship at Facebook AI where I received valuable feedback from Ser-Nam, and his team of computer vision and machine learning engineers and research scientists.
+
+## Citing this library
+If you'd like to cite powerful_benchmarker in your paper, you can use this bibtex:
+```latex
+@misc{Musgrave2019,
+  author = {Musgrave, Kevin and Lim, Ser-Nam and Belongie, Serge},
+  title = {Powerful Benchmarker},
+  year = {2019},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/KevinMusgrave/powerful_benchmarker}},
+}
+```
