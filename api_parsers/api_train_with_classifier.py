@@ -2,6 +2,7 @@
 
 from .base_api_parser import BaseAPIParser
 from utils import common_functions as c_f
+import logging
 
 class APITrainWithClassifier(BaseAPIParser):
 
@@ -10,6 +11,8 @@ class APITrainWithClassifier(BaseAPIParser):
         return super().get_embedder_model(model_type, input_size, output_size)
 
     def model_getter_dict(self):
+        logging.info("Setting dataset so that num labels can be determined")
+        self.split_manager.set_curr_split("train", is_training=True)        
         getter_dict = super().model_getter_dict()
         classifer_model_names = [x for x in list(self.args.models.keys()) if x.startswith("classifier")]
         for k in classifer_model_names:
