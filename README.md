@@ -4,7 +4,7 @@
 - [Spreadsheet #1: Train/val 50/50](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing)
 - [Spreadsheet #2: 4-fold cross validation, test on 2nd-half of classes](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing)
 
-## See [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) for a list of currently available losses, miners, samplers, training methods, and testing methods.
+## See [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning) for a list of currently available losses, miners, samplers, training methods, and testing methods.
 
 ## Why use this tool?
 1. Flexibility and power:
@@ -24,11 +24,11 @@
 - scikit-learn
 - faiss-gpu
 - tensorboard
-- easy_module_attribute_getter
+- easy-module-attribute-getter
 - matplotlib
 - pretrainedmodels
-- pytorch_metric_learning
-- record_keeper
+- pytorch-metric-learning
+- record-keeper
 - pandas
 
 For conda users, package dependencies are also provided in [conda_env.yaml](conda_env.yaml) and [conda_env_all_packages.yaml](conda_env_all_packages.yaml)  
@@ -54,7 +54,7 @@ Download the datasets here:
 - [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
 
 ## Set default file paths
-Open [run.py](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/run.py#L12):
+Open [run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/run.py#L12):
 - Set the default value for ```--pytorch_home``` to where you want to save downloaded pretrained models.
 - Set the default value for ```--dataset_root``` to where your datasets are located. 
 - Set the default value for ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
@@ -100,7 +100,7 @@ And look at the number of hard postive and hard negative pairs that the miner is
 
 ![miner_info_example](readme_imgs/miner_info_example.png)
 
-To learn more about where this info comes from, check out [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) and [record_keeper](https://github.com/KevinMusgrave/record_keeper)
+To learn more about where this info comes from, check out [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning) and [record-keeper](https://github.com/KevinMusgrave/record-keeper)
 
 In addition to tensorboard, all experiment data is automatically saved in pickle and CSV format in the ```saved_pkls``` subfolder.
 
@@ -156,7 +156,7 @@ python run.py \
 ```
 Now trunk_optimizer has lr set to 0.01, but it still has weight_decay set to 0.00005 as specified in the config file.
 
-To see more details about this functionality, check out [easy_module_attribute_getter](https://github.com/KevinMusgrave/easy_module_attribute_getter).
+To see more details about this functionality, check out [easy-module-attribute-getter](https://github.com/KevinMusgrave/easy-module-attribute-getter).
 
 ## Combine yaml files at the command line
 The config files are currently separated into 6 folders, for readability. Suppose you want to try Deep Adversarial Metric Learning. You can write a new yaml file in the config_general folder that contains the necessary parameters. But there is no need to rewrite generic parameters like pytorch_home and num_epochs_train. Instead, just tell the program to use both the default config file and your new config file:
@@ -165,7 +165,7 @@ python run.py --experiment_name test3 --config_general default daml
 ```
 With this command, ```configs/config_general/default.yaml``` will be loaded first, and then ```configs/config_general/daml.yaml``` will be merged into it. 
 
-It turns out that [pytorch_metric_learning](https://github.com/KevinMusgrave/pytorch_metric_learning) allows you to run deep adversarial metric learning with a classifier layer. So you can write another yaml file containing the classifier layer parameters and optimizer, and then specify it on the command line:
+It turns out that [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning) allows you to run deep adversarial metric learning with a classifier layer. So you can write another yaml file containing the classifier layer parameters and optimizer, and then specify it on the command line:
 ```
 python run.py --experiment_name test4 --config_general default daml train_with_classifier
 ```
@@ -257,7 +257,7 @@ If you stop and want to resume bayesian optimization, simply use ```run_bayesian
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
 
-### [config_general](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_general/default.yaml)
+### [config_general](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_general/default.yaml)
 ```yaml
 training_method: <type> #options: MetricLossOnly, TrainWithClassifier, CascadedEmbeddings, DeepAdversarialMetricLearning
 testing_method: <type> #options: GlobalEmbeddingSpaceTester, WithSameParentLabelTester
@@ -281,7 +281,7 @@ check_untrained_accuracy: <boolean>
 patience: <int> #Training will stop if validation accuracy has not improved after this number of epochs. If null, then it is ignored.
 
 ```
-### [config_models](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_models/default.yaml)
+### [config_models](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_models/default.yaml)
 ```yaml
 models:
   trunk:
@@ -295,7 +295,7 @@ models:
 batch_size: <number>
 freeze_batchnorm: <boolean>
 ```
-### [config_loss_and_miners](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_loss_and_miners/default.yaml)
+### [config_loss_and_miners](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_loss_and_miners/default.yaml)
 ```yaml 
 loss_funcs:
   <name>: 
@@ -316,7 +316,7 @@ mining_funcs:
       ...
   ...
 ```
-### [config_optimizers](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_optimizers/default.yaml)
+### [config_optimizers](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_optimizers/default.yaml)
 ```yaml
 optimizers:
   trunk_optimizer:
@@ -329,7 +329,7 @@ optimizers:
       ...
   ...
 ```
-### [config_transforms](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_transforms/default.yaml)
+### [config_transforms](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_transforms/default.yaml)
 ```yaml
 transforms:
   train:
@@ -344,7 +344,7 @@ transforms:
       ...
     ...
 ```
-### [config_eval](https://github.com/KevinMusgrave/powerful_benchmarker/blob/master/configs/config_eval/default.yaml)
+### [config_eval](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_eval/default.yaml)
 ```yaml
 eval_reference_set: <name> #options: compared_to_self, compared_to_sets_combined, compared_to_training_set
 eval_normalize_embeddings: <boolean>
@@ -360,7 +360,7 @@ eval_size_of_tsne: <number> #The number of samples per split that you want to vi
 Thank you to Ser-Nam Lim at Facebook AI, and my research advisor, Professor Serge Belongie. This project began during my internship at Facebook AI where I received valuable feedback from Ser-Nam, and his team of computer vision and machine learning engineers and research scientists.
 
 ## Citing this library
-If you'd like to cite powerful_benchmarker in your paper, you can use this bibtex:
+If you'd like to cite powerful-benchmarker in your paper, you can use this bibtex:
 ```latex
 @misc{Musgrave2019,
   author = {Musgrave, Kevin and Lim, Ser-Nam and Belongie, Serge},
@@ -368,6 +368,6 @@ If you'd like to cite powerful_benchmarker in your paper, you can use this bibte
   year = {2019},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/KevinMusgrave/powerful_benchmarker}},
+  howpublished = {\url{https://github.com/KevinMusgrave/powerful-benchmarker}},
 }
 ```

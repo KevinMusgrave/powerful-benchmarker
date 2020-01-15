@@ -142,9 +142,9 @@ if __name__ == "__main__":
         parameters, trial_index = ax_client.get_next_trial()
         ax_client.complete_trial(trial_index=trial_index, raw_data=run_experiment(config_foldernames, parameters))
         save_new_log(ax_client, root_experiment_folder)
-        plot_progress(ax_client, root_experiment_folder, experiment_name)
         finished_experiment_names.append([experiment_path])
         write_finished_experiment_names(root_experiment_folder, finished_experiment_names)
+        plot_progress(ax_client, root_experiment_folder, experiment_name)
 
     logging.info("DONE BAYESIAN OPTIMIZATION")
     df = ax_client.get_trials_data_frame()
