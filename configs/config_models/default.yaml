@@ -6,5 +6,5 @@ models:
     MLP:
       layer_sizes:
         - 128
-batch_size: 128
+batch_size: 32
 freeze_batchnorm: True

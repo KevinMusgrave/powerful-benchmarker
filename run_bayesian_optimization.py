@@ -1,4 +1,5 @@
 from ax.service.ax_client import AxClient
+from ax.service.utils.best_point import get_best_raw_objective_point
 from ax.plot.render import plot_config_to_html
 from ax.utils.report.render import render_report_elements
 import re
@@ -7,6 +8,8 @@ import run
 import logging
 import glob
 import os
+import csv
+import pandas as pd
 from utils import common_functions as c_f
 logging.getLogger().setLevel(logging.INFO)
 
@@ -43,6 +46,9 @@ def replace_with_optimizer_values(param_path, input_dict, optimizer_value):
             else:
                 input_dict[p] = optimizer_value
 
+def get_latest_experiment_path(root_experiment_folder, experiment_name):
+    experiment_number = len(glob.glob("%s/%s*"%(root_experiment_folder, experiment_name)))
+    return "%s/%s%d" % (root_experiment_folder, experiment_name, experiment_number)
 
 def run_experiment(config_foldernames, parameters):
     YR, _ = read_yaml_and_find_bayes(config_foldernames)
@@ -50,8 +56,7 @@ def run_experiment(config_foldernames, parameters):
         replace_with_optimizer_values(param_path, YR.args.__dict__, value)
         for sub_dict in YR.args.dict_of_yamls.values():
             replace_with_optimizer_values(param_path, sub_dict, value)
-    experiment_number = len(glob.glob("%s/%s*"%(YR.args.root_experiment_folder, YR.args.experiment_name)))
-    YR.args.experiment_folder = "%s/%s%d" % (YR.args.root_experiment_folder, YR.args.experiment_name, experiment_number)
+    YR.args.experiment_folder = get_latest_experiment_path(YR.args.root_experiment_folder, YR.args.experiment_name)
     YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
     return run.run(YR.args)
 
@@ -87,6 +92,29 @@ def get_ax_client(YR, bayes_params):
         ax_client.create_experiment(parameters=bayes_params, name=YR.args.experiment_name, minimize=False, objective_name=YR.args.eval_metric_for_best_epoch)
     return ax_client
 
+def get_finished_experiment_names(root_experiment_folder):
+    try:
+        with open('%s/finished_experiment_names.csv'%root_experiment_folder, 'r') as f:
+            reader = csv.reader(f)
+            output = list(reader)
+    except:
+        output = []
+    return output
+
+def write_finished_experiment_names(root_experiment_folder, experiment_name_list):
+    with open('%s/finished_experiment_names.csv'%root_experiment_folder,'w') as f:
+        wr = csv.writer(f)
+        wr.writerows(experiment_name_list)
+
+def test_best_model(experiment_path):
+    YR = run.setup_yaml_reader(config_foldernames)
+    YR.args.evaluate = True
+    YR.args.experiment_folder = experiment_path
+    YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
+    YR.args.splits_to_eval = ["test"]
+    YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(**run.determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=float('inf'))
+    run.run(YR.args)
+
 def plot_progress(ax_client, root_experiment_folder, experiment_name):
     html_elements = []
     html_elements.append(plot_config_to_html(ax_client.get_optimization_trace()))
@@ -102,18 +130,34 @@ if __name__ == "__main__":
                           "config_loss_and_miners", "config_transforms", "config_eval"]
 
     YR, bayes_params = read_yaml_and_find_bayes(config_foldernames)
+    root_experiment_folder = YR.args.root_experiment_folder
+    experiment_name = YR.args.experiment_name
     ax_client = get_ax_client(YR, bayes_params)
     num_explored_points = len(ax_client.experiment.trials) if ax_client.experiment.trials else 0
+    finished_experiment_names = get_finished_experiment_names(root_experiment_folder)
 
     for i in range(num_explored_points, YR.args.bayesian_optimization_n_iter):
         logging.info("Optimization iteration %d"%i)
+        experiment_path = get_latest_experiment_path(root_experiment_folder, experiment_name)
         parameters, trial_index = ax_client.get_next_trial()
         ax_client.complete_trial(trial_index=trial_index, raw_data=run_experiment(config_foldernames, parameters))
-        save_new_log(ax_client, YR.args.root_experiment_folder)
-        plot_progress(ax_client, YR.args.root_experiment_folder, YR.args.experiment_name)
+        save_new_log(ax_client, root_experiment_folder)
+        plot_progress(ax_client, root_experiment_folder, experiment_name)
+        finished_experiment_names.append([experiment_path])
+        write_finished_experiment_names(root_experiment_folder, finished_experiment_names)
 
     logging.info("DONE BAYESIAN OPTIMIZATION")
-    plot_progress(ax_client, YR.args.root_experiment_folder, YR.args.experiment_name)
-    best_parameters, best_values = ax_client.get_best_parameters()
-    best_parameters_dict = {"best_parameters": best_parameters, "means": best_values[0]}
+    df = ax_client.get_trials_data_frame()
+    metric_column = pd.to_numeric(df[YR.args.eval_metric_for_best_epoch])
+    best_trial_index = df['trial_index'].iloc[metric_column.idxmax()]
+    best_experiment_path = finished_experiment_names[best_trial_index][0] 
+    logging.info("BEST EXPERIMENT PATH: %s"%best_experiment_path)
+
+    plot_progress(ax_client, YR.args.root_experiment_folder, experiment_name)
+    best_parameters, best_values = get_best_raw_objective_point(ax_client.experiment)
+    best_parameters_dict = {"best_experiment_path": best_experiment_path, 
+                            "best_parameters": best_parameters, 
+                            "best_values": {k:{"mean": float(v[0]), "SEM": float(v[1])} for k,v in best_values.items()}}
     c_f.write_yaml("%s/best_parameters.yaml"%YR.args.root_experiment_folder, best_parameters_dict, open_as='w')
+
+    test_best_model(best_experiment_path)

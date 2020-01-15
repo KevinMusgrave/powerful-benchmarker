@@ -13,6 +13,7 @@ import os
 import shutil
 import logging
 import numpy as np
+from scipy import stats as scipy_stats
 from collections import defaultdict
 import inspect
 
@@ -54,7 +55,8 @@ class BaseAPIParser:
             self.run_for_each_split_scheme()
             self.record_meta_logs()
         self.flush_tensorboard()
-        return self.return_val_accuracy()
+        if self.is_training():
+            return self.return_val_accuracy_and_standard_error()
 
     def run_for_each_split_scheme(self):
         for split_scheme_name in self.split_manager.split_scheme_names:
@@ -308,14 +310,18 @@ class BaseAPIParser:
             for split in self.args.splits_to_eval:
                 group_name = "meta_" + self.tester_obj.record_group_name(split)
                 averages = {"%s_%s"%(k, self.args.eval_metric_for_best_epoch): np.mean(list(v.values())) for k, v in self.meta_accuracies[split].items()}
+                standard_errors = {"SEM_%s_%s"%(k, self.args.eval_metric_for_best_epoch): scipy_stats.sem(list(v.values())) for k, v in self.meta_accuracies[split].items()}
                 len_of_existing_record = len(self.meta_record_keeper.get_record(group_name)[list(averages.keys())[0]])
                 self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
+                self.meta_record_keeper.update_records(standard_errors, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
             self.meta_pickler_and_csver.save_records()
 
-    def return_val_accuracy(self):
+    def return_val_accuracy_and_standard_error(self):
         if hasattr(self, "meta_record_keeper"):
             group_name = "meta_" + self.tester_obj.record_group_name("val")
-            return self.meta_record_keeper.get_record(group_name)["average_best_%s"%self.args.eval_metric_for_best_epoch][-1]
+            mean = self.meta_record_keeper.get_record(group_name)["average_best_%s"%self.args.eval_metric_for_best_epoch][-1]
+            standard_error = self.meta_record_keeper.get_record(group_name)["SEM_average_best_%s"%self.args.eval_metric_for_best_epoch][-1]
+            return mean, standard_error
         return self.tester_obj.get_best_epoch_and_accuracy("val")[1]
 
     def maybe_load_models_and_records(self):
