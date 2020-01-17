@@ -52,7 +52,16 @@ class BaseAPIParser:
         if self.args.evaluate and self.args.meta_testing_method:
             self.meta_eval()
         else:
-            self.run_for_each_split_scheme()
+            try:
+                self.run_for_each_split_scheme()
+            except ValueError as value_exception:
+                error_string = str(value_exception)
+                if "NaN" in error_string:
+                    logging.error(error_string)
+                    mean, sem = 0, 0
+                    return mean, sem if hasattr(self, "meta_record_keeper") else mean
+                else:
+                    raise ValueError
             self.record_meta_logs()
         self.flush_tensorboard()
         if self.is_training():
