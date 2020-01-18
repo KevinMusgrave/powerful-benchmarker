@@ -6,5 +6,5 @@ class APIUnsupervisedEmbeddingsUsingAugmentations(BaseAPIParser):
         transforms = self.get_transforms()
         trainer_kwargs["transforms"] = [transforms[k] for k in transforms.keys() if k.startswith("augmentation")]
         trainer_kwargs["sampler"] = None
-        trainer_kwargs["label_mapper"] = lambda label, hierarchy_level: label
+        trainer_kwargs["set_min_label_to_zero"] = False
         return trainer_kwargs

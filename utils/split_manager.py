@@ -79,9 +79,7 @@ class SplitManager:
         self.dataset, subset_indices = self.curr_split_scheme[self.curr_split_name]
         self.set_dataset_transform(transform)
         if self.is_training:
-            label_source = self.original_dataset.labels[subset_indices]
-            self.set_labels_to_indices(label_source)
-            self.set_label_map()
+            self.labels = self.original_dataset.labels[subset_indices]
         logging.info("SPLIT: %s / %s / length %d" % (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
 
     def set_transforms(self, train_transform, eval_transform):
@@ -95,19 +93,8 @@ class SplitManager:
     def set_dataset_transform(self, transform):
         self.dataset.dataset.transform = transform
 
-    def set_labels_to_indices(self, labels):
-        self.labels_to_indices = d_u.get_labels_to_indices(labels)
-
-    def set_label_map(self):
-        self.label_map = {}
-        for hierarchy_level, v in self.labels_to_indices.items():
-            self.label_map[hierarchy_level] = d_u.make_label_to_rank_dict(list(v.keys()))
-
-    def map_labels(self, labels, hierarchy_level):
-        return np.array([self.label_map[hierarchy_level][x] for x in labels], dtype=np.int)
-
-    def get_num_labels(self, hierarchy_level):
-        return len(self.labels_to_indices[hierarchy_level])
+    def get_num_labels(self):
+        return len(self.labels)
 
     def get_dataset_dict(self, exclusion_list, is_training):
         logging.info("COLLECTING DATASETS FOR EVAL")

@@ -198,13 +198,13 @@ class BaseAPIParser:
         if self.args.sampler in [None, {}]:
             self.sampler = None
         else:
-            self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels_to_indices":self.split_manager.labels_to_indices})
+            self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels":self.split_manager.labels})
 
     def get_loss_function(self, loss_type):
         loss, loss_params = self.pytorch_getter.get("loss", yaml_dict=loss_type, return_uninitialized=True)
         loss_params = copy.deepcopy(loss_params)
         if "num_classes" in str(inspect.signature(loss.__init__)):
-            loss_params["num_classes"] = self.split_manager.get_num_labels(self.args.label_hierarchy_level)
+            loss_params["num_classes"] = self.split_manager.get_num_labels()
         return loss(**loss_params)        
 
     def set_loss_function(self):
@@ -386,14 +386,15 @@ class BaseAPIParser:
             "data_device": self.device,
             "record_keeper": self.record_keeper,
             "iterations_per_epoch": self.args.iterations_per_epoch,
-            "label_mapper": self.split_manager.map_labels,
             "lr_schedulers": self.lr_schedulers,
             "gradient_clippers": self.gradient_clippers,
             "freeze_trunk_batchnorm": self.args.freeze_batchnorm,
             "label_hierarchy_level": self.args.label_hierarchy_level,
             "dataloader_num_workers": self.args.dataloader_num_workers,
             "loss_weights": getattr(self.args, "loss_weights", None),
-            "data_and_label_getter": lambda data: (data["data"], data["label"]) 
+            "data_and_label_getter": lambda data: (data["data"], data["label"]),
+            "dataset_labels": self.split_manager.labels,
+            "set_min_label_to_zero": True 
         }
 
     def set_dataparallel(self):

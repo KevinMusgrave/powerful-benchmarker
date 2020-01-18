@@ -17,30 +17,6 @@ def get_base_split_name(test_size, test_start_idx, num_training_partitions, part
     return 'Test%02d_%02d_Partitions%d_%s'%(test_size, test_start_idx, num_training_partitions, partition)
 
 
-def get_labels_to_indices(labels):
-    """
-    Creates labels_to_indices, which is a dictionary mapping each label
-    to a numpy array of indices that will be used to index into self.dataset
-    """
-    labels_to_indices = {}
-    if labels.ndim == 1:
-        labels_to_indices[0] = defaultdict(list)
-        for i, label in enumerate(labels):
-            labels_to_indices[0][label].append(i)
-    else:
-        for i in range(labels.shape[1]):
-            labels_to_indices[i] = defaultdict(list)
-        for i, label_list in enumerate(labels):
-            for j, label in enumerate(label_list):
-                labels_to_indices[j][label].append(i)
-
-    for _, v1 in labels_to_indices.items():
-        for k2, v2 in v1.items():
-            v1[k2] = np.array(v2, dtype=np.int)
-
-    return labels_to_indices
-
-
 def create_subset(dataset, idx_to_keep):
     """
     Args:
@@ -149,15 +125,3 @@ def create_one_split_scheme(dataset, scheme_name=None, partition=None, num_train
                 traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
 
     return traintest_dict
-
-
-def make_label_to_rank_dict(label_set):
-    """
-    Args:
-        label_set: type sequence, a set of integer labels
-                    (no duplicates in the sequence)
-    Returns:
-        A dictionary mapping each label to its numeric rank in the original set
-    """
-    argsorted = list(np.argsort(label_set))
-    return {k: v for k, v in zip(label_set, argsorted)}
