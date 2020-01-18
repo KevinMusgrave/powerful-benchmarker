@@ -94,7 +94,10 @@ class SplitManager:
         self.dataset.dataset.transform = transform
 
     def get_num_labels(self):
-        return len(self.labels)
+        L = np.array(self.labels)
+        if L.ndim == 2:
+            L = L[:, self.hierarchy_level]
+        return len(set(L))
 
     def get_dataset_dict(self, exclusion_list, is_training):
         logging.info("COLLECTING DATASETS FOR EVAL")
