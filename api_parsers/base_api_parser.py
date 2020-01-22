@@ -4,7 +4,7 @@ from easy_module_attribute_getter import PytorchGetter
 import datasets
 import copy
 from utils import common_functions as c_f, split_manager
-from pytorch_metric_learning import trainers, losses, miners, samplers, testers
+from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
@@ -27,6 +27,7 @@ class BaseAPIParser:
         self.pytorch_getter.register('model', architectures.misc_models)
         self.pytorch_getter.register('loss', losses)
         self.pytorch_getter.register('miner', miners)
+        self.pytorch_getter.register('regularizer', regularizers)
         self.pytorch_getter.register('sampler', samplers)
         self.pytorch_getter.register('trainer', trainers)
         self.pytorch_getter.register('tester', testers)
@@ -205,6 +206,8 @@ class BaseAPIParser:
         loss_params = copy.deepcopy(loss_params)
         if "num_classes" in str(inspect.signature(loss.__init__)):
             loss_params["num_classes"] = self.split_manager.get_num_labels()
+        if "regularizer" in loss_params:
+            loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
         return loss(**loss_params)        
 
     def set_loss_function(self):
