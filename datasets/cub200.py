@@ -3,11 +3,11 @@
 import numpy as np
 from torch.utils.data import Dataset
 from torchvision import datasets
-
+import os
 
 class CUB200(Dataset):
     def __init__(self, dataset_root, transform=None):
-        img_folder = dataset_root + "/cub2011/CUB_200_2011/images"
+        img_folder = os.path.join(dataset_root, "cub2011", "CUB_200_2011", "images")
         self.dataset = datasets.ImageFolder(img_folder)
         self.labels = np.array([b for (a, b) in self.dataset.imgs])
         self.transform = transform

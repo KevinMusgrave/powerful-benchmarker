@@ -13,7 +13,9 @@ import pandas as pd
 from utils import common_functions as c_f
 logging.getLogger().setLevel(logging.INFO)
 
-def set_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywords=("~BAYESIAN~", "~LOG_BAYESIAN~", "~INT_BAYESIAN~")):
+BAYESIAN_KEYWORDS=("~BAYESIAN~", "~LOG_BAYESIAN~", "~INT_BAYESIAN~")
+
+def set_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywords=BAYESIAN_KEYWORDS):
     for k, v in args_dict.items():
         if not isinstance(v, dict):
             for keyword in keywords:
@@ -29,7 +31,6 @@ def set_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywo
             set_optimizable_params_and_bounds(v, bayes_params, next_parent_key, keywords)
     for keyword in keywords:
         emag_utils.remove_key_word(args_dict, keyword)
-
 
 def read_yaml_and_find_bayes(config_foldernames):
     YR = run.setup_yaml_reader(config_foldernames)
@@ -47,8 +48,8 @@ def replace_with_optimizer_values(param_path, input_dict, optimizer_value):
                 input_dict[p] = optimizer_value
 
 def get_latest_experiment_path(root_experiment_folder, experiment_name):
-    experiment_number = len(glob.glob("%s/%s*"%(root_experiment_folder, experiment_name)))
-    return "%s/%s%d" % (root_experiment_folder, experiment_name, experiment_number)
+    experiment_number = len(glob.glob(os.path.join(root_experiment_folder, experiment_name+"*")))
+    return os.path.join(root_experiment_folder, experiment_name)+str(experiment_number)
 
 def run_experiment(config_foldernames, parameters):
     YR, _ = read_yaml_and_find_bayes(config_foldernames)
@@ -57,20 +58,20 @@ def run_experiment(config_foldernames, parameters):
         for sub_dict in YR.args.dict_of_yamls.values():
             replace_with_optimizer_values(param_path, sub_dict, value)
     YR.args.experiment_folder = get_latest_experiment_path(YR.args.root_experiment_folder, YR.args.experiment_name)
-    YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
+    YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
     return run.run(YR.args)
 
 def get_log_folder(root_experiment_folder):
-    return "%s/bayesian_optimizer_logs/"%root_experiment_folder
+    return os.path.join(root_experiment_folder, "bayesian_optimizer_logs")
 
 def get_all_log_paths(root_experiment_folder):
-    return sorted(glob.glob("%s/log*.json"%get_log_folder(root_experiment_folder)), reverse=True)
+    return sorted(glob.glob(os.path.join(get_log_folder(root_experiment_folder), "log*.json")), reverse=True)
 
 def save_new_log(ax_client, root_experiment_folder):
     log_paths = get_all_log_paths(root_experiment_folder)
     log_folder = get_log_folder(root_experiment_folder)
     c_f.makedir_if_not_there(log_folder)
-    new_log_path = "%s/log%05d.json"%(log_folder, len(log_paths))
+    new_log_path = os.path.join(log_folder, "log%05d.json"%len(log_paths))
     ax_client.save_to_json_file(filepath=new_log_path)
 
 def open_log(log_paths):
@@ -94,7 +95,7 @@ def get_ax_client(YR, bayes_params):
 
 def get_finished_experiment_names(root_experiment_folder):
     try:
-        with open('%s/finished_experiment_names.csv'%root_experiment_folder, 'r') as f:
+        with open(os.path.join(root_experiment_folder, 'finished_experiment_names.csv'), 'r') as f:
             reader = csv.reader(f)
             output = list(reader)
     except:
@@ -102,7 +103,7 @@ def get_finished_experiment_names(root_experiment_folder):
     return output
 
 def write_finished_experiment_names(root_experiment_folder, experiment_name_list):
-    with open('%s/finished_experiment_names.csv'%root_experiment_folder,'w') as f:
+    with open(os.path.join(root_experiment_folder, 'finished_experiment_names.csv'), 'w') as f:
         wr = csv.writer(f)
         wr.writerows(experiment_name_list)
 
@@ -110,9 +111,12 @@ def test_best_model(experiment_path):
     YR = run.setup_yaml_reader(config_foldernames)
     YR.args.evaluate = True
     YR.args.experiment_folder = experiment_path
-    YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
+    YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
     YR.args.splits_to_eval = ["test"]
-    YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(**run.determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=float('inf'))
+    emag_utils.remove_key_word_recursively(YR.args.__dict__, "~OVERRIDE~")
+    for keyword in BAYESIAN_KEYWORDS:
+        emag_utils.remove_key_word_recursively(YR.args.__dict__, keyword)
+    YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(**run.determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=0)
     run.run(YR.args)
 
 def plot_progress(ax_client, root_experiment_folder, experiment_name):
@@ -122,7 +126,7 @@ def plot_progress(ax_client, root_experiment_folder, experiment_name):
         html_elements.append(plot_config_to_html(ax_client.get_contour_plot()))
     except:
         pass
-    with open("%s/optimization_plots.html"%root_experiment_folder, 'w') as f:
+    with open(os.path.join(root_experiment_folder, "optimization_plots.html"), 'w') as f:
         f.write(render_report_elements(experiment_name, html_elements))
 
 if __name__ == "__main__":
@@ -158,6 +162,6 @@ if __name__ == "__main__":
     best_parameters_dict = {"best_experiment_path": best_experiment_path, 
                             "best_parameters": best_parameters, 
                             "best_values": {k:{"mean": float(v[0]), "SEM": float(v[1])} for k,v in best_values.items()}}
-    c_f.write_yaml("%s/best_parameters.yaml"%YR.args.root_experiment_folder, best_parameters_dict, open_as='w')
+    c_f.write_yaml(os.path.join(YR.args.root_experiment_folder, "best_parameters.yaml"), best_parameters_dict, open_as='w')
 
     test_best_model(best_experiment_path)

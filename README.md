@@ -156,6 +156,13 @@ python run.py \
 ```
 Now trunk_optimizer has lr set to 0.01, but it still has weight_decay set to 0.00005 as specified in the config file.
 
+What if you want to make the trunk_optimizer use RMSprop but you want to leave embedder_optimizer to the default setting? In this case, append the ```~OVERRIDE~``` suffix to trunk_optimizer.
+```
+python run.py \
+--experiment_name test2 \
+--optimizers {trunk_optimizer~OVERRIDE~: {RMSprop: {lr: 0.01}}} 
+```
+
 To see more details about this functionality, check out [easy-module-attribute-getter](https://github.com/KevinMusgrave/easy-module-attribute-getter).
 
 ## Combine yaml files at the command line
@@ -243,7 +250,7 @@ python run_bayesian_optimization.py --bayesian_optimization_n_iter 50 \
 --loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~BAYESIAN~: [0.01, 50], beta~BAYESIAN~: [0.01, 50], base~BAYESIAN~: [0, 1]}}} \
 --mining_funcs~OVERRIDE~ {post_gradient_miner: {MultiSimilarityMiner: {epsilon~BAYESIAN~: [0, 1]}}} \
 --experiment_name cub200_test5050_multi_similarity_with_ms_miner \
---root_experiment_folder /home/tkm45/experiments/cub200_test5050_multi_similarity_with_ms_miner/
+--root_experiment_folder /home/tkm45/experiments/cub200_test5050_multi_similarity_with_ms_miner
 ```
 
 Note that you may want to set ```root_experiment_folder``` differently from usual, because every step in bayesian optimization will create a new experiment folder with the following format:

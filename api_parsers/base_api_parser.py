@@ -33,9 +33,9 @@ class BaseAPIParser:
         self.pytorch_getter.register('tester', testers)
         self.pytorch_getter.register('dataset', datasets)
 
-        _model_folder = "%s/%s/saved_models"
-        _pkl_folder = "%s/%s/saved_pkls"
-        _tensorboard_folder = "%s/%s/tensorboard_logs"
+        _model_folder = os.path.join("%s", "%s", "saved_models")
+        _pkl_folder = os.path.join("%s", "%s", "saved_pkls")
+        _tensorboard_folder = os.path.join("%s", "%s", "tensorboard_logs")
         self.sub_experiment_dirs = [
             _model_folder,
             _pkl_folder,
@@ -342,7 +342,7 @@ class BaseAPIParser:
         if hasattr(self, "meta_pickler_and_csver"):
             self.meta_pickler_and_csver.load_records()
         if self.args.resume_training:
-            resume_epoch = c_f.latest_version(self.model_folder, "/trunk_*.pth") or 0
+            resume_epoch = c_f.latest_version(self.model_folder, "trunk_*.pth") or 0
             if resume_epoch > 0:
                 for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
                     c_f.load_dict_of_models(obj_dict, resume_epoch, self.model_folder, self.device)

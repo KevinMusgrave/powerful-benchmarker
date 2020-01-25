@@ -3,10 +3,11 @@
 import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
+import os
 
 class CelebA(Dataset):
     def __init__(self, dataset_root, transform=None):
-        self.dataset_folder = dataset_root + "/celeb_a/"
+        self.dataset_folder = os.path.join(dataset_root, "celeb_a")
         self.load_labels()
         self.transform = transform
 
@@ -24,9 +25,9 @@ class CelebA(Dataset):
 
     def load_labels(self):
         from pandas import read_csv
-        splits_info = read_csv('%s/%s'%(self.dataset_folder, "list_eval_partition.txt"), delim_whitespace=True, header=None).values
-        self.img_paths = ['%s/%s/%s'%(self.dataset_folder, "img_align_celeba", x) for x in splits_info[:, 0]]
-        attributes = read_csv('%s/%s'%(self.dataset_folder, "list_attr_celeba.txt"), delim_whitespace=True, header=1)
+        splits_info = read_csv(os.path.join(self.dataset_folder, "list_eval_partition.txt"), delim_whitespace=True, header=None).values
+        self.img_paths = [os.path.join(self.dataset_folder, "img_align_celeba", x) for x in splits_info[:, 0]]
+        attributes = read_csv(os.path.join(self.dataset_folder, "list_attr_celeba.txt"), delim_whitespace=True, header=1)
         self.labels = (attributes.values + 1) // 2
         self.label_names = list(attributes.columns)
         splits = splits_info[:, 1]

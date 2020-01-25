@@ -5,6 +5,7 @@ import argparse
 import api_parsers
 import logging
 import glob
+import os
 logging.getLogger().setLevel(logging.INFO)
 
 def setup_argparser(config_foldernames):
@@ -25,18 +26,18 @@ def setup_argparser(config_foldernames):
 def setup_yaml_reader(config_foldernames):
     argparser = setup_argparser(config_foldernames)
     YR = YamlReader(argparser=argparser)
-    YR.args.experiment_folder = "%s/%s" % (YR.args.root_experiment_folder, YR.args.experiment_name)
-    YR.args.place_to_save_configs = "%s/%s" % (YR.args.experiment_folder, "configs")
+    YR.args.experiment_folder = os.path.join(YR.args.root_experiment_folder, YR.args.experiment_name)
+    YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
     return YR
 
 def determine_where_to_get_yamls(args, config_foldernames):
     if args.resume_training or args.evaluate:
-        config_paths = ['%s/%s.yaml'%(args.place_to_save_configs, v) for v in config_foldernames]
+        config_paths = [os.path.join(args.place_to_save_configs,'%s.yaml'%v) for v in config_foldernames]
     else:
         config_paths = []
         for subfolder in config_foldernames:
             for curr_yaml in getattr(args, subfolder):
-                config_paths.append("%s/%s/%s.yaml"%(args.root_config_folder, subfolder, curr_yaml))
+                config_paths.append(os.path.join(args.root_config_folder, subfolder, "%s.yaml"%curr_yaml))
     return {"config_paths": config_paths}
 
 def run(args):
@@ -44,12 +45,12 @@ def run(args):
     return api_parser.run()
 
 def reproduce_results(YR, config_foldernames):
-    configs_folder = '%s/configs'%YR.args.reproduce_results
+    configs_folder = os.path.join(YR.args.reproduce_results, 'configs')
     default_configs, experiment_configs = [], []
     for k in config_foldernames:
-        default_configs.append("%s/%s/default.yaml"%(YR.args.root_config_folder, k)) #append default config file
+        default_configs.append(os.path.join(YR.args.root_config_folder, k, "default.yaml")) #append default config file
     for k in config_foldernames:
-        experiment_configs.append('%s/%s.yaml'%(configs_folder, k)) #append experiment config file
+        experiment_configs.append(os.path.join(configs_folder, "%s.yaml"%k)) #append experiment config file
     args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0)
 
     # check if there were config diffs if training was resumed
@@ -68,7 +69,7 @@ def reproduce_results(YR, config_foldernames):
             # start with a fresh set of args
             YR = setup_yaml_reader(config_foldernames)
             # load the default configs, the experiment specific configs, plus the config diffs 
-            for k in glob.glob("%s/*"%sub_folder):
+            for k in glob.glob(os.path.join(sub_folder, "*")):
                 experiment_configs.append(k)
             args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0)
             # remove default configs from dict_of_yamls to avoid saving these as config diffs

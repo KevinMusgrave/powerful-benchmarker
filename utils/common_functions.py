@@ -15,9 +15,9 @@ import logging
 
 def experiment_filename(folder, basename, identifier, extension=".pth"):
     if identifier is None:
-        return "%s/%s%s" % (folder, basename, extension)
+        return os.path.join(folder, basename+extension)
     else:
-        return "%s/%s_%s%s" % (folder, basename, str(identifier), extension)
+        return os.path.join(folder, "%s_%s%s" % (basename, str(identifier), extension))
 
 
 def load_model(model_def, model_filename, device):
@@ -100,7 +100,7 @@ def write_yaml(fname, input_dict, open_as):
 
 
 def latest_version(folder, string_to_glob):
-    items = glob.glob("%s/%s" % (folder, string_to_glob))
+    items = glob.glob(os.path.join(folder, string_to_glob))
     if items == []:
         return None
     items = [x for x in items if not x.endswith("best.pth")]
@@ -112,13 +112,13 @@ def latest_sub_experiment_epochs(sub_experiment_dir_dict):
     latest_epochs = {}
     for sub_experiment_name, folders in sub_experiment_dir_dict.items():
         model_folder = folders[0]
-        latest_epochs[sub_experiment_name] = latest_version(model_folder, "/trunk_*.pth") or 0
+        latest_epochs[sub_experiment_name] = latest_version(model_folder, "trunk_*.pth") or 0
     return latest_epochs
 
 
 def get_all_resume_training_config_diffs(config_folder, split_scheme_name, num_training_sets):
     folder_base_name = "resume_training_config_diffs_"
-    full_base_path = "%s/%s" % (config_folder, folder_base_name)
+    full_base_path = os.path.join(config_folder, folder_base_name)
     config_diffs = sorted(glob.glob("%s*"%full_base_path))
     if num_training_sets > 1:
         split_scheme_names = ["%s%d"%(split_scheme,i) for (split_scheme,i) in list(itertools.product(split_scheme_name, range(num_training_sets)))]
@@ -139,7 +139,7 @@ def save_config_files(config_folder, dict_of_yamls, resume_training, reproduce_r
         config_category_name = k_split[-2] 
         if not config_category_name.startswith('config_'):
             config_category_name = os.path.splitext(k_split[-1])[0]
-        fname = '%s/%s.yaml' % (config_folder, config_category_name)
+        fname = os.path.join(config_folder, '%s.yaml'%config_category_name)
         if not resume_training:
             if os.path.isfile(fname):
                 v = emag_utils.merge_two_dicts(load_yaml(fname), v, max_merge_depth=0 if reproduce_results else float('inf'))
@@ -151,9 +151,9 @@ def save_config_files(config_folder, dict_of_yamls, resume_training, reproduce_r
                 if (k2 not in curr_yaml) or (v2 != curr_yaml[k2]):
                     yaml_diff[k2] = v2
             if yaml_diff != {}:
-                new_dir = '%s/resume_training_config_diffs_'%(config_folder) + '_'.join([str(epoch) for epoch in latest_epochs])
+                new_dir = os.path.join(config_folder, 'resume_training_config_diffs_' + '_'.join([str(epoch) for epoch in latest_epochs]))
                 makedir_if_not_there(new_dir)
-                fname = '%s/%s.yaml' % (new_dir, config_category_name)
+                fname = os.path.join(new_dir, '%s.yaml' %config_category_name)
                 write_yaml(fname, yaml_diff, 'a')
 
 def get_last_linear(input_model, return_name=False):
