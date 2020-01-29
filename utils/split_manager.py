@@ -68,7 +68,7 @@ class SplitManager:
         self.curr_split_scheme_name = split_scheme_name
         self.curr_split_scheme = self.split_schemes[self.curr_split_scheme_name]
 
-    def set_curr_split(self, split_name, is_training):
+    def set_curr_split(self, split_name, is_training, log_split_details=False):
         """
         Sets self.dataset and self.labels to a specific split within the current
         split_scheme.
@@ -80,7 +80,8 @@ class SplitManager:
         self.set_dataset_transform(transform)
         if self.is_training:
             self.labels = self.original_dataset.labels[subset_indices]
-        logging.info("SPLIT: %s / %s / length %d" % (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
+        if log_split_details:
+            logging.info("SPLIT: %s / %s / length %d" % (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
 
     def set_transforms(self, train_transform, eval_transform):
         self.train_transform = train_transform
@@ -104,6 +105,6 @@ class SplitManager:
         dataset_dict = {}
         for split_name, dataset in self.curr_split_scheme.items():
             if split_name not in exclusion_list:
-                self.set_curr_split(split_name, is_training)
+                self.set_curr_split(split_name, is_training, log_split_details=True)
                 dataset_dict[split_name] = self.dataset
         return dataset_dict

@@ -5,6 +5,7 @@ import copy
 from utils import common_functions as c_f, split_manager
 from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
 import pytorch_metric_learning.utils.logging_presets as logging_presets
+import pytorch_metric_learning.utils.common_functions as pml_cf
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
@@ -231,18 +232,18 @@ class BaseAPIParser:
 
     def load_model_for_eval(self, suffix):
         untrained = suffix == "-1"
-        trunk_model = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"]))
+        trunk_model = self.get_trunk_model(self.args.models["trunk"])
         if not untrained:
-            embedder_model = torch.nn.DataParallel(self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size))
-            c_f.load_dict_of_models(
+            embedder_model = self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size)
+            pml_cf.load_dict_of_models(
                 {"trunk": trunk_model, "embedder": embedder_model},
                 suffix,
                 self.model_folder,
                 self.device
             )
         else:
-            embedder_model = torch.nn.DataParallel(architectures.misc_models.Identity())
-        return trunk_model, embedder_model
+            embedder_model = architectures.misc_models.Identity()
+        return torch.nn.DataParallel(trunk_model), torch.nn.DataParallel(embedder_model)
 
     def get_splits_exclusion_list(self, splits_to_eval):
         if splits_to_eval is None or any(x in ["train", "val"] for x in splits_to_eval):
@@ -254,6 +255,7 @@ class BaseAPIParser:
             assert v.dataset.transform is self.split_manager.eval_transform
 
     def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, **kwargs):
+        logging.info("Launching evaluation for epoch %d"%epoch)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
         else:
@@ -263,25 +265,6 @@ class BaseAPIParser:
         dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
         self.eval_assertions(dataset_dict)
         self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval, **kwargs)
-
-    def save_stuff(self, curr_suffix, prev_suffix=None):
-        for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
-            c_f.save_dict_of_models(obj_dict, curr_suffix, self.model_folder)
-            if prev_suffix is not None:
-                c_f.delete_dict_of_models(obj_dict, prev_suffix, self.model_folder) 
-
-    def save_stuff_and_maybe_eval(self):
-        if self.epoch % self.args.save_interval == 0:
-            self.save_stuff(self.epoch, self.epoch-self.args.save_interval)
-            if self.epoch == self.args.save_interval and self.args.check_untrained_accuracy:
-                self.eval_model(-1, "-1", load_model=True)
-                self.save_stuff("best")
-            self.eval_model(self.epoch, str(self.epoch))
-            self.set_best_epoch_and_curr_accuracy()
-            if self.epoch == self.best_epoch:
-                logging.info("New best accuracy!")
-                self.save_stuff("best")
-            self.pickler_and_csver.save_records()
 
     def flush_tensorboard(self):
         for writer in ["tensorboard_writer", "meta_tensorboard_writer"]:
@@ -331,29 +314,24 @@ class BaseAPIParser:
         return self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val")[1]
 
     def maybe_load_models_and_records(self):
-        resume_epoch = 0
-        self.pickler_and_csver.load_records()
         if hasattr(self, "meta_pickler_and_csver"):
             self.meta_pickler_and_csver.load_records()
-        if self.args.resume_training:
-            resume_epoch = c_f.latest_version(self.model_folder, "trunk_*.pth") or 0
-            if resume_epoch > 0:
-                for obj_dict in [self.models, self.optimizers, self.lr_schedulers, self.loss_funcs]:
-                    c_f.load_dict_of_models(obj_dict, resume_epoch, self.model_folder, self.device)
-        return resume_epoch
+        return self.hooks.load_latest_saved_models_and_records(self.trainer, self.model_folder, self.device)
 
     def set_models_optimizers_losses(self):
         self.set_model()
         self.set_transforms()
         self.set_sampler()
-        self.set_dataparallel()
         self.set_loss_function()
         self.set_mining_function()
         self.set_optimizers()
         self.set_record_keeper()
-        self.hooks = logging_presets.HookContainer(self.record_keeper, end_of_epoch_test=False)
+        self.hooks = logging_presets.HookContainer(self.record_keeper)
         self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
-        self.epoch = self.maybe_load_models_and_records() + 1
+        self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
+        self.epoch = self.maybe_load_models_and_records()
+        self.set_dataparallel()
+        self.set_devices()
 
     def get_tester_kwargs(self):
         return {
@@ -370,6 +348,26 @@ class BaseAPIParser:
             "label_hierarchy_level": self.args.label_hierarchy_level,
             "end_of_testing_hook": self.hooks.end_of_testing_hook 
         }
+
+    def get_end_of_epoch_hook(self):
+        logging.info("Creating end_of_epoch_hook kwargs")
+        splits_to_exclude = self.get_splits_exclusion_list(None)
+        dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
+        helper_hook = self.hooks.end_of_epoch_hook(tester=self.tester_obj,
+                                                    dataset_dict=dataset_dict,
+                                                    model_folder=self.model_folder,
+                                                    test_interval=self.args.save_interval,
+                                                    validation_split_name="val",
+                                                    patience=self.args.patience)
+        def end_of_epoch_hook(trainer):
+            for k in dataset_dict.keys(): self.split_manager.set_curr_split(k, is_training=False)
+            self.eval_assertions(dataset_dict)
+            continue_training = helper_hook(trainer)
+            for k in dataset_dict.keys(): self.split_manager.set_curr_split(k, is_training=True)
+            self.training_assertions(trainer)
+            return continue_training
+
+        return end_of_epoch_hook
 
     def get_trainer_kwargs(self):
         return {
@@ -393,7 +391,7 @@ class BaseAPIParser:
             "dataset_labels": self.split_manager.labels,
             "set_min_label_to_zero": True,
             "end_of_iteration_hook": self.hooks.end_of_iteration_hook,
-            "end_of_epoch_hook": self.hooks.end_of_epoch_hook(None, None)
+            "end_of_epoch_hook": self.get_end_of_epoch_hook()
         }
 
     def set_dataparallel(self):
@@ -407,47 +405,27 @@ class BaseAPIParser:
         for v in self.optimizers.values():
             c_f.move_optimizer_to_gpu(v, self.device)
 
-    def set_best_epoch_and_curr_accuracy(self):
-        self.curr_accuracy = self.hooks.get_accuracy_of_epoch(self.tester_obj, 'val', self.epoch)
-        self.best_epoch = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, 'val')[0]
-
-    def patience_remaining(self):
-        if self.args.patience is not None:
-            if self.epoch - self.best_epoch > self.args.patience:
-                logging.info("Validation accuracy has plateaued. Exiting.")
-                return False
-        return True
-
     def should_train(self, num_epochs, split_scheme_name):
-        self.set_best_epoch_and_curr_accuracy()
-        if self.best_epoch is None:
+        best_epoch, curr_accuracy = self.hooks.get_best_epoch_and_curr_accuracy(self.tester_obj, "val", self.epoch)
+        if best_epoch is None:
             return True
         else:
-            return self.patience_remaining() and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
+            return self.hooks.patience_remaining(self.epoch, best_epoch, self.args.patience) and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
-    def training_assertions(self):
-        assert self.trainer.dataset is self.split_manager.curr_split_scheme["train"][0]
-        assert self.trainer.dataset.dataset.transform is self.split_manager.train_transform
+    def training_assertions(self, trainer):
+        assert trainer.dataset is self.split_manager.curr_split_scheme["train"][0]
+        assert trainer.dataset.dataset.transform is self.split_manager.train_transform
 
     def train(self, num_epochs):
-        self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
-        while self.epoch <= num_epochs:
-            self.split_manager.set_curr_split("train", is_training=True)
-            self.training_assertions()
-            self.set_devices()
-            self.trainer.train(self.epoch, self.args.save_interval)
-            self.epoch = self.trainer.epoch
-            self.save_stuff_and_maybe_eval()
-            if not self.patience_remaining():
-                return
-            self.trainer.step_lr_plateau_schedulers(self.curr_accuracy)
-            self.epoch += 1
+        if self.epoch == 1 and self.args.check_untrained_accuracy:
+            self.eval_model(-1, "-1", load_model=True)
+        self.split_manager.set_curr_split("train", is_training=True)
+        self.training_assertions(self.trainer)        
+        self.trainer.train(self.epoch, num_epochs)
+        self.epoch = self.trainer.epoch + 1
 
     def eval(self, **kwargs):
-        best_epoch = -1
-        for group_name, value in self.pickler_and_csver.records.items():
-            if group_name.startswith("accuracies") and group_name.endswith("VAL"):
-                best_epoch = max(best_epoch, value["best_epoch"][-1])
+        best_epoch = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val")[0]
         for name, epoch in {"-1": -1, "best": best_epoch}.items():
             self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True, **kwargs)
         self.pickler_and_csver.save_records()
@@ -474,13 +452,14 @@ class BaseAPIParser:
         self.models = {}
         self.record_keeper = self.meta_record_keeper
         self.pickler_and_csver = self.meta_pickler_and_csver
+        self.pickler_and_csver.load_records()
         self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__)
         self.tester_obj = self.pytorch_getter.get("tester", 
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
         group_name = self.hooks.record_group_name(self.tester_obj, "test")
         curr_records = self.meta_record_keeper.get_record(group_name)
-        iteration = len(list(list(curr_records.values())[0].values())) - 1 if len(curr_records) > 0 else 0 #this abomination is necessary
+        iteration = len(list(curr_records.values())[0]) - 1 if len(curr_records) > 0 else 0 #this abomination is necessary
         for name, i in {"-1": -1, "best": iteration}.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()

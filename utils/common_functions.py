@@ -12,65 +12,7 @@ from torch.autograd import Variable
 import yaml
 from easy_module_attribute_getter import utils as emag_utils
 import logging
-
-def experiment_filename(folder, basename, identifier, extension=".pth"):
-    if identifier is None:
-        return os.path.join(folder, basename+extension)
-    else:
-        return os.path.join(folder, "%s_%s%s" % (basename, str(identifier), extension))
-
-
-def load_model(model_def, model_filename, device):
-    try:
-        model_def.load_state_dict(torch.load(model_filename, map_location=device))
-    except BaseException:
-        # original saved file with DataParallel
-        state_dict = torch.load(model_filename)
-        # create new OrderedDict that does not contain `module.`
-        from collections import OrderedDict
-
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
-            name = k[7:]  # remove `module.`
-            new_state_dict[name] = v
-        # load params
-        model_def.load_state_dict(new_state_dict)
-
-
-def save_model_or_optimizer(model, model_name, filepath):
-    try:
-        torch.save(model.cpu().state_dict(), filepath)
-    except:
-        torch.save(model.state_dict(), filepath)
-
-
-def operate_on_dict_of_models(input_dict, suffix, folder, operation, logging_string=''):
-    for k, v in input_dict.items():
-        opt_cond = "optimizer" in k
-        if opt_cond or len([i for i in v.parameters()]) > 0:
-            model_path = experiment_filename(folder, k, suffix)
-            if logging_string != '':
-                logging.info("%s %s"%(logging_string, model_path))
-            operation(k, v, model_path)
-
-def save_dict_of_models(input_dict, suffix, folder):
-    def operation(k, v, model_path):
-        save_model_or_optimizer(v, k, model_path)
-    operate_on_dict_of_models(input_dict, suffix, folder, operation)
-
-def load_dict_of_models(input_dict, suffix, folder, device):
-    def operation(k, v, model_path):
-        load_model(v, model_path, device)
-    operate_on_dict_of_models(input_dict, suffix, folder, operation, "LOADING")
-            
-def delete_dict_of_models(input_dict, suffix, folder):
-    def operation(k, v, model_path):
-        try:
-            os.remove(model_path)
-        except:
-            pass
-    operate_on_dict_of_models(input_dict, suffix, folder, operation)
-            
+import pytorch_metric_learning.utils.common_functions as pml_cf
 
 
 def move_optimizer_to_gpu(optimizer, device):
@@ -99,20 +41,11 @@ def write_yaml(fname, input_dict, open_as):
         yaml.dump(input_dict, outfile, default_flow_style=False, sort_keys=False)
 
 
-def latest_version(folder, string_to_glob):
-    items = glob.glob(os.path.join(folder, string_to_glob))
-    if items == []:
-        return None
-    items = [x for x in items if not x.endswith("best.pth")]
-    version = [int(x.split("_")[-1].split(".")[0]) for x in items]
-    return max(version)
-
-
 def latest_sub_experiment_epochs(sub_experiment_dir_dict):
     latest_epochs = {}
     for sub_experiment_name, folders in sub_experiment_dir_dict.items():
         model_folder = folders[0]
-        latest_epochs[sub_experiment_name] = latest_version(model_folder, "trunk_*.pth") or 0
+        latest_epochs[sub_experiment_name] = pml_cf.latest_version(model_folder, "trunk_*.pth") or 0
     return latest_epochs
 
 

@@ -12,7 +12,7 @@ class APITrainWithClassifier(BaseAPIParser):
 
     def model_getter_dict(self):
         logging.info("Setting dataset so that num labels can be determined")
-        self.split_manager.set_curr_split("train", is_training=True)        
+        self.split_manager.set_curr_split("train", is_training=True, log_split_details=True)        
         getter_dict = super().model_getter_dict()
         classifer_model_names = [x for x in list(self.args.models.keys()) if x.startswith("classifier")]
         for k in classifer_model_names:
