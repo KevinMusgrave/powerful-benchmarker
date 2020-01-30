@@ -43,6 +43,8 @@ class BaseAPIParser:
             _tensorboard_folder
         ]
 
+        self.trainer, self.tester_obj = None, None
+
     def run(self):
         if self.beginning_of_training():
             self.make_dir()
@@ -360,6 +362,7 @@ class BaseAPIParser:
                                                     validation_split_name="val",
                                                     patience=self.args.patience)
         def end_of_epoch_hook(trainer):
+            torch.cuda.empty_cache()
             for k in dataset_dict.keys(): self.split_manager.set_curr_split(k, is_training=False)
             self.eval_assertions(dataset_dict)
             continue_training = helper_hook(trainer)

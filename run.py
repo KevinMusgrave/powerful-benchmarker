@@ -42,7 +42,11 @@ def determine_where_to_get_yamls(args, config_foldernames):
 
 def run(args):
     api_parser = getattr(api_parsers, "API"+args.training_method)(args)
-    return api_parser.run()
+    run_output = api_parser.run()
+    del api_parser.tester_obj
+    del api_parser.trainer
+    del api_parser
+    return run_output
 
 def reproduce_results(YR, config_foldernames):
     configs_folder = os.path.join(YR.args.reproduce_results, 'configs')
