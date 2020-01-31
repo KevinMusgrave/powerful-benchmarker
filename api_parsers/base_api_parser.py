@@ -249,7 +249,7 @@ class BaseAPIParser:
         return torch.nn.DataParallel(trunk_model), torch.nn.DataParallel(embedder_model)
 
     def get_splits_exclusion_list(self, splits_to_eval):
-        if splits_to_eval in [["train"], ["val"], ["train", "val"]]:
+        if set(splits_to_eval) in [{"train"}, {"val"}, {"train", "val"}]:
             return ["test"]
         return []
 
