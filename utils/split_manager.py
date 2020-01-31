@@ -63,6 +63,7 @@ class SplitManager:
         if self.special_split_scheme_name != "predefined": 
             self.assert_splits_are_disjoint()
         self.split_scheme_names = list(self.split_schemes.keys())
+        self.split_names = list(self.split_schemes[self.split_scheme_names[0]].keys())
 
     def set_curr_split_scheme(self, split_scheme_name):
         self.curr_split_scheme_name = split_scheme_name
@@ -100,11 +101,14 @@ class SplitManager:
             L = L[:, self.hierarchy_level]
         return len(set(L))
 
-    def get_dataset_dict(self, exclusion_list, is_training):
+    def get_dataset_dict(self, inclusion_list=None, exclusion_list=None, is_training=False):
         logging.info("COLLECTING DATASETS FOR EVAL")
         dataset_dict = {}
+        inclusion_list = list(self.curr_split_scheme.keys()) if inclusion_list is None else inclusion_list
+        exclusion_list = [] if exclusion_list is None else exclusion_list
+        allowed_list = [x for x in inclusion_list if x not in exclusion_list]
         for split_name, dataset in self.curr_split_scheme.items():
-            if split_name not in exclusion_list:
+            if split_name in allowed_list:
                 self.set_curr_split(split_name, is_training, log_split_details=True)
                 dataset_dict[split_name] = self.dataset
         return dataset_dict

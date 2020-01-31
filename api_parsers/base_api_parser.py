@@ -147,6 +147,7 @@ class BaseAPIParser:
                                                         num_training_sets=self.args.num_training_sets,
                                                         special_split_scheme_name=self.args.special_split_scheme_name,
                                                         hierarchy_level=self.args.label_hierarchy_level)
+        if not self.args.splits_to_eval: self.args.splits_to_eval = [x for x in self.split_manager.split_names if x!="test"]
 
     def get_transforms(self):
         try:
@@ -248,7 +249,7 @@ class BaseAPIParser:
         return torch.nn.DataParallel(trunk_model), torch.nn.DataParallel(embedder_model)
 
     def get_splits_exclusion_list(self, splits_to_eval):
-        if splits_to_eval is None or any(x in ["train", "val"] for x in splits_to_eval):
+        if splits_to_eval in [["train"], ["val"], ["train", "val"]]:
             return ["test"]
         return []
 
@@ -264,7 +265,7 @@ class BaseAPIParser:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
         splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
-        dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
+        dataset_dict = self.split_manager.get_dataset_dict(inclusion_list=splits_to_eval, exclusion_list=splits_to_exclude, is_training=False)
         self.eval_assertions(dataset_dict)
         self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval, **kwargs)
 
@@ -353,8 +354,8 @@ class BaseAPIParser:
 
     def get_end_of_epoch_hook(self):
         logging.info("Creating end_of_epoch_hook kwargs")
-        splits_to_exclude = self.get_splits_exclusion_list(None)
-        dataset_dict = self.split_manager.get_dataset_dict(exclusion_list=splits_to_exclude, is_training=False)
+        splits_to_exclude = self.get_splits_exclusion_list(self.args.splits_to_eval)
+        dataset_dict = self.split_manager.get_dataset_dict(inclusion_list=self.args.splits_to_eval, exclusion_list=splits_to_exclude, is_training=False)
         helper_hook = self.hooks.end_of_epoch_hook(tester=self.tester_obj,
                                                     dataset_dict=dataset_dict,
                                                     model_folder=self.model_folder,
@@ -421,7 +422,7 @@ class BaseAPIParser:
 
     def train(self, num_epochs):
         if self.epoch == 1 and self.args.check_untrained_accuracy:
-            self.eval_model(-1, "-1", load_model=True)
+            self.eval_model(-1, "-1",  splits_to_eval=self.args.splits_to_eval, load_model=True)
         self.split_manager.set_curr_split("train", is_training=True)
         self.training_assertions(self.trainer)        
         self.trainer.train(self.epoch, num_epochs)
