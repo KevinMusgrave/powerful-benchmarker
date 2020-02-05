@@ -208,6 +208,9 @@ class BaseAPIParser:
     def get_loss_function(self, loss_type):
         loss, loss_params = self.pytorch_getter.get("loss", yaml_dict=loss_type, return_uninitialized=True)
         loss_params = copy.deepcopy(loss_params)
+        if loss == losses.MultipleLosses:
+            loss_funcs = [self.get_loss_function({k:v}) for k,v in loss_params["losses"].items()]
+            return loss(loss_funcs) 
         if "num_classes" in str(inspect.signature(loss.__init__)):
             loss_params["num_classes"] = self.split_manager.get_num_labels()
         if "regularizer" in loss_params:
