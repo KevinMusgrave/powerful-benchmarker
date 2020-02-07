@@ -16,7 +16,6 @@ import logging
 import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
-import inspect
 
 class BaseAPIParser:
     def __init__(self, args):
@@ -211,8 +210,9 @@ class BaseAPIParser:
         if loss == losses.MultipleLosses:
             loss_funcs = [self.get_loss_function({k:v}) for k,v in loss_params["losses"].items()]
             return loss(loss_funcs) 
-        if "num_classes" in str(inspect.signature(loss.__init__)):
+        if c_f.check_init_arguments(loss, "num_classes"):
             loss_params["num_classes"] = self.split_manager.get_num_labels()
+            logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
         if "regularizer" in loss_params:
             loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
         return loss(**loss_params)        

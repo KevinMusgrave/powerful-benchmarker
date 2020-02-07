@@ -96,6 +96,7 @@ class SplitManager:
         self.dataset.dataset.transform = transform
 
     def get_num_labels(self):
+        self.set_curr_split("train", True)
         L = np.array(self.labels)
         if L.ndim == 2:
             L = L[:, self.hierarchy_level]

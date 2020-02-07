@@ -12,6 +12,7 @@ from torch.autograd import Variable
 import yaml
 from easy_module_attribute_getter import utils as emag_utils
 import logging
+import inspect
 import pytorch_metric_learning.utils.common_functions as pml_cf
 
 
@@ -99,3 +100,13 @@ def get_last_linear(input_model, return_name=False):
 
 def set_last_linear(input_model, set_to):
     setattr(input_model, get_last_linear(input_model, return_name=True)[1], set_to)
+
+
+def check_init_arguments(input_obj, str_to_check):
+    obj_stack = [input_obj]
+    while len(obj_stack) > 0:
+        curr_obj = obj_stack.pop()
+        obj_stack += list(curr_obj.__bases__)
+        if str_to_check in str(inspect.signature(curr_obj.__init__)):
+            return True
+    return False
