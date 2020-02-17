@@ -67,6 +67,7 @@ class BaseAPIParser:
                     raise ValueError
             self.record_meta_logs()
         self.flush_tensorboard()
+        self.delete_old_objects()
         if self.is_training():
             return self.return_val_accuracy_and_standard_error()
 
@@ -81,6 +82,21 @@ class BaseAPIParser:
             elif self.should_train(num_epochs, split_scheme_name):
                 self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
+            self.delete_old_objects()
+
+    def delete_old_objects(self):
+        for attr_name in ["models", "loss_funcs", "mining_funcs", "optimizers", "lr_schedulers", "gradient_clippers"]:
+            try:
+                delattr(self, attr_name)
+                logging.info("Deleted self.%s"%attr_name)
+            except:
+                pass
+        try:
+            del self.trainer.dataloader
+            del self.trainer.dataloader_iter
+            logging.info("Deleted trainer dataloader")
+        except:
+            pass
 
     def is_training(self):
         return not self.args.evaluate
@@ -257,7 +273,9 @@ class BaseAPIParser:
         return []
 
     def eval_assertions(self, dataset_dict):
-        for v in dataset_dict.values():
+        for k, v in dataset_dict.items():
+            dataset, _ = self.split_manager.curr_split_scheme[k]
+            assert v is dataset
             assert v.dataset.transform is self.split_manager.eval_transform
 
     def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, **kwargs):
@@ -420,8 +438,10 @@ class BaseAPIParser:
             return self.hooks.patience_remaining(self.epoch, best_epoch, self.args.patience) and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
     def training_assertions(self, trainer):
-        assert trainer.dataset is self.split_manager.curr_split_scheme["train"][0]
+        dataset, subset_idx = self.split_manager.curr_split_scheme["train"]
+        assert trainer.dataset is dataset
         assert trainer.dataset.dataset.transform is self.split_manager.train_transform
+        assert np.array_equal(trainer.dataset_labels, self.split_manager.original_dataset.labels[subset_idx])
 
     def train(self, num_epochs):
         if self.epoch == 1 and self.args.check_untrained_accuracy:
