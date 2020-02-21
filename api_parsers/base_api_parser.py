@@ -206,11 +206,9 @@ class BaseAPIParser:
             miner, miner_params = self.pytorch_getter.get("miner", yaml_dict=miner_type, return_uninitialized=True)
             miner_params = copy.deepcopy(miner_params)
             if "loss_function" in miner_params:
-                loss_args = miner_params["loss_function"]
-                miner_params["loss_function"] = self.get_loss_function(loss_args)
+                miner_params["loss_function"] = self.get_loss_function(miner_params["loss_function"])
             if "mining_function" in miner_params:
-                miner_args = miner_params["mining_function"]
-                miner_params["mining_function"] = self.get_mining_function(miner_args)
+                miner_params["mining_function"] = self.get_mining_function(miner_params["mining_function"])
             return miner(**miner_params)
         return None
 
@@ -226,6 +224,9 @@ class BaseAPIParser:
         if loss == losses.MultipleLosses:
             loss_funcs = [self.get_loss_function({k:v}) for k,v in loss_params["losses"].items()]
             return loss(loss_funcs) 
+        if loss == losses.CrossBatchMemory:
+            if "loss" in loss_params: loss_params["loss"] = self.get_loss_function(loss_params["loss"])
+            if "miner" in loss_params: loss_params["miner"] = self.get_mining_function(loss_params["miner"])
         if c_f.check_init_arguments(loss, "num_classes"):
             loss_params["num_classes"] = self.split_manager.get_num_labels()
             logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
@@ -350,7 +351,7 @@ class BaseAPIParser:
         self.set_mining_function()
         self.set_optimizers()
         self.set_record_keeper()
-        self.hooks = logging_presets.HookContainer(self.record_keeper)
+        self.hooks = logging_presets.HookContainer(self.record_keeper, metric_for_best_epoch=self.args.eval_metric_for_best_epoch)
         self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
         self.epoch = self.maybe_load_models_and_records()
@@ -363,7 +364,6 @@ class BaseAPIParser:
             "normalize_embeddings": self.args.eval_normalize_embeddings,
             "use_trunk_output": self.args.eval_use_trunk_output,
             "batch_size": self.args.eval_batch_size,
-            "metric_for_best_epoch": self.args.eval_metric_for_best_epoch,
             "data_device": self.device,
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
             "pca": self.args.eval_pca,
@@ -480,7 +480,7 @@ class BaseAPIParser:
         self.record_keeper = self.meta_record_keeper
         self.pickler_and_csver = self.meta_pickler_and_csver
         self.pickler_and_csver.load_records()
-        self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__)
+        self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__, metric_for_best_epoch=self.args.eval_metric_for_best_epoch)
         self.tester_obj = self.pytorch_getter.get("tester", 
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
