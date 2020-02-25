@@ -2,6 +2,8 @@ from ax.service.ax_client import AxClient
 from ax.service.utils.best_point import get_best_raw_objective_point
 from ax.plot.render import plot_config_to_html
 from ax.utils.report.render import render_report_elements
+from ax.plot.contour import interact_contour
+from ax.modelbridge.registry import Models
 import re
 from easy_module_attribute_getter import utils as emag_utils
 import run
@@ -119,11 +121,12 @@ def test_best_model(experiment_path):
     YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(**run.determine_where_to_get_yamls(YR.args, config_foldernames), max_merge_depth=0)
     run.run(YR.args)
 
-def plot_progress(ax_client, root_experiment_folder, experiment_name):
+def plot_progress(ax_client, YR, root_experiment_folder, experiment_name):
+    model = Models.GPEI(experiment=ax_client.experiment, data=ax_client.experiment.fetch_data())
     html_elements = []
     html_elements.append(plot_config_to_html(ax_client.get_optimization_trace()))
     try:
-        html_elements.append(plot_config_to_html(ax_client.get_contour_plot()))
+        html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=YR.args.eval_metric_for_best_epoch)))
     except:
         pass
     with open(os.path.join(root_experiment_folder, "optimization_plots.html"), 'w') as f:
@@ -148,7 +151,7 @@ if __name__ == "__main__":
         save_new_log(ax_client, root_experiment_folder)
         finished_experiment_names.append([experiment_path])
         write_finished_experiment_names(root_experiment_folder, finished_experiment_names)
-        plot_progress(ax_client, root_experiment_folder, experiment_name)
+        plot_progress(ax_client, YR, root_experiment_folder, experiment_name)
 
     logging.info("DONE BAYESIAN OPTIMIZATION")
     df = ax_client.get_trials_data_frame()
@@ -157,11 +160,11 @@ if __name__ == "__main__":
     best_experiment_path = finished_experiment_names[best_trial_index][0] 
     logging.info("BEST EXPERIMENT PATH: %s"%best_experiment_path)
 
-    plot_progress(ax_client, YR.args.root_experiment_folder, experiment_name)
+    plot_progress(ax_client, YR, root_experiment_folder, experiment_name)
     best_parameters, best_values = get_best_raw_objective_point(ax_client.experiment)
     best_parameters_dict = {"best_experiment_path": best_experiment_path, 
                             "best_parameters": best_parameters, 
                             "best_values": {k:{"mean": float(v[0]), "SEM": float(v[1])} for k,v in best_values.items()}}
-    c_f.write_yaml(os.path.join(YR.args.root_experiment_folder, "best_parameters.yaml"), best_parameters_dict, open_as='w')
+    c_f.write_yaml(os.path.join(root_experiment_folder, "best_parameters.yaml"), best_parameters_dict, open_as='w')
 
     test_best_model(best_experiment_path)
