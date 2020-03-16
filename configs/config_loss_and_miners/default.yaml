@@ -10,6 +10,6 @@ sampler:
     m: 8
 
 mining_funcs:
-  post_gradient_miner: 
+  tuple_miner: 
     MultiSimilarityMiner: 
       epsilon: 0.1
