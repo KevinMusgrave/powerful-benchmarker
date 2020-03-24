@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 import torch
-import architectures as arch
+from .. import architectures as arch
 from .api_train_with_classifier import APIMaybeExtendTrainWithClassifier
 import numpy as np
-from utils import common_functions as c_f
+from ..utils import common_functions as c_f
 from pytorch_metric_learning.utils import common_functions as pml_c_f
 import logging
 

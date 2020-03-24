@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import architectures as arch
+from .. import architectures as arch
 from .api_train_with_classifier import APIMaybeExtendTrainWithClassifier
 
 

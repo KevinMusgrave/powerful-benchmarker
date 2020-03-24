@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 import torch
-from utils import dataset_utils as d_u
+from . import dataset_utils as d_u
 import logging
 import itertools
 

@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 from .base_api_parser import BaseAPIParser
-from utils import common_functions as c_f
+from ..utils import common_functions as c_f
 import logging
 
 class APITrainWithClassifier(BaseAPIParser):
@@ -18,7 +18,7 @@ class APITrainWithClassifier(BaseAPIParser):
         for k in classifer_model_names:
             getter_dict[k] = lambda model_type: self.get_classifier_model(
                 model_type,
-                self.split_manager.get_num_labels(self.args.label_hierarchy_level),
+                self.split_manager.get_num_labels(),
             )
         return getter_dict
 

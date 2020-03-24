@@ -1,15 +1,15 @@
 import sys
 from easy_module_attribute_getter import PytorchGetter
-import datasets
+from .. import datasets
 import copy
-from utils import common_functions as c_f, split_manager
+from ..utils import common_functions as c_f, split_manager
 from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
-import architectures
+from .. import architectures
 import os
 import shutil
 import logging
@@ -21,7 +21,6 @@ class BaseAPIParser:
     def __init__(self, args):
         pml_cf.NUMPY_RANDOM = np.random.RandomState()
         logging.info("NUMPY_RANDOM = %s"%pml_cf.NUMPY_RANDOM)
-        os.environ["TORCH_HOME"] = args.pytorch_home
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.args = args
         self.experiment_folder = args.experiment_folder
@@ -76,7 +75,7 @@ class BaseAPIParser:
             return self.return_val_accuracy_and_standard_error()
 
     def run_for_each_split_scheme(self):
-        for split_scheme_name in self.split_manager.split_scheme_names:
+        for self.curr_split_count, split_scheme_name in enumerate(self.split_manager.split_scheme_names):
             num_epochs = self.num_epochs[split_scheme_name]
             self.split_manager.set_curr_split_scheme(split_scheme_name)
             self.set_curr_folders()
@@ -154,8 +153,8 @@ class BaseAPIParser:
             o, s, g = self.pytorch_getter.get_optimizer(param_source, yaml_dict=v)
             logging.info("%s\n%s" % (k, o))
             if o is not None: self.optimizers[k] = o
-            if s is not None: self.lr_schedulers[k + "_scheduler"] = s
-            if g is not None: self.gradient_clippers[k + "_grad_clipper"] = g
+            if s is not None: self.lr_schedulers[basename + "_scheduler"] = s
+            if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
 
     def set_split_manager(self):
         chosen_dataset = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, additional_params={"dataset_root":self.args.dataset_root})
@@ -209,10 +208,8 @@ class BaseAPIParser:
         if miner_type:
             miner, miner_params = self.pytorch_getter.get("miner", yaml_dict=miner_type, return_uninitialized=True)
             miner_params = copy.deepcopy(miner_params)
-            if "loss_function" in miner_params:
-                miner_params["loss_function"] = self.get_loss_function(miner_params["loss_function"])
-            if "mining_function" in miner_params:
-                miner_params["mining_function"] = self.get_mining_function(miner_params["mining_function"])
+            if "loss" in miner_params: miner_params["loss"] = self.get_loss_function(miner_params["loss"])
+            if "miner" in miner_params: miner_params["miner"] = self.get_mining_function(miner_params["miner"])
             return miner(**miner_params)
         return None
 
@@ -234,8 +231,9 @@ class BaseAPIParser:
         if c_f.check_init_arguments(loss, "num_classes"):
             loss_params["num_classes"] = self.split_manager.get_num_labels()
             logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
-        if "regularizer" in loss_params:
-            loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
+        for k in ["regularizer"]:
+            if k in loss_params:
+                loss_params[k] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params[k])
         return loss(**loss_params)        
 
     def set_loss_function(self):
@@ -283,7 +281,7 @@ class BaseAPIParser:
             assert v is dataset
             assert v.dataset.transform is self.split_manager.eval_transform
 
-    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, **kwargs):
+    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False):
         logging.info("Launching evaluation for epoch %d"%epoch)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
@@ -293,7 +291,7 @@ class BaseAPIParser:
         splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
         dataset_dict = self.split_manager.get_dataset_dict(inclusion_list=splits_to_eval, exclusion_list=splits_to_exclude, is_training=False)
         self.eval_assertions(dataset_dict)
-        self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval, **kwargs)
+        self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval)
 
     def flush_tensorboard(self):
         for keeper in ["record_keeper", "meta_record_keeper"]:
@@ -303,12 +301,14 @@ class BaseAPIParser:
                 k.tensorboard_writer.close()
 
     def set_record_keeper(self):
-        self.record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.db_path, self.args.experiment_name, self.beginning_of_training())
+        is_new_experiment = self.beginning_of_training() and self.curr_split_count == 0
+        self.record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.db_path, self.args.experiment_name, is_new_experiment)
 
     def set_meta_record_keeper(self):
+        is_new_experiment = self.beginning_of_training()
         if len(self.split_manager.split_scheme_names) > 1:
             _, csv_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
-            self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.db_path, self.args.experiment_name, self.beginning_of_training())
+            self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.db_path, self.args.experiment_name, is_new_experiment)
             self.meta_accuracies = defaultdict(lambda: defaultdict(dict))
 
     def update_meta_record_keeper(self, split_scheme_name):
@@ -316,11 +316,12 @@ class BaseAPIParser:
             for split in self.args.splits_to_eval:
                 best_split_accuracies, _ = self.hooks.get_accuracies_of_best_epoch(self.tester_obj, split)
                 untrained_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, -1)
-                for accuracies, keyname in [(best_split_accuracies, "average_best_%s"), (untrained_accuracies, "untrained_%s")]:
+                for accuracies, keyname in [(best_split_accuracies, "average_best"), (untrained_accuracies, "untrained")]:
                     if len(accuracies) > 0:
-                        accuracies.pop("epoch")
-                        for k, v in accuracies[0].items():
-                            self.meta_accuracies[split]["%s_%s"%(keyname, k)][split_scheme_name] = v
+                        accuracy_keys = [k for k in accuracies[0].keys() if k not in ["epoch", "id", "experiment_id"]]
+                        for k in accuracy_keys:
+                            self.meta_accuracies[split]["%s_%s"%(keyname, k)][split_scheme_name] = accuracies[0][k]
+            print("META_ACCURACIES", self.meta_accuracies)
 
     def record_meta_logs(self):
         if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
@@ -328,7 +329,10 @@ class BaseAPIParser:
                 group_name = "meta_" + self.hooks.record_group_name(self.tester_obj, split)
                 averages = {k: np.mean(list(v.values())) for k, v in self.meta_accuracies[split].items()}
                 standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in self.meta_accuracies[split].items()}
-                len_of_existing_record = len(self.meta_record_keeper.get_record(group_name)[list(averages.keys())[0]])
+                try:
+                    len_of_existing_record = len(self.meta_record_keeper.get_record(group_name)[list(averages.keys())[0]])
+                except:
+                    len_of_existing_record = 0
                 self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
                 self.meta_record_keeper.update_records(standard_errors, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
             self.meta_record_keeper.save_records()
@@ -336,6 +340,7 @@ class BaseAPIParser:
     def return_val_accuracy_and_standard_error(self):
         if hasattr(self, "meta_record_keeper"):
             group_name = "meta_" + self.hooks.record_group_name(self.tester_obj, "val")
+            print("META_RECORD_KEEPER", self.meta_record_keeper.get_record(group_name))
             for k, v in self.meta_record_keeper.get_record(group_name).items():
                 if self.args.eval_primary_metric in k:
                     if k.startswith("average_best"):
@@ -387,7 +392,8 @@ class BaseAPIParser:
                                                     dataset_dict=dataset_dict,
                                                     model_folder=self.model_folder,
                                                     test_interval=self.args.save_interval,
-                                                    patience=self.args.patience)
+                                                    patience=self.args.patience,
+                                                    test_collate_fn=None)
         def end_of_epoch_hook(trainer):
             torch.cuda.empty_cache()
             for k in dataset_dict.keys(): self.split_manager.set_curr_split(k, is_training=False)
@@ -453,10 +459,10 @@ class BaseAPIParser:
         self.trainer.train(self.epoch, num_epochs)
         self.epoch = self.trainer.epoch + 1
 
-    def eval(self, **kwargs):
+    def eval(self):
         best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val")
         for name, epoch in {"-1": -1, "best": best_epoch}.items():
-            self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True, **kwargs)
+            self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True)
         self.record_keeper.save_records()
 
     def meta_ConcatenateEmbeddings(self, model_suffix): 
@@ -475,7 +481,7 @@ class BaseAPIParser:
         embedder = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_embedders, embedder_input_sizes, operation_before_concat))
         return trunk, embedder
 
-    def meta_eval(self, **kwargs):
+    def meta_eval(self):
         assert self.args.splits_to_eval == ["test"]
         meta_model_getter = getattr(self, "meta_"+self.args.meta_testing_method)
         self.models = {}
@@ -490,5 +496,5 @@ class BaseAPIParser:
         for name, i in {"-1": -1, "best": iteration}.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()
-            self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False, **kwargs)
+            self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False)
         self.record_keeper.save_records()

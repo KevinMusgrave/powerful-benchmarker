@@ -1,0 +1,15 @@
+optimizers:
+  trunk_optimizer:
+    Adam:
+      lr: 0.00001
+      weight_decay: 0.00005
+      scheduler:
+        CosineAnnealingLR:
+          T_max: 10
+  embedder_optimizer:
+    Adam:
+      lr: 0.00001
+      weight_decay: 0.00005
+      scheduler:
+        CosineAnnealingLR:
+          T_max: 10
