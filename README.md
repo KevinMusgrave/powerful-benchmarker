@@ -1,4 +1,4 @@
-# Benchmarking Metric-Learning Algorithms the Right Way
+# [A Metric Learning Reality Check](https://arxiv.org/abs/2003.08505)
 
 ## [Benchmark results (in progress)](https://drive.google.com/open?id=1Y_stkiqlHA7HTMNrhyPCnYhR0oevphRR): 
 - [Spreadsheet #1: Train/val 50/50](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing)
