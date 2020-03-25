@@ -1,4 +1,3 @@
-import sys
 import logging
 import argparse
 logging.getLogger().setLevel(logging.INFO)

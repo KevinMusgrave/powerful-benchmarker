@@ -1,7 +1,6 @@
 __pycache__/
 *.py[cod]
 .nfs*
-*.sh
 build/
 dist/
 *.egg-info/
