@@ -110,3 +110,11 @@ def check_init_arguments(input_obj, str_to_check):
         if str_to_check in str(inspect.signature(curr_obj.__init__)):
             return True
     return False
+
+
+def try_getting_db_count(record_keeper, table_name):
+    try:
+        len_of_existing_record = record_keeper.query("SELECT count(*) FROM %s"%table_name, use_global_db=False)[0]["count(*)"] 
+    except:
+        len_of_existing_record = 0
+    return len_of_existing_record

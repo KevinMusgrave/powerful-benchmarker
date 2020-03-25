@@ -6,6 +6,7 @@ from ..utils import common_functions as c_f, split_manager
 from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
+import pytorch_metric_learning.utils.calculate_accuracies as pml_ca
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
@@ -318,10 +319,9 @@ class BaseAPIParser:
                 untrained_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, -1)
                 for accuracies, keyname in [(best_split_accuracies, "average_best"), (untrained_accuracies, "untrained")]:
                     if len(accuracies) > 0:
-                        accuracy_keys = [k for k in accuracies[0].keys() if k not in ["epoch", "id", "experiment_id"]]
+                        accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in pml_ca.METRICS)]
                         for k in accuracy_keys:
                             self.meta_accuracies[split]["%s_%s"%(keyname, k)][split_scheme_name] = accuracies[0][k]
-            print("META_ACCURACIES", self.meta_accuracies)
 
     def record_meta_logs(self):
         if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
@@ -329,10 +329,7 @@ class BaseAPIParser:
                 group_name = "meta_" + self.hooks.record_group_name(self.tester_obj, split)
                 averages = {k: np.mean(list(v.values())) for k, v in self.meta_accuracies[split].items()}
                 standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in self.meta_accuracies[split].items()}
-                try:
-                    len_of_existing_record = len(self.meta_record_keeper.get_record(group_name)[list(averages.keys())[0]])
-                except:
-                    len_of_existing_record = 0
+                len_of_existing_record = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
                 self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
                 self.meta_record_keeper.update_records(standard_errors, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
             self.meta_record_keeper.save_records()
@@ -340,16 +337,16 @@ class BaseAPIParser:
     def return_val_accuracy_and_standard_error(self):
         if hasattr(self, "meta_record_keeper"):
             group_name = "meta_" + self.hooks.record_group_name(self.tester_obj, "val")
-            print("META_RECORD_KEEPER", self.meta_record_keeper.get_record(group_name))
-            for k, v in self.meta_record_keeper.get_record(group_name).items():
-                if self.args.eval_primary_metric in k:
-                    if k.startswith("average_best"):
-                        mean = v[-1]
-                    elif k.startswith("SEM"):
-                        standard_error = v[-1]
-            return mean, standard_error
+            def get_average_best_and_sem(key):
+                avg_key = "average_best_%s"%key
+                sem_key = "SEM_average_best_%s"%key
+                query = "SELECT {0}, {1} FROM {2} WHERE id=(SELECT MAX(id) FROM {2})".format(avg_key, sem_key, group_name)
+                return self.meta_record_keeper.query(query, use_global_db=False), avg_key, sem_key
+            q, avg_key, sem_key = self.hooks.try_primary_metric(self.tester_obj, get_average_best_and_sem)
+            return q[0][avg_key], q[0][sem_key]
         _, best_accuracy = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val")
         return best_accuracy
+
 
     def maybe_load_models_and_records(self):
         return self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device)
@@ -486,13 +483,12 @@ class BaseAPIParser:
         meta_model_getter = getattr(self, "meta_"+self.args.meta_testing_method)
         self.models = {}
         self.record_keeper = self.meta_record_keeper
-        self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__, metric_for_best_epoch=self.args.eval_primary_metric)
+        self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__, primary_metric=self.args.eval_primary_metric)
         self.tester_obj = self.pytorch_getter.get("tester", 
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
         group_name = self.hooks.record_group_name(self.tester_obj, "test")
-        curr_records = self.meta_record_keeper.get_record(group_name)
-        iteration = len(list(curr_records.values())[0]) - 1 if len(curr_records) > 0 else 0 #this abomination is necessary
+        iteration = c_f.try_getting_db_count(self.record_keeper, group_name)
         for name, i in {"-1": -1, "best": iteration}.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()
