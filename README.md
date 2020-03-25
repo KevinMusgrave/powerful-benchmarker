@@ -1,7 +1,5 @@
 # Benchmarking Metric-Learning Algorithms the Right Way
 
-# !! Currently being refactored into a pip package. Code might be broken temporarily !!
-
 ## [Benchmark results (in progress)](https://drive.google.com/open?id=1Y_stkiqlHA7HTMNrhyPCnYhR0oevphRR): 
 - [Spreadsheet #1: Train/val 50/50](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing)
 - [Spreadsheet #2: 4-fold cross validation, test on 2nd-half of classes](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing)
@@ -13,27 +11,22 @@
     - Configure most aspects of your experiment easily with config files and/or the command-line. Extend existing config files by merging them with new ones, or by merging/overriding config options via the command line.
     - Mix and match losses, mining functions, samplers, and training methods.
 2. Detailed record keeping:
-    - View in-depth information about the training process on Tensorboard, and save data in pickle and csv format.
+    - View in-depth information about the training process on Tensorboard, and save data in sqlite and csv format.
     - View the history (if any) of config options that were changed during the course of an experiment. 
 3. Better performance metrics
     - Use metrics that are more informative than Recall@1,2,4,8.
     - Measure accuracy on multiple class-based train/val/test splits.
 
-## Dependencies
-- Python 3.7
-- pytorch
-- torchvision
-- scikit-learn
-- faiss-gpu
-- tensorboard
-- easy-module-attribute-getter
-- matplotlib
-- pretrainedmodels
-- pytorch-metric-learning
-- record-keeper
-- pandas
+## Installation
+```python
+pip install powerful-benchmarker
+```
 
-For conda users, package dependencies are also provided in [conda_env.yaml](conda_env.yaml) and [conda_env_all_packages.yaml](conda_env_all_packages.yaml)  
+## Example usage
+See [run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py):
+- Set the default value for ```--pytorch_home``` to where you want to save downloaded pretrained models.
+- Set the default value for ```--dataset_root``` to where your datasets are located. 
+- Set the default value for ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
 
 ## Organize the datasets (after downloading them)
 ```
@@ -54,12 +47,6 @@ Download the datasets here:
 - [CUB200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html)
 - [Cars196](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
 - [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
-
-## Set default file paths
-Open [run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/run.py#L12):
-- Set the default value for ```--pytorch_home``` to where you want to save downloaded pretrained models.
-- Set the default value for ```--dataset_root``` to where your datasets are located. 
-- Set the default value for ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
 
 
 ## Try a basic command
