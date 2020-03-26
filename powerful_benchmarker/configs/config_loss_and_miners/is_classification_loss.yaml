@@ -1,0 +1,3 @@
+sampler~OVERRIDE~:
+  MPerClassSampler:
+    m: 1

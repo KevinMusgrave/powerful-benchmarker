@@ -40,7 +40,7 @@ def create_label_based_subset(dataset, labels, class_rule):
     True if that class should be included in the subset dataset.
     """
     idx_to_keep = [i for i, label in enumerate(labels) if class_rule(label)]
-    return create_subset(dataset, idx_to_keep), idx_to_keep
+    return create_subset(dataset, idx_to_keep)
 
 
 def numeric_class_rule(a, b, exclusion_rule=None):
@@ -96,7 +96,7 @@ def create_one_split_scheme(dataset, scheme_name=None, partition=None, num_train
     traintest_dict = OrderedDict()
     if scheme_name == "predefined":
         for k, v in dataset.predefined_splits.items():
-            traintest_dict[k] = torch.utils.data.Subset(dataset, v), v
+            traintest_dict[k] = torch.utils.data.Subset(dataset, v)
     else:
         labels = get_labels_by_hierarchy(dataset.labels, hierarchy_level)
         sorted_label_set = sorted(list(set(labels)))

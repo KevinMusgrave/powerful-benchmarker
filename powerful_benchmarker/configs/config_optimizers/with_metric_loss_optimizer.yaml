@@ -1,0 +1,6 @@
+optimizers:  
+  metric_loss_optimizer:
+    RMSprop:
+      lr: 0.000001
+      weight_decay: 0.00005
+      momentum: 0.9

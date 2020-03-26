@@ -33,13 +33,22 @@ class SplitManager:
         self.is_training = True
         self.create_split_schemes()
 
-    def assert_splits_are_disjoint(self):
+    def assert_splits_are_class_disjoint(self):
         for (split_scheme_name, split_scheme) in self.split_schemes.items():
             labels = []
-            for split, (_, subset_indices) in split_scheme.items():
-                labels.append(set(d_u.get_labels_by_hierarchy(self.original_dataset.labels[subset_indices], self.hierarchy_level)))
+            for split, dataset in split_scheme.items():
+                labels.append(set(d_u.get_labels_by_hierarchy(self.original_dataset.labels[dataset.indices], self.hierarchy_level)))
             for (x,y) in itertools.combinations(labels, 2):
                 assert x.isdisjoint(y)
+
+    def assert_same_test_set_across_schemes(self):
+        prev_indices = None
+        for (split_scheme_name, split_scheme) in self.split_schemes.items():
+            curr_indices = np.array(split_scheme["test"].indices)
+            if prev_indices is not None:
+                assert np.array_equal(curr_indices, prev_indices)
+            prev_indices = curr_indices
+
 
     def create_split_schemes(self):
         """
@@ -61,7 +70,8 @@ class SplitManager:
                                                                         test_start_idx=self.test_start_idx,
                                                                         hierarchy_level=self.hierarchy_level)
         if self.special_split_scheme_name != "predefined": 
-            self.assert_splits_are_disjoint()
+            self.assert_splits_are_class_disjoint()
+            self.assert_same_test_set_across_schemes()
         self.split_scheme_names = list(self.split_schemes.keys())
         self.split_names = list(self.split_schemes[self.split_scheme_names[0]].keys())
 
@@ -77,10 +87,10 @@ class SplitManager:
         self.curr_split_name = split_name
         self.is_training = is_training
         transform = self.train_transform if self.is_training else self.eval_transform
-        self.dataset, subset_indices = self.curr_split_scheme[self.curr_split_name]
+        self.dataset = self.curr_split_scheme[self.curr_split_name]
         self.set_dataset_transform(transform)
         if self.is_training:
-            self.labels = self.original_dataset.labels[subset_indices]
+            self.labels = self.original_dataset.labels[self.dataset.indices]
         if log_split_details:
             logging.info("SPLIT: %s / %s / length %d" % (self.curr_split_scheme_name, self.curr_split_name, len(self.dataset)))
 
@@ -108,7 +118,7 @@ class SplitManager:
         inclusion_list = list(self.curr_split_scheme.keys()) if inclusion_list is None else inclusion_list
         exclusion_list = [] if exclusion_list is None else exclusion_list
         allowed_list = [x for x in inclusion_list if x not in exclusion_list]
-        for split_name, dataset in self.curr_split_scheme.items():
+        for split_name, _ in self.curr_split_scheme.items():
             if split_name in allowed_list:
                 self.set_curr_split(split_name, is_training, log_split_details=True)
                 dataset_dict[split_name] = self.dataset

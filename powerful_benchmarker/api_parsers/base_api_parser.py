@@ -17,14 +17,14 @@ from collections import defaultdict
 from .. import architectures
 
 class BaseAPIParser:
-    def __init__(self, args, pytorch_getter):
+    def __init__(self, args, pytorch_getter, global_db_path=None):
         pml_cf.NUMPY_RANDOM = np.random.RandomState()
         logging.info("NUMPY_RANDOM = %s"%pml_cf.NUMPY_RANDOM)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.args = args
         self.pytorch_getter = pytorch_getter
         self.experiment_folder = args.experiment_folder
-        self.db_path = "/home/tkm45/NEW_STUFF/experiments/experiments.db"
+        self.global_db_path = global_db_path
 
         _model_folder = os.path.join("%s", "%s", "saved_models")
         _csv_folder = os.path.join("%s", "%s", "saved_csvs")
@@ -268,7 +268,7 @@ class BaseAPIParser:
 
     def eval_assertions(self, dataset_dict):
         for k, v in dataset_dict.items():
-            dataset, _ = self.split_manager.curr_split_scheme[k]
+            dataset = self.split_manager.curr_split_scheme[k]
             assert v is dataset
             assert v.dataset.transform is self.split_manager.eval_transform
 
@@ -293,13 +293,13 @@ class BaseAPIParser:
 
     def set_record_keeper(self):
         is_new_experiment = self.beginning_of_training() and self.curr_split_count == 0
-        self.record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.db_path, self.args.experiment_name, is_new_experiment)
+        self.record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.global_db_path, self.args.experiment_name, is_new_experiment)
 
     def set_meta_record_keeper(self):
         is_new_experiment = self.beginning_of_training()
         if len(self.split_manager.split_scheme_names) > 1:
             _, csv_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
-            self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.db_path, self.args.experiment_name, is_new_experiment)
+            self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.global_db_path, self.args.experiment_name, is_new_experiment)
             self.meta_accuracies = defaultdict(lambda: defaultdict(dict))
 
     def update_meta_record_keeper(self, split_scheme_name):
@@ -433,10 +433,10 @@ class BaseAPIParser:
         return self.hooks.patience_remaining(self.epoch, best_epoch, self.args.patience) and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
     def training_assertions(self, trainer):
-        dataset, subset_idx = self.split_manager.curr_split_scheme["train"]
+        dataset = self.split_manager.curr_split_scheme["train"]
         assert trainer.dataset is dataset
         assert trainer.dataset.dataset.transform is self.split_manager.train_transform
-        assert np.array_equal(trainer.dataset_labels, self.split_manager.original_dataset.labels[subset_idx])
+        assert np.array_equal(trainer.dataset_labels, self.split_manager.original_dataset.labels[dataset.indices])
 
     def train(self, num_epochs):
         if self.epoch == 1 and self.args.check_untrained_accuracy:
@@ -483,4 +483,5 @@ class BaseAPIParser:
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()
             self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False)
+        self.record_keeper.record_writer.records[group_name].pop('epoch', None)
         self.record_keeper.save_records()

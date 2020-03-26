@@ -1,0 +1,4 @@
+dataset~OVERRIDE~:
+  StanfordOnlineProducts:
+save_interval: 20
+patience: 39

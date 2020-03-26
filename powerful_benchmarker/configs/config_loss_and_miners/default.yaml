@@ -1,15 +1,9 @@
 loss_funcs:
   metric_loss: 
-    MultiSimilarityLoss:
-      alpha: 0.1
-      beta: 40
-      base: 0.5
+    ContrastiveLoss:
 
 sampler:
   MPerClassSampler:
-    m: 8
+    m: 4
 
-mining_funcs:
-  tuple_miner: 
-    MultiSimilarityMiner: 
-      epsilon: 0.1
+mining_funcs: {}

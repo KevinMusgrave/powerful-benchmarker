@@ -1,0 +1,7 @@
+optimizers:
+  trunk_optimizer:
+    RMSprop:
+      lr: 0.00001
+  embedder_optimizer:
+    RMSprop:
+      lr: 0.00001
