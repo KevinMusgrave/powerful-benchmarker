@@ -1,39 +1,29 @@
 import sys
-from easy_module_attribute_getter import PytorchGetter
-from .. import datasets
 import copy
 from ..utils import common_functions as c_f, split_manager
-from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
+from pytorch_metric_learning import losses
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
 import pytorch_metric_learning.utils.calculate_accuracies as pml_ca
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
-from .. import architectures
 import os
 import shutil
 import logging
 import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
+from .. import architectures
 
 class BaseAPIParser:
-    def __init__(self, args):
+    def __init__(self, args, pytorch_getter):
         pml_cf.NUMPY_RANDOM = np.random.RandomState()
         logging.info("NUMPY_RANDOM = %s"%pml_cf.NUMPY_RANDOM)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.args = args
+        self.pytorch_getter = pytorch_getter
         self.experiment_folder = args.experiment_folder
-        self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
-        self.pytorch_getter.register('model', architectures.misc_models)
-        self.pytorch_getter.register('loss', losses)
-        self.pytorch_getter.register('miner', miners)
-        self.pytorch_getter.register('regularizer', regularizers)
-        self.pytorch_getter.register('sampler', samplers)
-        self.pytorch_getter.register('trainer', trainers)
-        self.pytorch_getter.register('tester', testers)
-        self.pytorch_getter.register('dataset', datasets)
         self.db_path = "/home/tkm45/NEW_STUFF/experiments/experiments.db"
 
         _model_folder = os.path.join("%s", "%s", "saved_models")

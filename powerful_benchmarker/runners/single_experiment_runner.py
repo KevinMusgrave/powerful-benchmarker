@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import logging
 logging.info("Importing packages in single_experiment_runner")
-from easy_module_attribute_getter import YamlReader
+from easy_module_attribute_getter import YamlReader, PytorchGetter
 from ..utils import common_functions as c_f, dataset_utils as d_u
 import argparse
 from .. import api_parsers
@@ -25,9 +25,27 @@ class SingleExperimentRunner:
             self.root_config_folder = root_config_folder
         else:
             self.root_config_folder = os.path.join(os.path.dirname(__file__), "../configs")
+        self.init_pytorch_getter()
         self.set_config_foldernames(config_foldernames)
         self.set_YR()
+        
 
+    def register(self, module_type, module):
+        self.pytorch_getter.register(module_type, module)
+
+    def init_pytorch_getter(self):
+        from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
+        from .. import architectures
+        from .. import datasets
+        self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
+        self.pytorch_getter.register('model', architectures.misc_models)
+        self.pytorch_getter.register('loss', losses)
+        self.pytorch_getter.register('miner', miners)
+        self.pytorch_getter.register('regularizer', regularizers)
+        self.pytorch_getter.register('sampler', samplers)
+        self.pytorch_getter.register('trainer', trainers)
+        self.pytorch_getter.register('tester', testers)
+        self.pytorch_getter.register('dataset', datasets)
 
     def set_YR(self):
         self.YR = self.setup_yaml_reader()
@@ -48,7 +66,7 @@ class SingleExperimentRunner:
             self.run_new_experiment()
 
     def start_experiment(self, args):
-        api_parser = getattr(api_parsers, "API"+args.training_method)(args)
+        api_parser = getattr(api_parsers, "API"+args.training_method)(args, self.pytorch_getter)
         run_output = api_parser.run()
         del api_parser.tester_obj
         del api_parser.trainer
