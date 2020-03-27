@@ -9,12 +9,14 @@ from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
 import os
+import pathlib
 import shutil
 import logging
 import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
+
 
 class BaseAPIParser:
     def __init__(self, args, pytorch_getter, global_db_path=None):
@@ -99,8 +101,10 @@ class BaseAPIParser:
         return (not self.args.resume_training) and (not self.args.evaluate)
 
     def make_dir(self):
-        if os.path.isdir(self.experiment_folder):
-            logging.info("Experiment name already taken!")
+        root = pathlib.Path(self.experiment_folder)
+        non_empty_dirs = {str(p.parent) for p in root.rglob('*') if p.is_file()}
+        if len(non_empty_dirs) > 0:
+            logging.info("Experiment folder already taken!")
             sys.exit()
         c_f.makedir_if_not_there(self.experiment_folder)
 
@@ -273,7 +277,7 @@ class BaseAPIParser:
             assert v.dataset.transform is self.split_manager.eval_transform
 
     def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False):
-        logging.info("Launching evaluation for epoch %d"%epoch)
+        logging.info("Launching evaluation for model %s"%suffix)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
         else:
@@ -478,10 +482,8 @@ class BaseAPIParser:
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
         group_name = self.hooks.record_group_name(self.tester_obj, "test")
-        iteration = c_f.try_getting_db_count(self.record_keeper, group_name)
-        for name, i in {"-1": -1, "best": iteration}.items():
+        for name, i in {"-1": -1, "best": 1}.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()
             self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False)
-        self.record_keeper.record_writer.records[group_name].pop('epoch', None)
         self.record_keeper.save_records()

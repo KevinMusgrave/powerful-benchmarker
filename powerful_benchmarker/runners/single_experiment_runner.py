@@ -65,7 +65,7 @@ class SingleExperimentRunner:
         if self.YR.args.reproduce_results:
             self.reproduce_results(self.YR)
         else:
-            self.run_new_experiment()
+            self.run_new_experiment(self.YR)
 
     def start_experiment(self, args):
         api_parser = getattr(api_parsers, "API"+args.training_method)(args, self.pytorch_getter, self.global_db_path)
@@ -75,8 +75,8 @@ class SingleExperimentRunner:
         del api_parser
         return run_output
 
-    def run_new_experiment(self):
-        args, _, args.dict_of_yamls = self.YR.load_yamls(**self.determine_where_to_get_yamls(self.YR.args), max_merge_depth=float('inf'))
+    def run_new_experiment(self, YR):
+        args, _, args.dict_of_yamls = YR.load_yamls(**self.determine_where_to_get_yamls(YR.args), max_merge_depth=float('inf'))
         return self.start_experiment(args)
 
     def reproduce_results(self, YR):
