@@ -70,6 +70,7 @@ class SingleExperimentRunner:
     def start_experiment(self, args):
         api_parser = getattr(api_parsers, "API"+args.training_method)(args, self.pytorch_getter, self.global_db_path)
         run_output = api_parser.run()
+        self.eval_record_group_dicts = api_parser.get_eval_record_name_dict(return_all=True)
         del api_parser.tester_obj
         del api_parser.trainer
         del api_parser

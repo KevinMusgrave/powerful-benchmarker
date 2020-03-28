@@ -103,6 +103,7 @@ class BaseAPIParser:
     def make_dir(self):
         root = pathlib.Path(self.experiment_folder)
         non_empty_dirs = {str(p.parent) for p in root.rglob('*') if p.is_file()}
+        non_empty_dirs.discard(self.experiment_folder)
         if len(non_empty_dirs) > 0:
             logging.info("Experiment folder already taken!")
             sys.exit()
@@ -320,7 +321,7 @@ class BaseAPIParser:
     def record_meta_logs(self):
         if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
             for split in self.args.splits_to_eval:
-                group_name = "meta_" + self.hooks.record_group_name(self.tester_obj, split)
+                group_name = self.get_eval_record_name_dict("meta")[split]
                 averages = {k: np.mean(list(v.values())) for k, v in self.meta_accuracies[split].items()}
                 standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in self.meta_accuracies[split].items()}
                 len_of_existing_record = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
@@ -330,7 +331,7 @@ class BaseAPIParser:
 
     def return_val_accuracy_and_standard_error(self):
         if hasattr(self, "meta_record_keeper"):
-            group_name = "meta_" + self.hooks.record_group_name(self.tester_obj, "val")
+            group_name = self.get_eval_record_name_dict("meta")["val"]
             def get_average_best_and_sem(key):
                 avg_key = "average_best_%s"%key
                 sem_key = "SEM_average_best_%s"%key
@@ -481,9 +482,29 @@ class BaseAPIParser:
         self.tester_obj = self.pytorch_getter.get("tester", 
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
-        group_name = self.hooks.record_group_name(self.tester_obj, "test")
         for name, i in {"-1": -1, "best": 1}.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()
             self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False)
         self.record_keeper.save_records()
+
+
+    def get_eval_record_name_dict(self, eval_type="non_meta", return_all=False):
+        prefix = self.hooks.record_group_name_prefix 
+        self.hooks.record_group_name_prefix = "" #temporary
+        non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in ["train", "val", "test"]}
+        meta = {k:"meta_"+v for k,v in non_meta.items()}
+        meta_concatenated = {k:"meta_ConcatenateEmbeddings_"+v for k,v in non_meta.items()}
+        self.hooks.record_group_name_prefix = prefix
+
+        name_dict = {"non_meta": non_meta,
+                    "meta": meta,
+                    "meta_ConcatenateEmbeddings": meta_concatenated}
+
+        if return_all:
+            return name_dict
+        return name_dict[eval_type]
+
+
+
+

@@ -15,9 +15,11 @@ import pandas as pd
 from ..utils import common_functions as c_f
 from .single_experiment_runner import SingleExperimentRunner
 import pytorch_metric_learning.utils.logging_presets as logging_presets
-import math
-from types import SimpleNamespace
+import numpy as np
+import scipy.stats as scipy_stats
 import shutil
+import collections
+import json
 logging.info("Done importing packages in bayes_opt_runner")
 
 BAYESIAN_KEYWORDS=("~BAYESIAN~", "~LOG_BAYESIAN~", "~INT_BAYESIAN~")
@@ -68,10 +70,10 @@ def remove_keywords(YR):
 
 
 class BayesOptRunner(SingleExperimentRunner):
-    def __init__(self, bayes_opt_iters, num_reproductions, **kwargs):
+    def __init__(self, bayes_opt_iters, reproductions, **kwargs):
         super().__init__(**kwargs)
         self.bayes_opt_iters = bayes_opt_iters
-        self.num_reproductions = num_reproductions
+        self.reproductions = reproductions
         self.experiment_name = self.YR.args.experiment_name
         self.bayes_opt_root_experiment_folder = os.path.join(self.root_experiment_folder, self.experiment_name)
         if self.global_db_path is None:
@@ -81,6 +83,8 @@ class BayesOptRunner(SingleExperimentRunner):
         self.ax_log_folder = os.path.join(self.bayes_opt_root_experiment_folder, "bayes_opt_ax_logs")
         self.best_parameters_filename = os.path.join(self.bayes_opt_root_experiment_folder, "best_parameters.yaml")
         self.most_recent_parameters_filename = os.path.join(self.bayes_opt_root_experiment_folder, "most_recent_parameters.yaml")
+        self.accuracy_report_detailed_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report_detailed.yaml")
+        self.accuracy_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report.yaml")
         self.bayes_opt_table_name = "bayes_opt"
 
     def set_YR(self):
@@ -103,20 +107,22 @@ class BayesOptRunner(SingleExperimentRunner):
             self.plot_progress(ax_client)
 
         logging.info("DONE BAYESIAN OPTIMIZATION")
-        # self.plot_progress(ax_client)
+        self.plot_progress(ax_client)
         best_sub_experiment_name = self.save_best_parameters(record_keeper, ax_client)
         self.test_model(best_sub_experiment_name)
         self.reproduce_results(best_sub_experiment_name)
+        self.create_accuracy_report(best_sub_experiment_name)
 
 
     def get_parameters_and_trial_index(self, ax_client, sub_experiment_name):
+        parameters, trial_index = ax_client.get_next_trial()
         if os.path.isdir(self.get_sub_experiment_path(sub_experiment_name)):
             recent = c_f.load_yaml(self.most_recent_parameters_filename)
-            parameters, trial_index = recent["parameters"], recent["trial_index"]
-            ax_client.attach_trial(parameters)
+            recent_parameters, recent_trial_index = recent["parameters"], recent["trial_index"]
+            assert parameters == recent_parameters
+            assert trial_index == recent_trial_index
             experiment_func = self.resume_training
         else:
-            parameters, trial_index = ax_client.get_next_trial()
             c_f.write_yaml(self.most_recent_parameters_filename, {"parameters": parameters, "trial_index": trial_index}, open_as='w')
             experiment_func = self.run_new_experiment
         return parameters, trial_index, experiment_func
@@ -159,13 +165,68 @@ class BayesOptRunner(SingleExperimentRunner):
         logging.info("BEST SUB EXPERIMENT NAME: %s"%best_sub_experiment_name)
 
         best_parameters, best_values = get_best_raw_objective_point(ax_client.experiment)
-        assert math.isclose(best_values[self.YR.args.eval_primary_metric][0], q[self.YR.args.eval_primary_metric])
+        assert np.isclose(best_values[self.YR.args.eval_primary_metric][0], q[self.YR.args.eval_primary_metric])
         best_parameters_dict = {"best_sub_experiment_name": best_sub_experiment_name,
                                 "best_sub_experiment_path": best_sub_experiment_path, 
                                 "best_parameters": best_parameters, 
                                 "best_values": {k:{"mean": float(v[0]), "SEM": float(v[1])} for k,v in best_values.items()}}
         c_f.write_yaml(self.best_parameters_filename, best_parameters_dict, open_as='w')
         return best_sub_experiment_name
+
+    def create_accuracy_report(self, best_sub_experiment_name):
+        global_record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.global_db_path, "", False)
+        exp_names = glob.glob(os.path.join(self.bayes_opt_root_experiment_folder, "%s*"%best_sub_experiment_name))
+
+        exp_names = [os.path.basename(e) for e in exp_names]
+        results, summary = {}, {}
+
+        for eval_type in ["meta", "meta_ConcatenateEmbeddings"]:
+            results[eval_type] = {}
+            summary[eval_type] = collections.defaultdict(lambda: collections.defaultdict(list))
+            table_name = self.eval_record_group_dicts[eval_type]["test"]
+            
+            for exp in exp_names:
+                results[eval_type][exp] = {}
+                exp_id = global_record_keeper.record_writer.global_db.get_experiment_id(exp)
+                base_query = "SELECT * FROM %s WHERE experiment_id=? AND id=?"%table_name
+                max_id_query = "SELECT max(id) FROM %s WHERE experiment_id=?"%table_name
+                qs = {}
+
+                if eval_type == "meta_ConcatenateEmbeddings":
+                    base_query += " AND epoch=?"
+                    max_id_query += " AND epoch=?"
+                    for key, epoch in [("trained", 1), ("untrained", -1)]:
+                        max_id = global_record_keeper.query(max_id_query, values=(exp_id, epoch), use_global_db=True)[0]["max(id)"]
+                        q = global_record_keeper.query(base_query, values=(exp_id, max_id, epoch), use_global_db=True)
+                        if len(q) > 0:
+                            qs[key] = q[0]
+                else:
+                    max_id = global_record_keeper.query(max_id_query, values=(exp_id,), use_global_db=True)[0]["max(id)"]
+                    qs["trained_and_untrained"] = global_record_keeper.query(base_query, values=(exp_id, max_id), use_global_db=True)[0]
+
+                for trained_or_not, v1 in qs.items():
+                    q_as_dict = dict(v1)
+                    results[eval_type][exp][trained_or_not] = q_as_dict
+                    for acc_key, v2 in q_as_dict.items():
+                        if all(not acc_key.startswith(x) for x in ["epoch", "best_epoch", "best_accuracy", "SEM", "id", "experiment_id"]):
+                            summary[eval_type][trained_or_not][acc_key].append(v2)
+
+
+            for trained_or_not, v1 in summary[eval_type].items():
+                for acc_key in v1.keys():
+                    v2 = v1[acc_key]
+                    mean = np.mean(v2)
+                    cf_low, cf_high = scipy_stats.t.interval(0.95, len(v2)-1, loc=np.mean(v2), scale=scipy_stats.sem(v2)) #https://stackoverflow.com/a/34474255
+                    cf_width = mean-cf_low
+                    summary[eval_type][trained_or_not][acc_key] = {"mean": float(mean), 
+                                                                    "95%_confidence_interval": (float(cf_low), float(cf_high)),
+                                                                    "95%_confidence_interval_width": float(cf_width)}
+
+        c_f.write_yaml(self.accuracy_report_detailed_filename, results, open_as="w")
+        c_f.write_yaml(self.accuracy_report_filename, json.loads(json.dumps(summary)), open_as="w")
+
+
+
 
     def get_ax_client(self):
         log_paths = self.get_all_log_paths()
@@ -223,6 +284,7 @@ class BayesOptRunner(SingleExperimentRunner):
         try:
             output = super().run_new_experiment(YR)
         except Exception as e:
+            YR.args.resume_training = False
             logging.error(repr(e))
             logging.warning("Could not resume training for %s"%YR.args.experiment_name)
             self.delete_sub_experiment_folder(YR.args.experiment_name)
@@ -262,16 +324,20 @@ class BayesOptRunner(SingleExperimentRunner):
 
 
     def test_model(self, sub_experiment_name):
-        local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
-        local_YR.args.evaluate = True
-        local_YR.args.splits_to_eval = ["test"]
         for meta_testing_method in [None, "ConcatenateEmbeddings"]:
+            local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
+            local_YR.args.evaluate = True
+            local_YR.args.splits_to_eval = ["test"]
             local_YR.args.__dict__["meta_testing_method~OVERRIDE~"] = meta_testing_method
             super().run_new_experiment(local_YR)
 
 
     def reproduce_results(self, sub_experiment_name):
-        for i in range(self.num_reproductions):
+        if type(self.reproductions) in [list, tuple]:
+            idx_list = range(*self.reproductions) 
+        else:
+            idx_list = range(self.reproductions)
+        for i in idx_list:
             local_YR = self.get_simplified_yaml_reader("%s_reproduction%d"%(sub_experiment_name, i))
             local_YR.args.reproduce_results = self.get_sub_experiment_path(sub_experiment_name)
             output = None
