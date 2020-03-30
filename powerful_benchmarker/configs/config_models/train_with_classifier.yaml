@@ -1,4 +1,0 @@
-models:
-  classifier:
-    MLP:
-      layer_sizes: []
