@@ -14,7 +14,7 @@
 2. Extensive logging
     - View experiment data in tensorboard, csv, and sqlite format.
 3. Easy hyperparameter optimization
-    - Simply append ~BAYESIAN~ to the hyperparameters you want to optimize.
+    - Simply append \~BAYESIAN\~ to the hyperparameters you want to optimize.
 4. Customizable
     - Register your own losses, miners, datasets etc. with a simple function call.
 
@@ -83,56 +83,43 @@ Experiment data is saved in the following format:
 ```
 
 ### Override config options at the command line
-The default config files use a batch size of 32. What if you want to use a batch size of 256? Just write the flag at the command line:
+The default config files use a [batch size of 32](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_models/default.yaml). What if you want to use a batch size of 256? Just write the flag at the command line:
 ```
 python run.py --experiment_name test2 --batch_size 256
 ```
-All options in the config files can be overriden via the command line. This includes nested config options.
+Complex options (i.e. nested dictionaries) can be specified at the command line:
 ```
 python run.py \
---experiment_name test2 \
+--experiment_name test1 \
 --mining_funcs {tuple_miner: {PairMarginMiner: {pos_margin: 0.5, neg_margin: 0.5}}}
 ```
-The ```~OVERRIDE~``` suffix is required to completely override complex config options. For example, the following overrides the default loss function:
+The ```~OVERRIDE~``` suffix is required to completely override complex config options. For example, the following overrides the [default loss function](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_loss_and_miners/default.yaml):
 ```
 python run.py \
 --experiment_name test1 \
 --loss_funcs {metric_loss~OVERRIDE~: {ArcFaceLoss: {margin: 30, scale: 64, embedding_size: 128}}}
 ```
-Leave out the ```~OVERRIDE~``` suffix if you want to merge options. For example, the default optimizers are:
-```
-optimizers:
-  trunk_optimizer:
-    Adam:
-      lr: 0.00001
-      weight_decay: 0.00005
-  embedder_optimizer:
-    Adam:
-      lr: 0.00001
-      weight_decay: 0.00005
-```
-We can add an optimizer for our loss function's parameters
+Leave out the ```~OVERRIDE~``` suffix if you want to merge options. For example, we can add an optimizer for our loss function's parameters:
 ```
 python run.py \
 --experiment_name test1 \
 --optimizers {metric_loss_optimizer: {SGD: {lr: 0.01}}} 
 ```
+This will be included along with the [default optimizers](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_optimizers/default.yaml). 
 
 We can change the learning rate of the trunk_optimizer, but keep all other parameters the same:
 ```
 python run.py \
 --experiment_name test1 \
---optimizers {trunk_optimizer: {Adam: {lr: 0.01}}} 
+--optimizers {trunk_optimizer: {RMSprop: {lr: 0.01}}} 
 ```
 
-Or we can make trunk_optimizer use RMSprop, but leave embedder_optimizer to the default setting: 
+Or we can make trunk_optimizer use Adam, but leave embedder_optimizer to the default setting: 
 ```
 python run.py \
---experiment_name test2 \
---optimizers {trunk_optimizer~OVERRIDE~: {RMSprop: {lr: 0.01}}} 
+--experiment_name test1 \
+--optimizers {trunk_optimizer~OVERRIDE~: {Adam: {lr: 0.01}}} 
 ```
-
-To see more details about this functionality, check out [easy-module-attribute-getter](https://github.com/KevinMusgrave/easy-module-attribute-getter).
 
 ## Combine yaml files at the command line
 The config files are currently separated into 6 folders, for readability. Suppose you want to try Deep Adversarial Metric Learning. You can write a new yaml file in the config_general folder that contains the necessary parameters. But there is no need to rewrite generic parameters like pytorch_home and num_epochs_train. Instead, just tell the program to use both the default config file and your new config file:
