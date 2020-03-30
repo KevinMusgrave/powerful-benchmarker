@@ -17,4 +17,6 @@ num_training_sets: 4
 label_hierarchy_level: 0
 dataloader_num_workers: 2
 check_untrained_accuracy: True
+skip_eval_if_already_done: True
+skip_meta_eval_if_already_done: True
 patience: 9

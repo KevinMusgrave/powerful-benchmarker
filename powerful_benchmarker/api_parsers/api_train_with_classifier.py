@@ -25,8 +25,8 @@ class APITrainWithClassifier(BaseAPIParser):
 
 
 class APIMaybeExtendTrainWithClassifier(APITrainWithClassifier):
-    def __init__(self, args):
-        super().__init__(args)
+    def __init__(self, args, *positional_args, **kwargs):
+        super().__init__(args, *positional_args, **kwargs)
         model_names = list(self.args.models.keys())
         if model_names and any(x.startswith("classifier") for x in model_names):
             self.inheriter = super()

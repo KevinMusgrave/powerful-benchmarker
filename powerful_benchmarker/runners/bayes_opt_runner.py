@@ -58,7 +58,7 @@ def open_log(log_paths):
         try:
             ax_client = AxClient.load_from_json_file(filepath=L)
             break
-        except:
+        except IOError:
             ax_client = None
     return ax_client
 
@@ -188,37 +188,31 @@ class BayesOptRunner(SingleExperimentRunner):
             for exp in exp_names:
                 results[eval_type][exp] = {}
                 exp_id = global_record_keeper.record_writer.global_db.get_experiment_id(exp)
-                base_query = "SELECT * FROM %s WHERE experiment_id=? AND id=?"%table_name
-                max_id_query = "SELECT max(id) FROM %s WHERE experiment_id=?"%table_name
+                base_query = "SELECT * FROM %s WHERE experiment_id=? AND id=? AND is_trained=?"%table_name
+                max_id_query = "SELECT max(id) FROM %s WHERE experiment_id=? AND is_trained=?"%table_name
                 qs = {}
 
-                if eval_type == "meta_ConcatenateEmbeddings":
-                    base_query += " AND epoch=?"
-                    max_id_query += " AND epoch=?"
-                    for key, epoch in [("trained", 1), ("untrained", -1)]:
-                        max_id = global_record_keeper.query(max_id_query, values=(exp_id, epoch), use_global_db=True)[0]["max(id)"]
-                        q = global_record_keeper.query(base_query, values=(exp_id, max_id, epoch), use_global_db=True)
-                        if len(q) > 0:
-                            qs[key] = q[0]
-                else:
-                    max_id = global_record_keeper.query(max_id_query, values=(exp_id,), use_global_db=True)[0]["max(id)"]
-                    qs["trained_and_untrained"] = global_record_keeper.query(base_query, values=(exp_id, max_id), use_global_db=True)[0]
+                for key, is_trained in [("trained", 1), ("untrained", 0)]:
+                    max_id = global_record_keeper.query(max_id_query, values=(exp_id, is_trained), use_global_db=True)[0]["max(id)"]
+                    q = global_record_keeper.query(base_query, values=(exp_id, max_id, is_trained), use_global_db=True)
+                    if len(q) > 0:
+                        qs[key] = q[0]
 
-                for trained_or_not, v1 in qs.items():
+                for is_trained, v1 in qs.items():
                     q_as_dict = dict(v1)
-                    results[eval_type][exp][trained_or_not] = q_as_dict
+                    results[eval_type][exp][is_trained] = q_as_dict
                     for acc_key, v2 in q_as_dict.items():
-                        if all(not acc_key.startswith(x) for x in ["epoch", "best_epoch", "best_accuracy", "SEM", "id", "experiment_id"]):
-                            summary[eval_type][trained_or_not][acc_key].append(v2)
+                        if all(not acc_key.startswith(x) for x in ["is_trained", "best_epoch", "best_accuracy", "SEM", "id", "experiment_id", "timestamp"]):
+                            summary[eval_type][is_trained][acc_key].append(v2)
 
 
-            for trained_or_not, v1 in summary[eval_type].items():
+            for is_trained, v1 in summary[eval_type].items():
                 for acc_key in v1.keys():
                     v2 = v1[acc_key]
                     mean = np.mean(v2)
                     cf_low, cf_high = scipy_stats.t.interval(0.95, len(v2)-1, loc=np.mean(v2), scale=scipy_stats.sem(v2)) #https://stackoverflow.com/a/34474255
                     cf_width = mean-cf_low
-                    summary[eval_type][trained_or_not][acc_key] = {"mean": float(mean), 
+                    summary[eval_type][is_trained][acc_key] = {"mean": float(mean), 
                                                                     "95%_confidence_interval": (float(cf_low), float(cf_high)),
                                                                     "95%_confidence_interval_width": float(cf_width)}
 
@@ -243,10 +237,7 @@ class BayesOptRunner(SingleExperimentRunner):
         model = Models.GPEI(experiment=ax_client.experiment, data=ax_client.experiment.fetch_data())
         html_elements = []
         html_elements.append(plot_config_to_html(ax_client.get_optimization_trace()))
-        try:
-            html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.YR.args.eval_primary_metric)))
-        except:
-            pass
+        html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.YR.args.eval_primary_metric)))
         with open(os.path.join(self.bayes_opt_root_experiment_folder, "optimization_plots.html"), 'w') as f:
             f.write(render_report_elements(self.experiment_name, html_elements))
 

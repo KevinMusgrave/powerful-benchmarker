@@ -14,6 +14,8 @@ from easy_module_attribute_getter import utils as emag_utils
 import logging
 import inspect
 import pytorch_metric_learning.utils.common_functions as pml_cf
+import datetime
+import sqlite3
 
 
 def move_optimizer_to_gpu(optimizer, device):
@@ -115,6 +117,10 @@ def check_init_arguments(input_obj, str_to_check):
 def try_getting_db_count(record_keeper, table_name):
     try:
         len_of_existing_record = record_keeper.query("SELECT count(*) FROM %s"%table_name, use_global_db=False)[0]["count(*)"] 
-    except:
+    except sqlite3.OperationalError:
         len_of_existing_record = 0
     return len_of_existing_record
+
+
+def get_datetime():
+    return datetime.datetime.now()

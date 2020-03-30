@@ -85,13 +85,13 @@ class BaseAPIParser:
             try:
                 delattr(self, attr_name)
                 logging.info("Deleted self.%s"%attr_name)
-            except:
+            except AttributeError:
                 pass
         try:
             del self.trainer.dataloader
             del self.trainer.dataloader_iter
             logging.info("Deleted trainer dataloader")
-        except:
+        except AttributeError:
             pass
 
     def is_training(self):
@@ -169,7 +169,7 @@ class BaseAPIParser:
             if isinstance(trunk, torch.nn.DataParallel):
                 trunk = trunk.module
             model_transform_properties = {k:getattr(trunk, k) for k in ["mean", "std", "input_space", "input_range"]}
-        except:
+        except (KeyError, AttributeError):
             model_transform_properties = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
         transforms = {"train": None, "eval": None}
         for k, v in self.args.transforms.items():
@@ -227,9 +227,8 @@ class BaseAPIParser:
         if c_f.check_init_arguments(loss, "num_classes"):
             loss_params["num_classes"] = self.split_manager.get_num_labels()
             logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
-        for k in ["regularizer"]:
-            if k in loss_params:
-                loss_params[k] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params[k])
+        if "regularizer" in loss_params:
+            loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params[k])
         return loss(**loss_params)        
 
     def set_loss_function(self):
@@ -277,7 +276,7 @@ class BaseAPIParser:
             assert v is dataset
             assert v.dataset.transform is self.split_manager.eval_transform
 
-    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False):
+    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, skip_eval_if_already_done=True):
         logging.info("Launching evaluation for model %s"%suffix)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
@@ -287,7 +286,8 @@ class BaseAPIParser:
         splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
         dataset_dict = self.split_manager.get_dataset_dict(inclusion_list=splits_to_eval, exclusion_list=splits_to_exclude, is_training=False)
         self.eval_assertions(dataset_dict)
-        self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, splits_to_eval)
+        return self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, 
+                                        splits_to_eval=splits_to_eval, collate_fn=None, skip_eval_if_already_done=skip_eval_if_already_done)
 
     def flush_tensorboard(self):
         for keeper in ["record_keeper", "meta_record_keeper"]:
@@ -305,40 +305,46 @@ class BaseAPIParser:
         if len(self.split_manager.split_scheme_names) > 1:
             _, csv_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
             self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.global_db_path, self.args.experiment_name, is_new_experiment)
-            self.meta_accuracies = defaultdict(lambda: defaultdict(dict))
+            self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
 
     def update_meta_record_keeper(self, split_scheme_name):
         if hasattr(self, "meta_accuracies"):
             for split in self.args.splits_to_eval:
                 best_split_accuracies, _ = self.hooks.get_accuracies_of_best_epoch(self.tester_obj, split)
                 untrained_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, -1)
-                for accuracies, keyname in [(best_split_accuracies, "average_best"), (untrained_accuracies, "untrained")]:
+                for accuracies, is_trained in [(untrained_accuracies, 0), (best_split_accuracies, 1)]:
                     if len(accuracies) > 0:
                         accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in pml_ca.METRICS)]
                         for k in accuracy_keys:
-                            self.meta_accuracies[split]["%s_%s"%(keyname, k)][split_scheme_name] = accuracies[0][k]
+                            self.meta_accuracies[split][is_trained][k][split_scheme_name] = accuracies[0][k]
 
     def record_meta_logs(self):
         if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
             for split in self.args.splits_to_eval:
                 group_name = self.get_eval_record_name_dict("meta")[split]
-                averages = {k: np.mean(list(v.values())) for k, v in self.meta_accuracies[split].items()}
-                standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in self.meta_accuracies[split].items()}
-                len_of_existing_record = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
-                self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
-                self.meta_record_keeper.update_records(standard_errors, global_iteration=len_of_existing_record, input_group_name_for_non_objects=group_name)
+                len_of_existing_records = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
+                for i, is_trained in enumerate([0, 1]):
+                    curr_dict = self.meta_accuracies[split][is_trained]
+                    if len(curr_dict) > 0:
+                        averages = {k: np.mean(list(v.values())) for k, v in curr_dict.items()}
+                        standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in curr_dict.items()}
+                        global_iteration = len_of_existing_records+i+1
+                        self.meta_record_keeper.update_records(averages, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
+                        self.meta_record_keeper.update_records(standard_errors, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
+                        self.meta_record_keeper.update_records({"is_trained": is_trained}, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
+                        self.meta_record_keeper.update_records({"timestamp": c_f.get_datetime()}, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
             self.meta_record_keeper.save_records()
 
     def return_val_accuracy_and_standard_error(self):
         if hasattr(self, "meta_record_keeper"):
             group_name = self.get_eval_record_name_dict("meta")["val"]
             def get_average_best_and_sem(key):
-                avg_key = "average_best_%s"%key
-                sem_key = "SEM_average_best_%s"%key
-                query = "SELECT {0}, {1} FROM {2} WHERE id=(SELECT MAX(id) FROM {2})".format(avg_key, sem_key, group_name)
-                return self.meta_record_keeper.query(query, use_global_db=False), avg_key, sem_key
-            q, avg_key, sem_key = self.hooks.try_primary_metric(self.tester_obj, get_average_best_and_sem)
-            return q[0][avg_key], q[0][sem_key]
+                is_trained = 1
+                sem_key = "SEM_%s"%key
+                query = "SELECT {0}, {1} FROM {2} WHERE is_trained=? AND id=(SELECT MAX(id) FROM {2})".format(key, sem_key, group_name)
+                return self.meta_record_keeper.query(query, values=(is_trained,), use_global_db=False), key, sem_key
+            q, key, sem_key = self.hooks.try_primary_metric(self.tester_obj, get_average_best_and_sem)
+            return q[0][key], q[0][sem_key]
         _, best_accuracy = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val")
         return best_accuracy
 
@@ -453,8 +459,10 @@ class BaseAPIParser:
 
     def eval(self):
         best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val")
-        for name, epoch in {"-1": -1, "best": best_epoch}.items():
-            self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True)
+        eval_dict = {"best": best_epoch}
+        if self.args.check_untrained_accuracy: eval_dict["-1"] = -1
+        for name, epoch in eval_dict.items():
+            self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
         self.record_keeper.save_records()
 
     def meta_ConcatenateEmbeddings(self, model_suffix): 
@@ -482,10 +490,25 @@ class BaseAPIParser:
         self.tester_obj = self.pytorch_getter.get("tester", 
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
-        for name, i in {"-1": -1, "best": 1}.items():
+
+        eval_dict = {"best": 1}
+        if self.args.check_untrained_accuracy: eval_dict["-1"] = -1
+
+        group_name = self.get_eval_record_name_dict("meta_ConcatenateEmbeddings")["test"]
+        len_of_existing_records = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
+
+        for name, i in eval_dict.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
             self.set_transforms()
-            self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False)
+            did_not_skip = self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False, skip_eval_if_already_done=self.args.skip_meta_eval_if_already_done)
+            if did_not_skip:
+                is_trained = int(i==1)
+                global_iteration = len_of_existing_records + is_trained + 1
+                self.record_keeper.update_records({"is_trained": int(i==1)}, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
+                self.record_keeper.update_records({"timestamp": c_f.get_datetime()}, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
+
+        for irrelevant_key in ["epoch", "best_epoch", "best_accuracy"]:
+            self.record_keeper.record_writer.records.pop(irrelevant_key, None)
         self.record_keeper.save_records()
 
 

@@ -42,9 +42,10 @@ class SplitManager:
                 assert x.isdisjoint(y)
 
     def assert_same_test_set_across_schemes(self):
+        test_key = "val" if self.special_split_scheme_name == "old_approach" else "test"
         prev_indices = None
         for (split_scheme_name, split_scheme) in self.split_schemes.items():
-            curr_indices = np.array(split_scheme["test"].indices)
+            curr_indices = np.array(split_scheme[test_key].indices)
             if prev_indices is not None:
                 assert np.array_equal(curr_indices, prev_indices)
             prev_indices = curr_indices
