@@ -1,34 +1,47 @@
-# [A Metric Learning Reality Check](https://arxiv.org/abs/2003.08505)
+<h1 align="center">
+ <a href="https://arxiv.org/abs/2003.08505">A Metric Learning Reality Check</a>
+</h2>
+<p align="center">
+
 
 ## [Benchmark results (in progress)](https://drive.google.com/open?id=1Y_stkiqlHA7HTMNrhyPCnYhR0oevphRR): 
 - [Spreadsheet #1: Train/val 50/50](https://docs.google.com/spreadsheets/d/1kiJ5rKmneQvnYKpVO9vBFdMDNx-yLcXV2wbDXlb-SB8/edit?usp=sharing)
 - [Spreadsheet #2: 4-fold cross validation, test on 2nd-half of classes](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing)
 
-## See [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning) for a list of currently available losses, miners, samplers, training methods, and testing methods.
-
-## Why use this tool?
-1. Flexibility and power:
-    - Configure most aspects of your experiment easily with config files and/or the command-line. Extend existing config files by merging them with new ones, or by merging/overriding config options via the command line.
-    - Mix and match losses, mining functions, samplers, and training methods.
-2. Detailed record keeping:
-    - View in-depth information about the training process on Tensorboard, and save data in sqlite and csv format.
-    - View the history (if any) of config options that were changed during the course of an experiment. 
-3. Better performance metrics
-    - Use metrics that are more informative than Recall@1,2,4,8.
-    - Measure accuracy on multiple class-based train/val/test splits.
+## Benefits of this library
+1. Highly configurable
+    - Use the default configs files, merge in your own, or override options via the command line.
+2. Extensive logging
+    - View experiment data in tensorboard, csv, and sqlite format.
+3. Easy hyperparameter optimization
+    - Simply append ~BAYESIAN~ to the hyperparameters you want to optimize.
+4. Customizable
+    - Register your own losses, miners, datasets etc. with a simple function call.
 
 ## Installation
-```python
+```
 pip install powerful-benchmarker
+pip install pytorch-metric-learning==0.9.82.dev0
 ```
 
-## Example usage
-See [run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py):
-- Set the default value for ```--pytorch_home``` to where you want to save downloaded pretrained models.
-- Set the default value for ```--dataset_root``` to where your datasets are located. 
-- Set the default value for ```--root_experiment_folder``` flag to where you want all experiment data to be saved.
+## Usage
 
-## Organize the datasets (after downloading them)
+### Set default flags
+
+The easiest way to get started is to download the [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py). Then change the default values for the following flags:
+
+- pytorch_home is where you want to save downloaded pretrained models.
+- dataset_root is where your datasets are located.
+- root_experiment_folder is where you want all experiment data to be saved.
+
+
+### Download and organize the datasets
+Download the datasets from here:
+- [CUB200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html)
+- [Cars196](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
+- [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
+
+Organize them as follows:
 ```
 <dataset_root>
 |-cub2011
@@ -43,14 +56,9 @@ See [run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/e
   |-cabinet_final
   ...
 ```
-Download the datasets here:
-- [CUB200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html)
-- [Cars196](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
-- [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
 
-
-## Try a basic command
-The following command will run an experiment using the default config files in the configs folder.
+### Try a basic command
+The following command will run an experiment using the [default config files](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker/configs)
 ```
 python run.py --experiment_name test1 
 ```
@@ -67,57 +75,31 @@ Experiment data is saved in the following format:
     |-config_transforms.yaml
   |-<split scheme name>
     |-saved_models
-    |-saved_pkls
+    |-saved_csvs
     |-tensorboard_logs
   |-meta_logs
-    |-saved_pkls
+    |-saved_csvs
     |-tensorboard_logs
 ```
-To view experiment data, go to the parent of ```root_experiment_folder``` and start tensorboard: 
-```
-tensorboard --logdir <root_experiment_folder>
-```
-Then in your browser, go to ```localhost:6006``` to see things like loss histories, optimizer learning rates, and train/val accuracy. The tensorboard also includes other interesting information that can help you understand the training process. For example, taken alone, this contrastive loss history plot makes it look like training never progressed:  
 
-![loss_history_example](readme_imgs/loss_history_example.png)
-
-But take a look at the number of pairs that violate the margin:
-
-![nonzero_pairs_example](readme_imgs/nonzero_pairs_example.png)
-
-And look at the number of hard postive and hard negative pairs that the miner is able to extract:
-
-![miner_info_example](readme_imgs/miner_info_example.png)
-
-To learn more about where this info comes from, check out [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning) and [record-keeper](https://github.com/KevinMusgrave/record-keeper)
-
-In addition to tensorboard, all experiment data is automatically saved in pickle and CSV format in the ```saved_pkls``` subfolder.
-
-## Override config options at the command line
-The default config files use a batch size of 128. What if you want to use a batch size of 256? Just write the flag at the command line:
+### Override config options at the command line
+The default config files use a batch size of 32. What if you want to use a batch size of 256? Just write the flag at the command line:
 ```
 python run.py --experiment_name test2 --batch_size 256
 ```
-All options in the config files can be overriden via the command line. This includes nested config options. For example, the default setting for ```mining_funcs``` (located in ```config/config_loss_and_miners/default.yaml```) is:
-```yaml
-mining_funcs:
-  post_gradient_miner: 
-    MultiSimilarityMiner: 
-      epsilon: 0.1
-```
-If you want to use PairMarginMiner instead, you can do:
+All options in the config files can be overriden via the command line. This includes nested config options.
 ```
 python run.py \
 --experiment_name test2 \
---mining_funcs~OVERRIDE~ {post_gradient_miner: PairMarginMiner: {pos_margin: 0.5, neg_margin: 0.5}}}
+--mining_funcs {tuple_miner: {PairMarginMiner: {pos_margin: 0.5, neg_margin: 0.5}}}
 ```
-Or if you don't want to use a miner at all:
+The ```~OVERRIDE~``` suffix is required to completely override complex config options. For example, the following overrides the default loss function:
 ```
 python run.py \
---experiment_name test2 \
---mining_funcs~OVERRIDE~ {}
+--experiment_name test1 \
+--loss_funcs {metric_loss~OVERRIDE~: {ArcFaceLoss: {margin: 30, scale: 64, embedding_size: 128}}}
 ```
-The ```~OVERRIDE~``` suffix is required to completely override complex config options. The reason is that by default, complex options are merged. For example, the default optimizers are:
+Leave out the ```~OVERRIDE~``` suffix if you want to merge options. For example, the default optimizers are:
 ```
 optimizers:
   trunk_optimizer:
@@ -129,23 +111,21 @@ optimizers:
       lr: 0.00001
       weight_decay: 0.00005
 ```
-If you want to add an optimizer for your loss function's parameters, just exclude the ```~OVERRIDE~``` suffix.
+We can add an optimizer for our loss function's parameters
 ```
 python run.py \
---experiment_name test2 \
+--experiment_name test1 \
 --optimizers {metric_loss_optimizer: {SGD: {lr: 0.01}}} 
 ```
-Now the ```optimizers``` parameter contains 3 optimizers because the command line flag was merged with the flag in the yaml file. 
 
-What if you want to change the learning rate of the trunk_optimizer, but keep all other parameters the same?
+We can change the learning rate of the trunk_optimizer, but keep all other parameters the same:
 ```
 python run.py \
---experiment_name test2 \
+--experiment_name test1 \
 --optimizers {trunk_optimizer: {Adam: {lr: 0.01}}} 
 ```
-Now trunk_optimizer has lr set to 0.01, but it still has weight_decay set to 0.00005 as specified in the config file.
 
-What if you want to make the trunk_optimizer use RMSprop but you want to leave embedder_optimizer to the default setting? In this case, append the ```~OVERRIDE~``` suffix to trunk_optimizer.
+Or we can make trunk_optimizer use RMSprop, but leave embedder_optimizer to the default setting: 
 ```
 python run.py \
 --experiment_name test2 \
