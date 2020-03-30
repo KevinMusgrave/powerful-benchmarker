@@ -85,7 +85,7 @@ Experiment data is saved in the following format:
 ### Override config options at the command line
 The default config files use a [batch size of 32](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_models/default.yaml). What if you want to use a batch size of 256? Just write the flag at the command line:
 ```
-python run.py --experiment_name test2 --batch_size 256
+python run.py --experiment_name test1 --batch_size 256
 ```
 Complex options (i.e. nested dictionaries) can be specified at the command line:
 ```
@@ -121,26 +121,21 @@ python run.py \
 --optimizers {trunk_optimizer~OVERRIDE~: {Adam: {lr: 0.01}}} 
 ```
 
-## Combine yaml files at the command line
-The config files are currently separated into 6 folders, for readability. Suppose you want to try Deep Adversarial Metric Learning. You can write a new yaml file in the config_general folder that contains the necessary parameters. But there is no need to rewrite generic parameters like pytorch_home and num_epochs_train. Instead, just tell the program to use both the default config file and your new config file:
+### Combine yaml files at the command line
+The following merges the ```with_cars196``` config file into the ```default``` config file, in the ```config_general``` category.
 ```
-python run.py --experiment_name test3 --config_general default daml
+python run.py --experiment_name test1 --config_general default with_cars196
 ```
-With this command, ```configs/config_general/default.yaml``` will be loaded first, and then ```configs/config_general/daml.yaml``` will be merged into it. 
+This is convenient when you want to change a few settings (specified in ```with_cars196```), and keep all the other options unchanged (specified in ```default```). You can specify any number of config files to merge, and they get loaded and merged in the order that you specify.
 
-It turns out that [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning) allows you to run deep adversarial metric learning with a classifier layer. So you can write another yaml file containing the classifier layer parameters and optimizer, and then specify it on the command line:
+### Resume training
+The following resumes training for the ```test1``` experiment:
 ```
-python run.py --experiment_name test4 --config_general default daml train_with_classifier
-```
-
-## Resume training
-To resume training from the most recently saved model, you just need to specify ```--experiment_name``` and ```--resume_training```.
-```
-python run.py --experiment_name test4 --resume_training
+python run.py --experiment_name test1 --resume_training
 ```
 Let's say you finished training for 100 epochs, and decide you want to train for another 50 epochs, for a total of 150. You would run:
 ```
-python run.py --experiment_name test4 --resume_training --num_epochs_train 150
+python run.py --experiment_name test1 --resume_training --num_epochs_train 150
 ```
 Now in your experiments folder you'll see the original config files, and a new folder starting with ```resume_training```.
 ```
@@ -154,7 +149,7 @@ Now in your experiments folder you'll see the original config files, and a new f
 ```
 This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. 
 
-The underscore delimited numbers in the folder name, indicate which models were loaded for each [split scheme](#split-schemes). For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named ```resume_training_config_diffs_50_30_0```.
+The underscore delimited numbers in the folder name indicate which models were loaded for each [split scheme](#split-schemes). For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named ```resume_training_config_diffs_50_30_0```.
 
 ## Reproducing benchmark results
 To reproduce an experiment from the benchmark spreadsheets, use the ```--reproduce_results``` flag:
