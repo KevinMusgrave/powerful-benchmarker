@@ -193,7 +193,7 @@ When doing cross validation, a new set of meta records will be created. The meta
 ### Bayesian optimization to tune hyperparameters
 You can use bayesian optimization using the same [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py). In your config files or at the command line, append ```~BAYESIAN~``` to any parameter that you want to tune, followed by a lower and upper bound in square brackets. If your parameter operates on a log scale (for example, learning rates), then append ```~LOG_BAYESIAN~```. You must also specify the number of iterations with the ```--bayes_opt_iters``` command line flag.
 
-Here is an example script which uses bayesian optimization to tune 3 hyperparameters for the multi similarity loss, and 1 hyperparameter for the multi similarity miner.
+Here is an example script which uses bayesian optimization to tune 3 hyperparameters for the multi similarity loss.
 ```
 python run.py --bayes_opt_iters 50 \
 --loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~LOG_BAYESIAN~: [0.01, 100], beta~LOG_BAYESIAN~: [0.01, 100], base~BAYESIAN~: [0, 1]}}} \
