@@ -149,9 +149,9 @@ Now in your experiments folder you'll see the original config files, and a new f
 ```
 This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file ```config_general.yaml``` with a single line: ```num_epochs_train: 150```. 
 
-The underscore delimited numbers in the folder name indicate which models were loaded for each [split scheme](#split-schemes). For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named ```resume_training_config_diffs_50_30_0```.
+The underscore delimited numbers in the folder name indicate which models were loaded for each [split scheme](#split-schemes-and-cross-validation). For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named ```resume_training_config_diffs_50_30_0```.
 
-## Reproducing benchmark results
+### Reproducing benchmark results
 To reproduce an experiment from the benchmark spreadsheets, use the ```--reproduce_results``` flag:
 1. In the benchmark spreadsheet, click on the google drive link under the "config files" column.
 2. Download the folders you want (for example ```cub200_old_approach_triplet_batch_all```), into some folder on your computer. For example, I downloaded into ```/home/tkm45/experiments_to_reproduce```
@@ -161,17 +161,17 @@ python run.py --reproduce_results /home/tkm45/experiments_to_reproduce/cub200_ol
 --experiment_name cub200_old_approach_triplet_batch_all_reproduced
 ```
 
-## Evaluation options
-By default, your model will be saved and evaluated on the training and validation sets every ```save_interval``` epochs.
+### Evaluation options
+By default, your model will be saved and evaluated on the validation set every ```save_interval``` epochs.
 
 To get accuracy for specific splits, use the ```--splits_to_eval``` flag and pass in a space-delimited list of split names. For example ```--splits_to_eval train test```
 
 To run evaluation only, use the ```--evaluate``` flag.
 
-## Split schemes and cross validation
+### Split schemes and cross validation
 One weakness of many metric-learning papers is that they have been training and testing on the same handful of datasets for years. They have also been splitting data into a 50/50 train/test split scheme, instead of train/val/test. This has likely lead to overfitting on the "test" set, as people have tuned hyperparameters and created algorithms with direct feedback from the "test" set.
 
-To remedy this situation, this benchmarker allows the user to specify the split scheme with the ```test_set_specs``` and ```num_cross_validation_folds``` options. Here's an example config:
+To remedy this situation, this benchmarker allows the user to specify the split scheme. Here's an example config:
 ```yaml
 test_size: 0.5
 test_start_idx: 0.5
@@ -179,7 +179,7 @@ num_training_partitions: 10
 num_training_sets: 5
 ```
 Translation:
-- The test set consists of classes with labels in ```[num_labels * start_idx, num_labels * (start_idx+size)]```. Note that if we set start_idx to 0.9, the range would wrap around to the beginning (0.9 to 1, 0 to 0.4). 
+- The test set consists of classes with labels in ```[num_labels * test_start_idx, num_labels * (test_start_idx + test_size)]```. Note that if we set ```test_start_idx``` to 0.9, the range would wrap around to the beginning (0.9 to 1, 0 to 0.4). 
 - The remaining classes will be split into 10 equal sized partitions. 
 - 5 of those partitions will be used for training. In other words, 5-fold cross validation will be performed, but the size of the partitions will be the same as if 10-fold cross validation was being performed.
 
@@ -187,30 +187,28 @@ When evaluating the cross-validated models, the best model from each fold will b
 
 If instead you still want to use the old 50/50 train/test split, then set ```special_split_scheme_name``` to ```old_approach```. Otherwise, leave it as ```null```. 
 
-## Meta logs
+### Meta logs
 When doing cross validation, a new set of meta records will be created. The meta records show the average of the best accuracies of your training runs. You can find these records on tensorboard and in the meta_logs folder.
 
-## Bayesian optimization to tune hyperparameters
-**This requires the [Ax package](https://github.com/facebook/Ax), which can be intalled using pip**
-
-You can use bayesian optimization via the ```run_bayesian_optimization.py``` script. In your config files or at the command line, append ```~BAYESIAN~``` to any parameter that you want to tune, followed by a lower and upper bound in square brackets. If your parameter operates on a log scale (for example, learning rates), then append ```~LOG_BAYESIAN~```. You must also specify the number of iterations with the ```--bayesian_optimization_n_iter``` command line flag.
+### Bayesian optimization to tune hyperparameters
+You can use bayesian optimization using the same [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py). In your config files or at the command line, append ```~BAYESIAN~``` to any parameter that you want to tune, followed by a lower and upper bound in square brackets. If your parameter operates on a log scale (for example, learning rates), then append ```~LOG_BAYESIAN~```. You must also specify the number of iterations with the ```--bayes_opt_iters``` command line flag.
 
 Here is an example script which uses bayesian optimization to tune 3 hyperparameters for the multi similarity loss, and 1 hyperparameter for the multi similarity miner.
 ```
-python run_bayesian_optimization.py --bayesian_optimization_n_iter 50 \
---loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~BAYESIAN~: [0.01, 50], beta~BAYESIAN~: [0.01, 50], base~BAYESIAN~: [0, 1]}}} \
---mining_funcs~OVERRIDE~ {post_gradient_miner: {MultiSimilarityMiner: {epsilon~BAYESIAN~: [0, 1]}}} \
---experiment_name cub200_test5050_multi_similarity_with_ms_miner \
---root_experiment_folder /home/tkm45/experiments/cub200_test5050_multi_similarity_with_ms_miner
+python run.py --bayes_opt_iters 50 \
+--loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~LOG_BAYESIAN~: [0.01, 100], beta~LOG_BAYESIAN~: [0.01, 100], base~BAYESIAN~: [0, 1]}}} \
+--experiment_name cub_bayes_opt \
 ```
 
-Note that you may want to set ```root_experiment_folder``` differently from usual, because every step in bayesian optimization will create a new experiment folder with the following format:
+If you stop and want to resume bayesian optimization, simply use ```run.py``` with the same ```experiment_name``` you were using before. (Do not use the ```resume_training``` flag.) 
 
-```<root_experiment_folder> / <experiment_name><iteration>```
+You can also run a number of reproductions for the best parameters, so that you can obtain a confidence interval for your results. Use the ```reproductions``` flag, and pass in the number of reproductions you want to perform at the end of bayesian optimization.
 
-The bayesian optimizer will also save logs in ```root_experiment_folder```.
+```
+python run.py --bayes_opt_iters 50 --reproductions 10 \
+--experiment_name cub_bayes_opt \
+```
 
-If you stop and want to resume bayesian optimization, simply use ```run_bayesian_optimization.py``` with the same ```root_experiment_folder``` and ```experiment_name``` you were using before. (Do not use the ```resume_training``` flag.) 
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
