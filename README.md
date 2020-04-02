@@ -209,6 +209,41 @@ python run.py --bayes_opt_iters 50 --reproductions 10 \
 --experiment_name cub_bayes_opt \
 ```
 
+### Register your own classes and modules
+By default, the API gives you access to losses/miners/datasets/optimizers/schedulers/trainers etc that are available in powerful-benchmarker, PyTorch, and pytorch-metric-learning.
+
+Let's say you make your own loss and mining functions, and you'd like to have access to them via the API. You can accomplish this by replacing the last two lines of the [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py) with this:
+
+```python
+from pytorch_metric_learning import losses, miners
+
+# your custom loss function
+class YourLossFunction(losses.BaseMetricLossFunction):
+   ...
+
+# your custom mining function
+class YourMiningFunction(miners.BaseTupleMiner):
+   ...
+
+r = runner(**(args.__dict__))
+
+# make the runner aware of them
+r.register("loss", YourLossFunction)
+r.regstier("miner", YourMiningFunction)
+r.run()
+```
+
+Now you can access your custom classes just like any other class:
+```yaml
+loss_funcs:
+  metric_loss: 
+    YourLossFunction:
+
+mining_funcs:
+  tuple_miner:
+    YourMiningFunction:
+```
+
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
