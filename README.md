@@ -229,7 +229,7 @@ r = runner(**(args.__dict__))
 
 # make the runner aware of them
 r.register("loss", YourLossFunction)
-r.regstier("miner", YourMiningFunction)
+r.register("miner", YourMiningFunction)
 r.run()
 ```
 
@@ -242,6 +242,13 @@ loss_funcs:
 mining_funcs:
   tuple_miner:
     YourMiningFunction:
+```
+
+If you have a module containing multiple classes and you want to register all those classes, you can simply register the module:
+```python
+import YourModuleOfLosses
+
+r.register("loss", YourModuleOfLosses)
 ```
 
 
