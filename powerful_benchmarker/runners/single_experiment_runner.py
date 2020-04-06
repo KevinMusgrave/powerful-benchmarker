@@ -121,7 +121,7 @@ class SingleExperimentRunner:
         parser.add_argument("--experiment_name", type=str, required=True)
         parser.add_argument("--resume_training", action="store_true")
         parser.add_argument("--evaluate", action="store_true")
-        parser.add_argument("--splits_to_eval", nargs="+", type=str, default=None)
+        parser.add_argument("--splits_to_eval", nargs="+", type=str, default=["val"])
         parser.add_argument("--reproduce_results", type=str, default=None)
         for c in self.config_foldernames:
             parser.add_argument("--%s" % c, nargs="+", type=str, required=False, default=["default"])

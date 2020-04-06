@@ -1,6 +1,6 @@
 optimizers:  
   metric_loss_optimizer:
     RMSprop:
-      lr: 0.000001
+      lr~LOG_BAYESIAN~: [0.000001, 1]
       weight_decay: 0.0001
       momentum: 0.9
