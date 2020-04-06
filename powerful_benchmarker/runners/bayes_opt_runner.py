@@ -112,6 +112,7 @@ class BayesOptRunner(SingleExperimentRunner):
         self.test_model(best_sub_experiment_name)
         self.reproduce_results(best_sub_experiment_name)
         self.create_accuracy_report(best_sub_experiment_name)
+        logging.info("##### FINISHED #####")
 
 
     def get_parameters_and_trial_index(self, ax_client, sub_experiment_name):
