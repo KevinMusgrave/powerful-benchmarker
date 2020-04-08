@@ -86,6 +86,7 @@ class BayesOptRunner(SingleExperimentRunner):
         self.accuracy_report_detailed_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report_detailed.yaml")
         self.accuracy_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report.yaml")
         self.bayes_opt_table_name = "bayes_opt"
+        self.sobol_steps = 5
 
     def set_YR(self):
         self.YR, self.bayes_params = self.read_yaml_and_find_bayes()
@@ -116,14 +117,18 @@ class BayesOptRunner(SingleExperimentRunner):
 
 
     def get_parameters_and_trial_index(self, ax_client, sub_experiment_name):
-        parameters, trial_index = ax_client.get_next_trial()
         if os.path.isdir(self.get_sub_experiment_path(sub_experiment_name)):
             recent = c_f.load_yaml(self.most_recent_parameters_filename)
             recent_parameters, recent_trial_index = recent["parameters"], recent["trial_index"]
-            assert parameters == recent_parameters
-            assert trial_index == recent_trial_index
+            if recent_trial_index < self.sobol_steps: # sobol generation is deterministic
+                parameters, trial_index = ax_client.get_next_trial()
+                assert parameters == recent_parameters
+                assert trial_index == recent_trial_index
+            else:
+                parameters, trial_index = ax_client.attach_trial(recent_parameters)
             experiment_func = self.resume_training
         else:
+            parameters, trial_index = ax_client.get_next_trial()
             c_f.write_yaml(self.most_recent_parameters_filename, {"parameters": parameters, "trial_index": trial_index}, open_as='w')
             experiment_func = self.run_new_experiment
         return parameters, trial_index, experiment_func
@@ -154,7 +159,10 @@ class BayesOptRunner(SingleExperimentRunner):
 
     def update_records(self, record_keeper, ax_client, iteration):
         df_as_dict = ax_client.get_trials_data_frame().to_dict()
-        most_recent = {k.replace('/','_'):v[iteration] for k,v in df_as_dict.items()}
+        trial_index_key = [k for k,v in df_as_dict["trial_index"].items() if v==iteration]
+        assert len(trial_index_key)==1
+        trial_index_key = trial_index_key[0]
+        most_recent = {k.replace('/','_'):v[trial_index_key] for k,v in df_as_dict.items()}
         record_keeper.update_records(most_recent, global_iteration=iteration, input_group_name_for_non_objects=self.bayes_opt_table_name)
         record_keeper.save_records()
 
@@ -238,7 +246,10 @@ class BayesOptRunner(SingleExperimentRunner):
         model = Models.GPEI(experiment=ax_client.experiment, data=ax_client.experiment.fetch_data())
         html_elements = []
         html_elements.append(plot_config_to_html(ax_client.get_optimization_trace()))
-        html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.YR.args.eval_primary_metric)))
+        try:
+            html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.YR.args.eval_primary_metric)))
+        except IndexError:
+            logging.warning("Can't create contour plot with only 1 parameter")
         with open(os.path.join(self.bayes_opt_root_experiment_folder, "optimization_plots.html"), 'w') as f:
             f.write(render_report_elements(self.experiment_name, html_elements))
 
