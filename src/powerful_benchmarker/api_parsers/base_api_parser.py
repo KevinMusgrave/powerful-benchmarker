@@ -149,7 +149,7 @@ class BaseAPIParser:
             o, s, g = self.pytorch_getter.get_optimizer(param_source, yaml_dict=v)
             logging.info("%s\n%s" % (k, o))
             if o is not None: self.optimizers[k] = o
-            if s is not None: self.lr_schedulers[basename + "_scheduler"] = s
+            if s is not None: self.lr_schedulers = {"%s_%s"%(basename, k):v for k,v in s.items()}
             if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
 
     def set_split_manager(self):

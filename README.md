@@ -20,8 +20,7 @@
 
 ## Installation
 ```
-pip install powerful-benchmarker
-pip install pytorch-metric-learning==0.9.82.dev2
+pip install powerful-benchmarker pytorch-metric-learning==0.9.82.dev3
 ```
 
 ## Usage
