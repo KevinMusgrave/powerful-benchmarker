@@ -8,7 +8,6 @@ import itertools
 
 import numpy as np
 import torch
-from torch.autograd import Variable
 import yaml
 from easy_module_attribute_getter import utils as emag_utils
 import logging

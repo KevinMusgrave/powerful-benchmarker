@@ -4,7 +4,6 @@ logging.info("Importing packages in single_experiment_runner")
 from easy_module_attribute_getter import YamlReader, PytorchGetter
 from ..utils import common_functions as c_f, dataset_utils as d_u
 import argparse
-from .. import api_parsers
 import glob
 import os
 logging.info("Done importing packages in single_experiment_runner")
@@ -39,6 +38,7 @@ class SingleExperimentRunner:
         from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
         from .. import architectures
         from .. import datasets
+        from .. import api_parsers
         self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
         self.pytorch_getter.register('model', architectures.misc_models)
         self.pytorch_getter.register('loss', losses)
@@ -48,6 +48,7 @@ class SingleExperimentRunner:
         self.pytorch_getter.register('trainer', trainers)
         self.pytorch_getter.register('tester', testers)
         self.pytorch_getter.register('dataset', datasets)
+        self.pytorch_getter.register('api_parser', api_parsers)
 
     def set_YR(self):
         self.YR = self.setup_yaml_reader()
@@ -68,7 +69,8 @@ class SingleExperimentRunner:
             self.run_new_experiment(self.YR)
 
     def start_experiment(self, args):
-        api_parser = getattr(api_parsers, "API"+args.training_method)(args, self.pytorch_getter, self.global_db_path)
+        api_parser_kwargs = {"args": args, "pytorch_getter": self.pytorch_getter, "global_db_path": self.global_db_path}
+        api_parser = self.pytorch_getter.get('api_parser', class_name="API"+args.training_method, params=api_parser_kwargs)
         run_output = api_parser.run()
         self.eval_record_group_dicts = api_parser.get_eval_record_name_dict(return_all=True)
         del api_parser.tester_obj
