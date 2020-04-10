@@ -83,7 +83,7 @@ Experiment data is saved in the following format:
 ```
 
 ### Override config options at the command line
-The default config files use a [batch size of 32](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_models/default.yaml). What if you want to use a batch size of 256? Just write the flag at the command line:
+The default config files use a [batch size of 32](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_models/default.yaml). What if you want to use a batch size of 256? Just write the flag at the command line:
 ```
 python run.py --experiment_name test1 --batch_size 256
 ```
@@ -93,7 +93,7 @@ python run.py \
 --experiment_name test1 \
 --mining_funcs {tuple_miner: {PairMarginMiner: {pos_margin: 0.5, neg_margin: 0.5}}}
 ```
-The ```~OVERRIDE~``` suffix is required to completely override complex config options. For example, the following overrides the [default loss function](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_loss_and_miners/default.yaml):
+The ```~OVERRIDE~``` suffix is required to completely override complex config options. For example, the following overrides the [default loss function](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_loss_and_miners/default.yaml):
 ```
 python run.py \
 --experiment_name test1 \
@@ -105,7 +105,7 @@ python run.py \
 --experiment_name test1 \
 --optimizers {metric_loss_optimizer: {SGD: {lr: 0.01}}} 
 ```
-This will be included along with the [default optimizers](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/config_optimizers/default.yaml). 
+This will be included along with the [default optimizers](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_optimizers/default.yaml). 
 
 We can change the learning rate of the trunk_optimizer, but keep all other parameters the same:
 ```
@@ -247,15 +247,46 @@ mining_funcs:
 If you have a module containing multiple classes and you want to register all those classes, you can simply register the module:
 ```python
 import YourModuleOfLosses
-
 r.register("loss", YourModuleOfLosses)
 ```
+
+Registering your own trainer is a bit more involved, because you need to also create an associated API parser. The name of the api parser should be ```APIParser<name of your training method>```. 
+
+Here's an example where I make a trainer that extends ```trainers.MetricLossOnly```, and takes in an additional argument ```foo```. In order to pass this in, the API parser needs to add ```foo``` to the trainer kwargs, and this is done in the ```get_trainer_kwargs``` method.
+
+```python
+from pytorch_metric_learning import trainers
+from powerful_benchmarker import api_parsers
+
+class YourTrainer(trainers.MetricLossOnly):
+    def __init__(self, foo, **kwargs):
+	super().__init__(**kwargs)
+	self.foo = foo
+	print("foo = ", self.foo)
+
+
+class APIYourTrainer(api_parsers.BaseAPIParser):
+    def get_foo(self):
+        return "hello"
+
+    def get_trainer_kwargs(self):
+        trainer_kwargs = super().get_trainer_kwargs()
+        trainer_kwargs["foo"] = self.get_foo()
+        return trainer_kwargs
+
+r = runner(**(args.__dict__))
+r.register("trainer", YourTrainer)
+r.register("api_parser", APIYourTrainer)
+r.run()
+```
+
+If your trainer's ```__init__``` arguments are identical to the one you're extending, then you can just set ```APIYourTrainer = api_parsers.BaseAPIParser```. (Note that ```BaseAPIParser``` is the same as ```APIMetricLossOnly```)
 
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
 
-### [config_general](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_general/default.yaml)
+### [config_general](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_general/default.yaml)
 ```yaml
 training_method: <type> #options: MetricLossOnly, TrainWithClassifier, CascadedEmbeddings, DeepAdversarialMetricLearning
 testing_method: <type> #options: GlobalEmbeddingSpaceTester, WithSameParentLabelTester
@@ -279,7 +310,7 @@ check_untrained_accuracy: <boolean>
 patience: <int> #Training will stop if validation accuracy has not improved after this number of epochs. If null, then it is ignored.
 
 ```
-### [config_models](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_models/default.yaml)
+### [config_models](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_models/default.yaml)
 ```yaml
 models:
   trunk:
@@ -293,7 +324,7 @@ models:
 batch_size: <number>
 freeze_batchnorm: <boolean>
 ```
-### [config_loss_and_miners](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_loss_and_miners/default.yaml)
+### [config_loss_and_miners](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_loss_and_miners/default.yaml)
 ```yaml 
 loss_funcs:
   <name>: 
@@ -314,7 +345,7 @@ mining_funcs:
       ...
   ...
 ```
-### [config_optimizers](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_optimizers/default.yaml)
+### [config_optimizers](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_optimizers/default.yaml)
 ```yaml
 optimizers:
   trunk_optimizer:
@@ -327,7 +358,7 @@ optimizers:
       ...
   ...
 ```
-### [config_transforms](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_transforms/default.yaml)
+### [config_transforms](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_transforms/default.yaml)
 ```yaml
 transforms:
   train:
@@ -342,7 +373,7 @@ transforms:
       ...
     ...
 ```
-### [config_eval](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/configs/config_eval/default.yaml)
+### [config_eval](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/src/powerful_benchmarker/configs/config_eval/default.yaml)
 ```yaml
 eval_reference_set: <name> #options: compared_to_self, compared_to_sets_combined, compared_to_training_set
 eval_normalize_embeddings: <boolean>
