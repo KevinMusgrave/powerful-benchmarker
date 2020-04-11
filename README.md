@@ -295,7 +295,7 @@ dataset:
     <kwarg>: <value>
     ...
 num_epochs_train: <how long to train for>
-iterations_per_epoch: <how long an "epoch" lasts>
+iterations_per_epoch: <Optional. If set, an epoch will simply be a fixed number of iterations. Or you can set this to null or 0, and it will be ignored.>
 save_interval: <how often (in number of epochs) models will be saved and evaluated>
 special_split_scheme_name: <string> #options: old_approach or predefined. Leave as null if you want to do cross validation.
 test_size: <number> #number in (0, 1), which is the percent of classes that will be used in the test set.
