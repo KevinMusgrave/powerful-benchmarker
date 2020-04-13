@@ -6,3 +6,6 @@ eval_primary_metric: mean_average_precision_at_r
 eval_dataloader_num_workers: 2
 eval_pca: null
 eval_size_of_tsne: 0
+eval_accuracy_calculator:
+  AccuracyCalculator:
+    

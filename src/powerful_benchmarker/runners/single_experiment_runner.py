@@ -35,7 +35,7 @@ class SingleExperimentRunner:
         self.pytorch_getter.register(module_type, module)
 
     def init_pytorch_getter(self):
-        from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers
+        from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers, utils
         from .. import architectures
         from .. import datasets
         from .. import api_parsers
@@ -49,6 +49,7 @@ class SingleExperimentRunner:
         self.pytorch_getter.register('tester', testers)
         self.pytorch_getter.register('dataset', datasets)
         self.pytorch_getter.register('api_parser', api_parsers)
+        self.pytorch_getter.register('accuracy_calculator', utils.AccuracyCalculator)
 
     def set_YR(self):
         self.YR = self.setup_yaml_reader()

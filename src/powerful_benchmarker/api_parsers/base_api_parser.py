@@ -4,7 +4,6 @@ from ..utils import common_functions as c_f, split_manager
 from pytorch_metric_learning import losses
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
-import pytorch_metric_learning.utils.calculate_accuracies as pml_ca
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
@@ -137,6 +136,9 @@ class BaseAPIParser:
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 
+    def get_accuracy_calculator(self):
+        return self.pytorch_getter.get("accuracy_calculator", yaml_dict=self.args.eval_accuracy_calculator)
+
     def set_optimizers(self):
         self.optimizers, self.lr_schedulers, self.gradient_clippers = {}, {}, {}
         for k, v in self.args.optimizers.items():
@@ -228,7 +230,7 @@ class BaseAPIParser:
             loss_params["num_classes"] = self.split_manager.get_num_labels()
             logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
         if "regularizer" in loss_params:
-            loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params[k])
+            loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
         if "num_class_per_param" in loss_params and loss_params["num_class_per_param"]:
             loss_params["num_class_per_param"] = self.split_manager.get_num_labels()
             logging.info("Passing %d as num_class_per_param to the loss function"%loss_params["num_class_per_param"])
@@ -383,7 +385,8 @@ class BaseAPIParser:
             "size_of_tsne": self.args.eval_size_of_tsne,
             "data_and_label_getter": lambda data: (data["data"], data["label"]),
             "label_hierarchy_level": self.args.label_hierarchy_level,
-            "end_of_testing_hook": self.hooks.end_of_testing_hook 
+            "end_of_testing_hook": self.hooks.end_of_testing_hook,
+            "accuracy_calculator": self.get_accuracy_calculator() 
         }
 
     def get_end_of_epoch_hook(self):
