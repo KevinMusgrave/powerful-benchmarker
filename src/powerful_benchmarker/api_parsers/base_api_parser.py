@@ -320,7 +320,7 @@ class BaseAPIParser:
                 untrained_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, -1)
                 for accuracies, is_trained in [(untrained_accuracies, 0), (best_split_accuracies, 1)]:
                     if len(accuracies) > 0:
-                        accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in pml_ca.METRICS)]
+                        accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in self.tester_obj.accuracy_calculator.get_curr_metrics())]
                         for k in accuracy_keys:
                             self.meta_accuracies[split][is_trained][k][split_scheme_name] = accuracies[0][k]
 
@@ -382,7 +382,6 @@ class BaseAPIParser:
             "data_device": self.device,
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
             "pca": self.args.eval_pca,
-            "size_of_tsne": self.args.eval_size_of_tsne,
             "data_and_label_getter": lambda data: (data["data"], data["label"]),
             "label_hierarchy_level": self.args.label_hierarchy_level,
             "end_of_testing_hook": self.hooks.end_of_testing_hook,
