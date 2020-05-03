@@ -388,8 +388,21 @@ eval_accuracy_calculator:
 ## Acknowledgements
 Thank you to Ser-Nam Lim at Facebook AI, and my research advisor, Professor Serge Belongie. This project began during my internship at Facebook AI where I received valuable feedback from Ser-Nam, and his team of computer vision and machine learning engineers and research scientists.
 
-## Citing this library
-If you'd like to cite powerful-benchmarker in your paper, you can use this bibtex:
+## Citing the benchmark results
+If you'd like to cite the benchmark results, please cite this paper:
+```latex
+@misc{musgrave2020metric,
+    title={A Metric Learning Reality Check},
+    author={Kevin Musgrave and Serge Belongie and Ser-Nam Lim},
+    year={2020},
+    eprint={2003.08505},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+```
+
+## Citing the code
+If you'd like to cite the powerful-benchmarker code, you can use this bibtex:
 ```latex
 @misc{Musgrave2019,
   author = {Musgrave, Kevin and Lim, Ser-Nam and Belongie, Serge},
