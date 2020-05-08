@@ -47,7 +47,7 @@ def latest_sub_experiment_epochs(sub_experiment_dir_dict):
     latest_epochs = {}
     for sub_experiment_name, folders in sub_experiment_dir_dict.items():
         model_folder = folders[0]
-        latest_epochs[sub_experiment_name], _ = pml_cf.latest_version(model_folder, "trunk_*.pth")
+        latest_epochs[sub_experiment_name], _ = pml_cf.latest_version(model_folder)
     return latest_epochs
 
 

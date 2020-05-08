@@ -260,12 +260,16 @@ class BaseAPIParser:
         untrained = suffix == "-1"
         trunk_model = self.get_trunk_model(self.args.models["trunk"])
         if not untrained:
+            if suffix == "best":
+                _, suffix = pml_cf.latest_version(self.model_folder, best=True)
             embedder_model = self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size)
             pml_cf.load_dict_of_models(
                 {"trunk": trunk_model, "embedder": embedder_model},
                 suffix,
                 self.model_folder,
-                self.device
+                self.device,
+                log_if_successful = True,
+                assert_success = True
             )
         else:
             embedder_model = architectures.misc_models.Identity()
@@ -355,7 +359,7 @@ class BaseAPIParser:
         return best_accuracy
 
 
-    def maybe_load_models_and_records(self):
+    def maybe_load_latest_saved_models(self):
         return self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device, best=self.args.resume_training=="best")
 
     def set_models_optimizers_losses(self):
@@ -369,7 +373,8 @@ class BaseAPIParser:
         self.hooks = logging_presets.HookContainer(self.record_keeper, primary_metric=self.args.eval_primary_metric, validation_split_name="val")
         self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
         self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
-        self.epoch = self.maybe_load_models_and_records()
+        if self.is_training():
+            self.epoch = self.maybe_load_latest_saved_models()
         self.set_dataparallel()
         self.set_devices()
 

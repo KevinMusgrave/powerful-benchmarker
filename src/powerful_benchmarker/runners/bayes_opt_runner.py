@@ -104,7 +104,7 @@ class BayesOptRunner(SingleExperimentRunner):
         for i in range(num_explored_points, self.bayes_opt_iters):
             logging.info("Optimization iteration %d"%i)
             sub_experiment_name = self.get_sub_experiment_name(i)
-            parameters, trial_index, experiment_func = self.get_parameters_and_trial_index(ax_client, sub_experiment_name)
+            parameters, trial_index, experiment_func, ax_client = self.get_parameters_and_trial_index(ax_client, sub_experiment_name)
             ax_client.complete_trial(trial_index=trial_index, raw_data=experiment_func(parameters, sub_experiment_name))
             self.save_new_log(ax_client)
             self.update_records(record_keeper, ax_client, i)
@@ -129,18 +129,20 @@ class BayesOptRunner(SingleExperimentRunner):
                 num_sobol_steps = sobol_model.num_trials
             except:
                 num_sobol_steps = sobol_model.num_arms
-            if recent_trial_index < num_sobol_steps: # sobol generation is deterministic
+            if recent_trial_index < num_sobol_steps: # sobol can be deterministic
                 parameters, trial_index = ax_client.get_next_trial()
-                assert parameters == recent_parameters
-                assert trial_index == recent_trial_index
-            else:
+                matching_assertion = (parameters == recent_parameters) and (trial_index == recent_trial_index)
+            if (recent_trial_index >= num_sobol_steps) or (not matching_assertion):
+                logging.info("Parameter mismatch: reloading Ax client and attaching trial instead.")
+                ax_client = self.get_ax_client()
                 parameters, trial_index = ax_client.attach_trial(recent_parameters)
+                assert trial_index == recent_trial_index
             experiment_func = self.resume_training
         else:
             parameters, trial_index = ax_client.get_next_trial()
             c_f.write_yaml(self.most_recent_parameters_filename, {"parameters": parameters, "trial_index": trial_index}, open_as='w')
             experiment_func = self.run_new_experiment
-        return parameters, trial_index, experiment_func
+        return parameters, trial_index, experiment_func, ax_client
 
 
     def get_sub_experiment_name(self, iteration):
@@ -358,6 +360,7 @@ class BayesOptRunner(SingleExperimentRunner):
         for i in idx_list:
             local_YR = self.get_simplified_yaml_reader("%s_reproduction%d"%(sub_experiment_name, i))
             local_YR.args.reproduce_results = self.get_sub_experiment_path(sub_experiment_name)
+            local_YR.args.resume_training = None
             output = None
             if os.path.isdir(local_YR.args.experiment_folder):
                 local_YR.args.resume_training = self.get_resume_training_value()
