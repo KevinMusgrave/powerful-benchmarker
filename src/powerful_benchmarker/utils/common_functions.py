@@ -47,7 +47,7 @@ def latest_sub_experiment_epochs(sub_experiment_dir_dict):
     latest_epochs = {}
     for sub_experiment_name, folders in sub_experiment_dir_dict.items():
         model_folder = folders[0]
-        latest_epochs[sub_experiment_name] = pml_cf.latest_version(model_folder, "trunk_*.pth") or 0
+        latest_epochs[sub_experiment_name], _ = pml_cf.latest_version(model_folder, "trunk_*.pth")
     return latest_epochs
 
 
@@ -56,7 +56,7 @@ def get_all_resume_training_config_diffs(config_folder, split_scheme_name, num_t
     full_base_path = os.path.join(config_folder, folder_base_name)
     config_diffs = sorted(glob.glob("%s*"%full_base_path))
     if num_training_sets > 1:
-        split_scheme_names = ["%s%d"%(split_scheme,i) for (split_scheme,i) in list(itertools.product(split_scheme_name, range(num_training_sets)))]
+        split_scheme_names = ["%s%d"%(split_scheme_name,i) for i in range(num_training_sets)]
     else:
         split_scheme_names = [split_scheme_name]
     resume_training_dict = {}

@@ -86,11 +86,14 @@ class BayesOptRunner(SingleExperimentRunner):
         self.accuracy_report_detailed_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report_detailed.yaml")
         self.accuracy_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report.yaml")
         self.bayes_opt_table_name = "bayes_opt"
-        self.sobol_steps = 5
+        self.original_config_folder = "%s/original_configs"%(self.bayes_opt_root_experiment_folder)
+        self.set_YR(use_super=False)
 
-    def set_YR(self):
-        self.YR, self.bayes_params = self.read_yaml_and_find_bayes()
-
+    def set_YR(self, use_super=True):
+        if use_super:
+            super().set_YR()
+        else:
+            self.YR, self.bayes_params = self.read_yaml_and_find_bayes()
 
     def run(self):    
         ax_client = self.get_ax_client()
@@ -120,7 +123,13 @@ class BayesOptRunner(SingleExperimentRunner):
         if os.path.isdir(self.get_sub_experiment_path(sub_experiment_name)):
             recent = c_f.load_yaml(self.most_recent_parameters_filename)
             recent_parameters, recent_trial_index = recent["parameters"], recent["trial_index"]
-            if recent_trial_index < self.sobol_steps: # sobol generation is deterministic
+            sobol_model = ax_client._generation_strategy._steps[0]
+            assert sobol_model.model.value == "Sobol"
+            try:
+                num_sobol_steps = sobol_model.num_trials
+            except:
+                num_sobol_steps = sobol_model.num_arms
+            if recent_trial_index < num_sobol_steps: # sobol generation is deterministic
                 parameters, trial_index = ax_client.get_next_trial()
                 assert parameters == recent_parameters
                 assert trial_index == recent_trial_index
@@ -256,7 +265,12 @@ class BayesOptRunner(SingleExperimentRunner):
 
     def read_yaml_and_find_bayes(self):
         YR = self.setup_yaml_reader()
-        YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(**self.determine_where_to_get_yamls(YR.args), max_merge_depth=float('inf'))
+        config_paths = self.get_saved_config_paths(self.original_config_folder) if os.path.isdir(self.original_config_folder) else self.get_root_config_paths(YR.args)
+        if not os.path.isdir(self.original_config_folder):
+            YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths=config_paths, max_merge_depth=float('inf'), merge_argparse=True)
+            c_f.save_config_files(self.original_config_folder, YR.args.dict_of_yamls, False, False, [])
+        else:
+            YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths=config_paths, max_merge_depth=float('inf'), merge_argparse=False)
         bayes_params = []
         set_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
         return YR, bayes_params
@@ -287,7 +301,7 @@ class BayesOptRunner(SingleExperimentRunner):
         try:
             output = super().run_new_experiment(YR)
         except Exception as e:
-            YR.args.resume_training = False
+            YR.args.resume_training = None
             logging.error(repr(e))
             logging.warning("Could not resume training for %s"%YR.args.experiment_name)
             self.delete_sub_experiment_folder(YR.args.experiment_name)
@@ -297,7 +311,7 @@ class BayesOptRunner(SingleExperimentRunner):
 
     def resume_training(self, parameters, sub_experiment_name):
         local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
-        local_YR.args.resume_training = True
+        local_YR.args.resume_training = self.get_resume_training_value()
 
         try:
             loaded_parameters = c_f.load_yaml(self.get_sub_experiment_bayes_opt_filename(local_YR.args.experiment_folder))
@@ -320,6 +334,7 @@ class BayesOptRunner(SingleExperimentRunner):
             for sub_dict in local_YR.args.dict_of_yamls.values():
                 replace_with_optimizer_values(param_path, sub_dict, value)
         local_YR.args.experiment_name = sub_experiment_name
+        local_YR.args.resume_training = None
         self.set_experiment_name_and_place_to_save_configs(local_YR)
         c_f.makedir_if_not_there(local_YR.args.experiment_folder)
         c_f.write_yaml(self.get_sub_experiment_bayes_opt_filename(local_YR.args.experiment_folder), parameters, open_as='w')
@@ -345,8 +360,12 @@ class BayesOptRunner(SingleExperimentRunner):
             local_YR.args.reproduce_results = self.get_sub_experiment_path(sub_experiment_name)
             output = None
             if os.path.isdir(local_YR.args.experiment_folder):
-                local_YR.args.resume_training = True
+                local_YR.args.resume_training = self.get_resume_training_value()
                 output = self.try_resuming(local_YR)
             if output is None:
                 super().reproduce_results(local_YR)
             self.test_model(local_YR.args.experiment_name)
+
+
+    def get_resume_training_value(self):
+        return "latest" if self.YR.args.resume_training is None else self.YR.args.resume_training

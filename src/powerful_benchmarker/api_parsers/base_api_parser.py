@@ -356,7 +356,7 @@ class BaseAPIParser:
 
 
     def maybe_load_models_and_records(self):
-        return self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device)
+        return self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device, best=self.args.resume_training=="best")
 
     def set_models_optimizers_losses(self):
         self.set_model()

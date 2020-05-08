@@ -90,7 +90,7 @@ class SingleExperimentRunner:
             default_configs.append(os.path.join(self.root_config_folder, k, "default.yaml")) #append default config file
         for k in self.config_foldernames:
             experiment_configs.append(os.path.join(configs_folder, "%s.yaml"%k)) #append experiment config file
-        args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0)
+        args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0, merge_argparse=False)
 
         # check if there were config diffs if training was resumed
         if YR.args.special_split_scheme_name:
@@ -104,17 +104,20 @@ class SingleExperimentRunner:
             for sub_folder, num_epochs_dict in resume_training_dict.items():
                 # train until the next config diff was made
                 args.num_epochs_train = num_epochs_dict
+                # remove default configs from dict_of_yamls to avoid saving these as config diffs
+                for d in default_configs:
+                    args.dict_of_yamls.pop(d, None)
                 self.start_experiment(args)
                 # start with a fresh set of args
                 YR = self.setup_yaml_reader()
                 # load the default configs, the experiment specific configs, plus the config diffs 
                 for k in glob.glob(os.path.join(sub_folder, "*")):
                     experiment_configs.append(k)
-                args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0)
-                # remove default configs from dict_of_yamls to avoid saving these as config diffs
-                for d in default_configs:
-                    args.dict_of_yamls.pop(d, None)
-                args.resume_training = True
+                args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0, merge_argparse=False)
+                args.resume_training = "latest"
+        # remove default configs from dict_of_yamls to avoid saving these as config diffs
+        for d in default_configs:
+            args.dict_of_yamls.pop(d, None)
         return self.start_experiment(args)
 
 
@@ -122,7 +125,7 @@ class SingleExperimentRunner:
     def setup_argparser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("--experiment_name", type=str, required=True)
-        parser.add_argument("--resume_training", action="store_true")
+        parser.add_argument("--resume_training", type=str, default=None, choices=["latest", "best"])
         parser.add_argument("--evaluate", action="store_true")
         parser.add_argument("--splits_to_eval", nargs="+", type=str, default=["val"])
         parser.add_argument("--reproduce_results", type=str, default=None)
@@ -142,10 +145,18 @@ class SingleExperimentRunner:
 
     def determine_where_to_get_yamls(self, args):
         if args.resume_training or args.evaluate:
-            config_paths = [os.path.join(args.place_to_save_configs,'%s.yaml'%v) for v in self.config_foldernames]
+            config_paths = self.get_saved_config_paths(args.place_to_save_configs)
         else:
-            config_paths = []
-            for subfolder in self.config_foldernames:
-                for curr_yaml in getattr(args, subfolder):
-                    config_paths.append(os.path.join(self.root_config_folder, subfolder, "%s.yaml"%curr_yaml))
+            config_paths = self.get_root_config_paths(args)
         return {"config_paths": config_paths}
+
+
+    def get_saved_config_paths(self, config_location):
+        return [os.path.join(config_location,'%s.yaml'%v) for v in self.config_foldernames]
+
+    def get_root_config_paths(self, args):
+        config_paths = []
+        for subfolder in self.config_foldernames:
+            for curr_yaml in getattr(args, subfolder):
+                config_paths.append(os.path.join(self.root_config_folder, subfolder, "%s.yaml"%curr_yaml))
+        return config_paths
