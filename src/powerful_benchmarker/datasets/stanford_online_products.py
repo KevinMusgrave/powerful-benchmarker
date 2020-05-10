@@ -20,6 +20,8 @@ class StanfordOnlineProducts(Dataset):
         self.dataset_folder = os.path.join(self.root, "Stanford_Online_Products")
         self.load_labels()
         self.transform = transform
+        assert len(np.unique(self.labels)) == 22634
+        assert self.__len__() == 120053
 
     def __len__(self):
         return len(self.labels)

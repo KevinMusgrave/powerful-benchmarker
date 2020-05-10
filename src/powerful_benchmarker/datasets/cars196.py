@@ -25,6 +25,8 @@ class Cars196(Dataset):
         self.dataset_folder = self.root
         self.load_labels()
         self.transform = transform
+        assert len(np.unique(self.labels)) == 196
+        assert self.__len__() == 16185
 
     def __len__(self):
         return len(self.labels)
