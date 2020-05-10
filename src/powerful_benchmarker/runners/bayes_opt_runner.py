@@ -347,6 +347,7 @@ class BayesOptRunner(SingleExperimentRunner):
         for meta_testing_method in [None, "ConcatenateEmbeddings"]:
             local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
             local_YR.args.evaluate = True
+            local_YR.args.resume_training = None
             local_YR.args.splits_to_eval = ["test"]
             local_YR.args.__dict__["meta_testing_method~OVERRIDE~"] = meta_testing_method
             super().run_new_experiment(local_YR)

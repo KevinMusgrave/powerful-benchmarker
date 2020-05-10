@@ -123,7 +123,7 @@ class SingleExperimentRunner:
 
 
     def setup_argparser(self):
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(allow_abbrev=False)
         parser.add_argument("--experiment_name", type=str, required=True)
         parser.add_argument("--resume_training", type=str, default=None, choices=["latest", "best"])
         parser.add_argument("--evaluate", action="store_true")

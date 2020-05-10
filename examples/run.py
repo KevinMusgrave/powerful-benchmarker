@@ -2,7 +2,7 @@ import logging
 import argparse
 logging.getLogger().setLevel(logging.INFO)
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(allow_abbrev=False)
 parser.add_argument("--pytorch_home", type=str, default="/home/tkm45/NEW_STUFF/pytorch_models")
 parser.add_argument("--dataset_root", type=str, default="/scratch")
 parser.add_argument("--root_experiment_folder", type=str, default="/home/tkm45/NEW_STUFF/experiments")

@@ -15,6 +15,8 @@ import inspect
 import pytorch_metric_learning.utils.common_functions as pml_cf
 import datetime
 import sqlite3
+import tqdm
+import tarfile, zipfile
 
 
 def move_optimizer_to_gpu(optimizer, device):
@@ -123,3 +125,15 @@ def try_getting_db_count(record_keeper, table_name):
 
 def get_datetime():
     return datetime.datetime.now()
+
+
+def extract_progress(compressed_obj):
+    logging.info("Extracting dataset")
+    if isinstance(compressed_obj, tarfile.TarFile):
+        iterable = compressed_obj
+        length = len(compressed_obj.getmembers())
+    elif isinstance(compressed_obj, zipfile.ZipFile):
+        iterable = compressed_obj.namelist()
+        length = len(iterable)
+    for member in tqdm.tqdm(iterable, total=length):
+        yield member

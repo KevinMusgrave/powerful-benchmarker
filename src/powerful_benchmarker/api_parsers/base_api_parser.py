@@ -155,7 +155,11 @@ class BaseAPIParser:
             if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
 
     def set_split_manager(self):
-        chosen_dataset = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, additional_params={"dataset_root":self.args.dataset_root})
+        chosen_dataset, dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
+        dataset_params = copy.deepcopy(dataset_params)
+        if "root" not in dataset_params:
+            dataset_params["root"] = self.args.dataset_root
+        chosen_dataset = chosen_dataset(**dataset_params)
         self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
                                                         test_size=self.args.test_size,
                                                         test_start_idx=self.args.test_start_idx, 
