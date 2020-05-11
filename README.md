@@ -127,13 +127,19 @@ python run.py --experiment_name test1 --config_general default with_cars196
 This is convenient when you want to change a few settings (specified in ```with_cars196```), and keep all the other options unchanged (specified in ```default```). You can specify any number of config files to merge, and they get loaded and merged in the order that you specify.
 
 ### Resume training
-The following resumes training for the ```test1``` experiment:
+The following resumes training for the ```test1``` experiment, using the latest saved models.
 ```
-python run.py --experiment_name test1 --resume_training
+python run.py --experiment_name test1 --resume_training latest
 ```
+
+You can also resume using the model with the best validation accuracy:
+```
+python run.py --experiment_name test1 --resume_training best
+```
+
 Let's say you finished training for 100 epochs, and decide you want to train for another 50 epochs, for a total of 150. You would run:
 ```
-python run.py --experiment_name test1 --resume_training --num_epochs_train 150
+python run.py --experiment_name test1 --resume_training latest --num_epochs_train 150
 ```
 Now in your experiments folder you'll see the original config files, and a new folder starting with ```resume_training```.
 ```
