@@ -7,6 +7,8 @@ from ax.utils.report.render import render_report_elements
 from ax.plot.contour import interact_contour
 from ax.modelbridge.registry import Models
 from ax.core.base_trial import TrialStatus
+from ax.plot.slice import interact_slice
+from ax.plot.helper import get_range_parameters
 import re
 from easy_module_attribute_getter import utils as emag_utils, YamlReader
 import glob
@@ -243,12 +245,12 @@ class BayesOptRunner(SingleExperimentRunner):
 
     def plot_progress(self, ax_client):
         model = Models.GPEI(experiment=ax_client.experiment, data=ax_client.experiment.fetch_data())
-        html_elements = []
-        html_elements.append(plot_config_to_html(ax_client.get_optimization_trace()))
-        try:
+        html_elements = [plot_config_to_html(ax_client.get_optimization_trace())]
+        model_params = get_range_parameters(model)
+        if len(model_params) > 1:
             html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.YR.args.eval_primary_metric)))
-        except IndexError:
-            logging.warning("Can't create contour plot with only 1 parameter")
+        else:
+            html_elements.append(plot_config_to_html(interact_slice(model=model, param_name=model_params[0].name, metric_name=self.YR.args.eval_primary_metric)))
         with open(os.path.join(self.bayes_opt_root_experiment_folder, "optimization_plots.html"), 'w') as f:
             f.write(render_report_elements(self.experiment_name, html_elements))
 
