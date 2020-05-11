@@ -6,6 +6,7 @@ from ax.plot.render import plot_config_to_html
 from ax.utils.report.render import render_report_elements
 from ax.plot.contour import interact_contour
 from ax.modelbridge.registry import Models
+from ax.core.base_trial import TrialStatus
 import re
 from easy_module_attribute_getter import utils as emag_utils, YamlReader
 import glob
@@ -97,14 +98,15 @@ class BayesOptRunner(SingleExperimentRunner):
 
     def run(self):    
         ax_client = self.get_ax_client()
-        num_explored_points = len(ax_client.experiment.trials) if ax_client.experiment.trials else 0
-        is_new_experiment = num_explored_points == 0
+        trials = ax_client.experiment.trials
         record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder)
 
-        for i in range(num_explored_points, self.bayes_opt_iters):
+        for i in range(0, self.bayes_opt_iters):
+            if i in trials and trials[i].status == TrialStatus.COMPLETED:
+                continue
             logging.info("Optimization iteration %d"%i)
             sub_experiment_name = self.get_sub_experiment_name(i)
-            parameters, trial_index, experiment_func, ax_client = self.get_parameters_and_trial_index(ax_client, sub_experiment_name)
+            parameters, trial_index, experiment_func = self.get_parameters_and_trial_index(ax_client, sub_experiment_name, i)
             ax_client.complete_trial(trial_index=trial_index, raw_data=experiment_func(parameters, sub_experiment_name))
             self.save_new_log(ax_client)
             self.update_records(record_keeper, ax_client, i)
@@ -119,30 +121,18 @@ class BayesOptRunner(SingleExperimentRunner):
         logging.info("##### FINISHED #####")
 
 
-    def get_parameters_and_trial_index(self, ax_client, sub_experiment_name):
-        if os.path.isdir(self.get_sub_experiment_path(sub_experiment_name)):
-            recent = c_f.load_yaml(self.most_recent_parameters_filename)
-            recent_parameters, recent_trial_index = recent["parameters"], recent["trial_index"]
-            sobol_model = ax_client._generation_strategy._steps[0]
-            assert sobol_model.model.value == "Sobol"
-            try:
-                num_sobol_steps = sobol_model.num_trials
-            except:
-                num_sobol_steps = sobol_model.num_arms
-            if recent_trial_index < num_sobol_steps: # sobol can be deterministic
-                parameters, trial_index = ax_client.get_next_trial()
-                matching_assertion = (parameters == recent_parameters) and (trial_index == recent_trial_index)
-            if (recent_trial_index >= num_sobol_steps) or (not matching_assertion):
-                logging.info("Parameter mismatch: reloading Ax client and attaching trial instead.")
-                ax_client = self.get_ax_client()
-                parameters, trial_index = ax_client.attach_trial(recent_parameters)
-                assert trial_index == recent_trial_index
+    def get_parameters_and_trial_index(self, ax_client, sub_experiment_name, input_trial_index):
+        try:
+            parameters = ax_client.get_trial_parameters(trial_index=input_trial_index)
+            trial_index = input_trial_index
             experiment_func = self.resume_training
-        else:
+        except:
             parameters, trial_index = ax_client.get_next_trial()
+            assert input_trial_index == trial_index
+            self.save_new_log(ax_client)
             c_f.write_yaml(self.most_recent_parameters_filename, {"parameters": parameters, "trial_index": trial_index}, open_as='w')
             experiment_func = self.run_new_experiment
-        return parameters, trial_index, experiment_func, ax_client
+        return parameters, trial_index, experiment_func
 
 
     def get_sub_experiment_name(self, iteration):
@@ -181,13 +171,11 @@ class BayesOptRunner(SingleExperimentRunner):
         q = record_keeper.query("SELECT * FROM {0} WHERE {1}=(SELECT max({1}) FROM {0})".format(self.bayes_opt_table_name, self.YR.args.eval_primary_metric))[0]
         best_trial_index = int(q['trial_index'])
         best_sub_experiment_name = self.get_sub_experiment_name(best_trial_index)
-        best_sub_experiment_path = self.get_sub_experiment_path(best_sub_experiment_name) 
         logging.info("BEST SUB EXPERIMENT NAME: %s"%best_sub_experiment_name)
 
         best_parameters, best_values = get_best_raw_objective_point(ax_client.experiment)
         assert np.isclose(best_values[self.YR.args.eval_primary_metric][0], q[self.YR.args.eval_primary_metric])
         best_parameters_dict = {"best_sub_experiment_name": best_sub_experiment_name,
-                                "best_sub_experiment_path": best_sub_experiment_path, 
                                 "best_parameters": best_parameters, 
                                 "best_values": {k:{"mean": float(v[0]), "SEM": float(v[1])} for k,v in best_values.items()}}
         c_f.write_yaml(self.best_parameters_filename, best_parameters_dict, open_as='w')

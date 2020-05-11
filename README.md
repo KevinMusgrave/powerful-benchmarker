@@ -152,10 +152,10 @@ The underscore delimited numbers in the folder name indicate which models were l
 ### Reproducing benchmark results
 To reproduce an experiment from the benchmark spreadsheets, use the ```--reproduce_results``` flag:
 1. In the benchmark spreadsheet, click on the google drive link under the "config files" column.
-2. Download the folders you want (for example ```cub200_old_approach_triplet_batch_all```), into some folder on your computer. For example, I downloaded into ```/home/userid/experiments_to_reproduce```
+2. Download the folders you want (for example ```cub200_old_approach_triplet_batch_all```), into some folder on your computer. For example, I downloaded into ```/home/experiments_to_reproduce```
 3. Then run:
 ```
-python run.py --reproduce_results /home/userid/experiments_to_reproduce/cub200_old_approach_triplet_batch_all \
+python run.py --reproduce_results /home/experiments_to_reproduce/cub200_old_approach_triplet_batch_all \
 --experiment_name cub200_old_approach_triplet_batch_all_reproduced
 ```
 
