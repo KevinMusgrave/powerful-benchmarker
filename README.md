@@ -2,6 +2,13 @@
  <a href="https://arxiv.org/abs/2003.08505">A Metric Learning Reality Check</a>
 </h2>
 <p align="center">
+	
+</h2>
+<p align="center">
+ <a href="https://badge.fury.io/py/powerful-benchmarker">
+     <img alt="PyPi version" src="https://badge.fury.io/py/powerful-benchmarker.svg">
+ </a>
+ 
 
 
 ## Benchmark results (in progress): 
