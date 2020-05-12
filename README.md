@@ -39,34 +39,13 @@ The easiest way to get started is to download the [example script](https://githu
 - dataset_root is where your datasets are located.
 - root_experiment_folder is where you want all experiment data to be saved.
 
-
-### Download and organize the datasets
-Download the datasets from here:
-- [CUB200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html)
-- [Cars196](https://ai.stanford.edu/~jkrause/cars/car_dataset.html)
-- [Stanford Online Products](http://cvgl.stanford.edu/projects/lifted_struct)
-
-Organize them as follows:
-```
-<dataset_root>
-|-cub2011
-  |-attributes.txt
-  |-CUB_200_2011
-    |-images
-|-cars196
-  |-cars_annos.mat
-  |-car_ims
-|-Stanford_Online_Products
-  |-bicycle_final
-  |-cabinet_final
-  ...
-```
-
 ### Try a basic command
-The following command will run an experiment using the [default config files](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker/configs)
+The following command will run an experiment using the [default config files](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker/configs), as well as download the CUB200 dataset into your ```dataset_root```
 ```
-python run.py --experiment_name test1 
+python run.py --experiment_name test1 --dataset {CUB200: {download: True}}
 ```
+(For the rest of this readme, we'll assume the datasets have already been downloaded.)
+
 Experiment data is saved in the following format:
 ```
 <root_experiment_folder>
