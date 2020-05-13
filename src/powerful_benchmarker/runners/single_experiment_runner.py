@@ -1,73 +1,21 @@
 #! /usr/bin/env python3
 import logging
 logging.info("Importing packages in single_experiment_runner")
-from easy_module_attribute_getter import YamlReader, PytorchGetter
 from ..utils import common_functions as c_f, dataset_utils as d_u
-import argparse
+from easy_module_attribute_getter import utils as emag_utils
+from .base_runner import BaseRunner
 import glob
 import os
 logging.info("Done importing packages in single_experiment_runner")
 
 
-class SingleExperimentRunner:
-    def __init__(self, 
-                dataset_root="datasets", 
-                root_experiment_folder="experiments", 
-                pytorch_home=None, 
-                root_config_folder=None, 
-                config_foldernames=None,
-                global_db_path=None):
-        self.dataset_root = dataset_root
-        self.root_experiment_folder = root_experiment_folder
-        self.global_db_path = global_db_path
-        if pytorch_home is not None:
-            os.environ["TORCH_HOME"] = pytorch_home
-        if root_config_folder is not None:
-            self.root_config_folder = root_config_folder
-        else:
-            self.root_config_folder = os.path.join(os.path.dirname(__file__), "../configs")
-        self.init_pytorch_getter()
-        self.set_config_foldernames(config_foldernames)
-        self.set_YR()
-        
-
-    def register(self, module_type, module):
-        self.pytorch_getter.register(module_type, module)
-
-    def init_pytorch_getter(self):
-        from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers, utils
-        from .. import architectures
-        from .. import datasets
-        from .. import api_parsers
-        self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
-        self.pytorch_getter.register('model', architectures.misc_models)
-        self.pytorch_getter.register('loss', losses)
-        self.pytorch_getter.register('miner', miners)
-        self.pytorch_getter.register('regularizer', regularizers)
-        self.pytorch_getter.register('sampler', samplers)
-        self.pytorch_getter.register('trainer', trainers)
-        self.pytorch_getter.register('tester', testers)
-        self.pytorch_getter.register('dataset', datasets)
-        self.pytorch_getter.register('api_parser', api_parsers)
-        self.pytorch_getter.register('accuracy_calculator', utils.AccuracyCalculator)
-
-    def set_YR(self):
-        self.YR = self.setup_yaml_reader()
-
-
-    def set_config_foldernames(self, config_foldernames=None):
-        if config_foldernames:
-            self.config_foldernames = config_foldernames
-        else:
-            self.config_foldernames = ["config_general", "config_models", "config_optimizers",
-                                        "config_loss_and_miners", "config_transforms", "config_eval"]
-
+class SingleExperimentRunner(BaseRunner):
 
     def run(self):
         if self.YR.args.reproduce_results:
             self.reproduce_results(self.YR)
         else:
-            self.run_new_experiment(self.YR)
+            self.run_new_experiment_or_resume(self.YR)
 
     def start_experiment(self, args):
         api_parser_kwargs = {"args": args, "pytorch_getter": self.pytorch_getter, "global_db_path": self.global_db_path}
@@ -79,18 +27,22 @@ class SingleExperimentRunner:
         del api_parser
         return run_output
 
-    def run_new_experiment(self, YR):
-        args, _, args.dict_of_yamls = YR.load_yamls(**self.determine_where_to_get_yamls(YR.args), max_merge_depth=float('inf'))
+    def run_new_experiment_or_resume(self, YR):
+        merge_argparse = self.merge_argparse_when_resuming if YR.args.resume_training else True
+        args, _, args.dict_of_yamls = YR.load_yamls(**self.determine_where_to_get_yamls(YR.args), 
+                                                    max_merge_depth=float('inf'), 
+                                                    merge_argparse=self.merge_argparse_when_resuming)
         return self.start_experiment(args)
 
     def reproduce_results(self, YR):
         configs_folder = os.path.join(YR.args.reproduce_results, 'configs')
-        default_configs, experiment_configs = [], []
-        for k in self.config_foldernames:
-            default_configs.append(os.path.join(self.root_config_folder, k, "default.yaml")) #append default config file
-        for k in self.config_foldernames:
-            experiment_configs.append(os.path.join(configs_folder, "%s.yaml"%k)) #append experiment config file
-        args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0, merge_argparse=False)
+        default_configs = self.get_root_config_paths(YR.args)
+        experiment_configs = self.get_saved_config_paths(configs_folder)
+        print("default_configs", default_configs)
+        print("experiment_configs", experiment_configs)
+        args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, 
+                                                    max_merge_depth=0, 
+                                                    merge_argparse=self.merge_argparse_when_resuming)
 
         # check if there were config diffs if training was resumed
         if YR.args.special_split_scheme_name:
@@ -108,55 +60,19 @@ class SingleExperimentRunner:
                 for d in default_configs:
                     args.dict_of_yamls.pop(d, None)
                 self.start_experiment(args)
-                # start with a fresh set of args
+                # Start fresh
                 YR = self.setup_yaml_reader()
+                # But remove nested dictionaries from the command line. 
+                # In other words, even if merge_argparse_when_resuming is True, nested dictionaries will not be included. 
+                emag_utils.remove_dicts(YR.args.__dict__)
                 # load the default configs, the experiment specific configs, plus the config diffs 
                 for k in glob.glob(os.path.join(sub_folder, "*")):
                     experiment_configs.append(k)
-                args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, max_merge_depth=0, merge_argparse=False)
+                args, _, args.dict_of_yamls = YR.load_yamls(config_paths=default_configs+experiment_configs, 
+                                                            max_merge_depth=0, 
+                                                            merge_argparse=self.merge_argparse_when_resuming)
                 args.resume_training = "latest"
         # remove default configs from dict_of_yamls to avoid saving these as config diffs
         for d in default_configs:
             args.dict_of_yamls.pop(d, None)
         return self.start_experiment(args)
-
-
-
-    def setup_argparser(self):
-        parser = argparse.ArgumentParser(allow_abbrev=False)
-        parser.add_argument("--experiment_name", type=str, required=True)
-        parser.add_argument("--resume_training", type=str, default=None, choices=["latest", "best"])
-        parser.add_argument("--evaluate", action="store_true")
-        parser.add_argument("--splits_to_eval", nargs="+", type=str, default=["val"])
-        parser.add_argument("--reproduce_results", type=str, default=None)
-        for c in self.config_foldernames:
-            parser.add_argument("--%s" % c, nargs="+", type=str, required=False, default=["default"])
-        return parser
-
-
-    def setup_yaml_reader(self):
-        argparser = self.setup_argparser()
-        YR = YamlReader(argparser=argparser)
-        YR.args.dataset_root = self.dataset_root
-        YR.args.experiment_folder = os.path.join(self.root_experiment_folder, YR.args.experiment_name)
-        YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
-        return YR
-
-
-    def determine_where_to_get_yamls(self, args):
-        if args.resume_training or args.evaluate:
-            config_paths = self.get_saved_config_paths(args.place_to_save_configs)
-        else:
-            config_paths = self.get_root_config_paths(args)
-        return {"config_paths": config_paths}
-
-
-    def get_saved_config_paths(self, config_location):
-        return [os.path.join(config_location,'%s.yaml'%v) for v in self.config_foldernames]
-
-    def get_root_config_paths(self, args):
-        config_paths = []
-        for subfolder in self.config_foldernames:
-            for curr_yaml in getattr(args, subfolder):
-                config_paths.append(os.path.join(self.root_config_folder, subfolder, "%s.yaml"%curr_yaml))
-        return config_paths

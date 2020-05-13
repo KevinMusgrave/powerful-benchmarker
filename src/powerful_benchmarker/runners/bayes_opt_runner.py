@@ -16,6 +16,7 @@ import os
 import csv
 import pandas as pd
 from ..utils import common_functions as c_f
+from .base_runner import BaseRunner
 from .single_experiment_runner import SingleExperimentRunner
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import numpy as np
@@ -26,6 +27,7 @@ import json
 logging.info("Done importing packages in bayes_opt_runner")
 
 BAYESIAN_KEYWORDS=("~BAYESIAN~", "~LOG_BAYESIAN~", "~INT_BAYESIAN~")
+RESUME_FAILURE="RESUME_FAILURE"
 
 
 def set_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywords=BAYESIAN_KEYWORDS):
@@ -72,7 +74,7 @@ def remove_keywords(YR):
         emag_utils.remove_key_word_recursively(YR.args.__dict__, keyword)
 
 
-class BayesOptRunner(SingleExperimentRunner):
+class BayesOptRunner(BaseRunner):
     def __init__(self, bayes_opt_iters, reproductions, **kwargs):
         super().__init__(**kwargs)
         self.bayes_opt_iters = bayes_opt_iters
@@ -230,8 +232,6 @@ class BayesOptRunner(SingleExperimentRunner):
         c_f.write_yaml(self.accuracy_report_filename, json.loads(json.dumps(summary)), open_as="w")
 
 
-
-
     def get_ax_client(self):
         log_paths = self.get_all_log_paths()
         ax_client = None
@@ -257,12 +257,16 @@ class BayesOptRunner(SingleExperimentRunner):
 
     def read_yaml_and_find_bayes(self):
         YR = self.setup_yaml_reader()
+        print("os.path.isdir(self.original_config_folder)", os.path.isdir(self.original_config_folder))
         config_paths = self.get_saved_config_paths(self.original_config_folder) if os.path.isdir(self.original_config_folder) else self.get_root_config_paths(YR.args)
-        if not os.path.isdir(self.original_config_folder):
-            YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths=config_paths, max_merge_depth=float('inf'), merge_argparse=True)
+        merge_argparse = self.merge_argparse_when_resuming if os.path.isdir(self.original_config_folder) else True
+        YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths = config_paths, 
+                                                        max_merge_depth = float('inf'), 
+                                                        merge_argparse = merge_argparse)
+
+        if not os.path.isdir(self.original_config_folder):                                         
             c_f.save_config_files(self.original_config_folder, YR.args.dict_of_yamls, False, False, [])
-        else:
-            YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths=config_paths, max_merge_depth=float('inf'), merge_argparse=False)
+
         bayes_params = []
         set_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
         return YR, bayes_params
@@ -274,8 +278,8 @@ class BayesOptRunner(SingleExperimentRunner):
 
 
     def get_simplified_yaml_reader(self, experiment_name):
-        YR = YamlReader()
-        YR.args, _ = self.setup_argparser().parse_known_args() # we want to ignore the "unknown" args in this case
+        YR = self.setup_yaml_reader()
+        emag_utils.remove_dicts(YR.args.__dict__)
         YR.args.dataset_root = self.dataset_root
         YR.args.experiment_name = experiment_name
         self.set_experiment_name_and_place_to_save_configs(YR)
@@ -289,15 +293,16 @@ class BayesOptRunner(SingleExperimentRunner):
         global_record_keeper.record_writer.global_db.delete_experiment(sub_experiment_name)
 
 
-    def try_resuming(self, YR):
+    def try_resuming(self, YR, reproduction=False):
         try:
-            output = super().run_new_experiment(YR)
+            SER = self.get_single_experiment_runner()
+            output = SER.reproduce_results(YR) if reproduction else SER.run_new_experiment_or_resume(YR)
         except Exception as e:
             YR.args.resume_training = None
             logging.error(repr(e))
             logging.warning("Could not resume training for %s"%YR.args.experiment_name)
             self.delete_sub_experiment_folder(YR.args.experiment_name)
-            output = None
+            output = RESUME_FAILURE
         return output
 
 
@@ -315,8 +320,8 @@ class BayesOptRunner(SingleExperimentRunner):
             self.delete_sub_experiment_folder(sub_experiment_name)
             parameter_load_successful = False
 
-        output = self.try_resuming(local_YR) if parameter_load_successful else None
-        return output if output is not None else self.run_new_experiment(parameters, sub_experiment_name)
+        output = self.try_resuming(local_YR) if parameter_load_successful else RESUME_FAILURE
+        return self.run_new_experiment(parameters, sub_experiment_name) if output == RESUME_FAILURE else output
 
 
     def run_new_experiment(self, parameters, sub_experiment_name):
@@ -330,7 +335,8 @@ class BayesOptRunner(SingleExperimentRunner):
         self.set_experiment_name_and_place_to_save_configs(local_YR)
         c_f.makedir_if_not_there(local_YR.args.experiment_folder)
         c_f.write_yaml(self.get_sub_experiment_bayes_opt_filename(local_YR.args.experiment_folder), parameters, open_as='w')
-        return self.start_experiment(local_YR.args)
+        SER = self.get_single_experiment_runner()
+        return SER.start_experiment(local_YR.args)
 
 
     def test_model(self, sub_experiment_name):
@@ -340,7 +346,8 @@ class BayesOptRunner(SingleExperimentRunner):
             local_YR.args.resume_training = None
             local_YR.args.splits_to_eval = ["test"]
             local_YR.args.__dict__["meta_testing_method~OVERRIDE~"] = meta_testing_method
-            super().run_new_experiment(local_YR)
+            SER = self.get_single_experiment_runner()
+            SER.run_new_experiment_or_resume(local_YR)
 
 
     def reproduce_results(self, sub_experiment_name):
@@ -352,14 +359,25 @@ class BayesOptRunner(SingleExperimentRunner):
             local_YR = self.get_simplified_yaml_reader("%s_reproduction%d"%(sub_experiment_name, i))
             local_YR.args.reproduce_results = self.get_sub_experiment_path(sub_experiment_name)
             local_YR.args.resume_training = None
-            output = None
+            output = RESUME_FAILURE
             if os.path.isdir(local_YR.args.experiment_folder):
                 local_YR.args.resume_training = self.get_resume_training_value()
-                output = self.try_resuming(local_YR)
-            if output is None:
-                super().reproduce_results(local_YR)
+                output = self.try_resuming(local_YR, reproduction=True)
+            if output == RESUME_FAILURE:
+                SER = self.get_single_experiment_runner()
+                SER.reproduce_results(local_YR)
             self.test_model(local_YR.args.experiment_name)
 
 
     def get_resume_training_value(self):
         return "latest" if self.YR.args.resume_training is None else self.YR.args.resume_training
+
+    
+    def get_single_experiment_runner(self):
+        return SingleExperimentRunner(root_experiment_folder=self.bayes_opt_root_experiment_folder, 
+                                    root_config_folder=self.original_config_folder, 
+                                    dataset_root=self.dataset_root,
+                                    pytorch_home=self.pytorch_home, 
+                                    config_foldernames=self.config_foldernames,
+                                    global_db_path=self.global_db_path,
+                                    merge_argparse_when_resuming=self.merge_argparse_when_resuming)
