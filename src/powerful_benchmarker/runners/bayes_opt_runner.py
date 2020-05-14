@@ -9,6 +9,8 @@ from ax.modelbridge.registry import Models
 from ax.core.base_trial import TrialStatus
 from ax.plot.slice import interact_slice
 from ax.plot.helper import get_range_parameters
+from ax.core.search_space import SearchSpace
+from ax.core.parameter import RangeParameter, ParameterType
 import re
 from easy_module_attribute_getter import utils as emag_utils, YamlReader
 import glob
@@ -236,11 +238,19 @@ class BayesOptRunner(BaseRunner):
         c_f.write_yaml(self.accuracy_report_filename, json.loads(json.dumps(summary)), open_as="w")
 
 
+    def update_bayes_opt_search_space(self, ax_client):
+        for bp in self.bayes_params:
+            kwargs_dict = {"name": bp["name"], "lower": bp["bounds"][0], "upper": bp["bounds"][1]}
+            kwargs_dict["parameter_type"] = ParameterType.FLOAT if bp["value_type"] == "float" else ParameterType.INT
+            kwargs_dict["log_scale"] = bp["log_scale"]
+            ax_client.experiment.search_space.update_parameter(RangeParameter(**kwargs_dict))
+
     def get_ax_client(self):
         log_paths = self.get_all_log_paths()
         ax_client = None
         if len(log_paths) > 0:
             ax_client = open_log(log_paths)
+            self.update_bayes_opt_search_space(ax_client)
         if ax_client is None:
             ax_client = AxClient()
             ax_client.create_experiment(parameters=self.bayes_params, name=self.YR.args.experiment_name, minimize=False, objective_name=self.YR.args.eval_primary_metric)
