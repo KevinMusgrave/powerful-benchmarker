@@ -18,10 +18,8 @@ class SingleExperimentRunner(BaseRunner):
             self.run_new_experiment_or_resume(self.YR)
 
     def start_experiment(self, args):
-        api_parser_kwargs = {"args": args, "pytorch_getter": self.pytorch_getter, "global_db_path": self.global_db_path}
-        api_parser = self.pytorch_getter.get('api_parser', class_name="API"+args.training_method, params=api_parser_kwargs)
+        api_parser = self.get_api_parser(args)
         run_output = api_parser.run()
-        self.eval_record_group_dicts = api_parser.get_eval_record_name_dict(return_all=True)
         del api_parser.tester_obj
         del api_parser.trainer
         del api_parser

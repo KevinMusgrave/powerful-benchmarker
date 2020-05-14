@@ -71,6 +71,10 @@ class BaseRunner:
         raise NotImplementedError
 
 
+    def get_api_parser(self, args):
+        api_parser_kwargs = {"args": args, "pytorch_getter": self.pytorch_getter, "global_db_path": self.global_db_path}
+        return self.pytorch_getter.get('api_parser', class_name="API"+args.training_method, params=api_parser_kwargs)
+
     def setup_argparser(self):
         parser = argparse.ArgumentParser(allow_abbrev=False)
         parser.add_argument("--experiment_name", type=str, required=True)

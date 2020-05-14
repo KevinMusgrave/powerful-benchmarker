@@ -104,11 +104,13 @@ class BayesOptRunner(BaseRunner):
         ax_client = self.get_ax_client()
         trials = ax_client.experiment.trials
         record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder)
+        temp_YR_for_config_diffs = self.read_yaml_and_find_bayes(find_bayes_params=False)
 
         for i in range(0, self.bayes_opt_iters):
             if i in trials and trials[i].status == TrialStatus.COMPLETED:
                 continue
             logging.info("Optimization iteration %d"%i)
+            c_f.save_config_files(self.original_config_folder, temp_YR_for_config_diffs.args.dict_of_yamls, True, [i]) # save config diffs, if any
             sub_experiment_name = self.get_sub_experiment_name(i)
             parameters, trial_index, experiment_func = self.get_parameters_and_trial_index(ax_client, sub_experiment_name, i)
             ax_client.complete_trial(trial_index=trial_index, raw_data=experiment_func(parameters, sub_experiment_name))
@@ -186,6 +188,8 @@ class BayesOptRunner(BaseRunner):
         return best_sub_experiment_name
 
     def create_accuracy_report(self, best_sub_experiment_name):
+        dummy_api_parser = self.get_api_parser(self.YR.args)
+        eval_record_group_dicts = dummy_api_parser.get_eval_record_name_dict(return_all=True)
         global_record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.global_db_path, "", False)
         exp_names = glob.glob(os.path.join(self.bayes_opt_root_experiment_folder, "%s*"%best_sub_experiment_name))
 
@@ -195,7 +199,7 @@ class BayesOptRunner(BaseRunner):
         for eval_type in ["meta", "meta_ConcatenateEmbeddings"]:
             results[eval_type] = {}
             summary[eval_type] = collections.defaultdict(lambda: collections.defaultdict(list))
-            table_name = self.eval_record_group_dicts[eval_type]["test"]
+            table_name = eval_record_group_dicts[eval_type]["test"]
             
             for exp in exp_names:
                 results[eval_type][exp] = {}
@@ -214,7 +218,7 @@ class BayesOptRunner(BaseRunner):
                     q_as_dict = dict(v1)
                     results[eval_type][exp][is_trained] = q_as_dict
                     for acc_key, v2 in q_as_dict.items():
-                        if all(not acc_key.startswith(x) for x in ["is_trained", "best_epoch", "best_accuracy", "SEM", "id", "experiment_id", "timestamp"]):
+                        if all(not acc_key.startswith(x) for x in ["epoch", "is_trained", "SEM", "id", "experiment_id", "timestamp"]):
                             summary[eval_type][is_trained][acc_key].append(v2)
 
 
@@ -255,7 +259,7 @@ class BayesOptRunner(BaseRunner):
             f.write(render_report_elements(self.experiment_name, html_elements))
 
 
-    def read_yaml_and_find_bayes(self):
+    def read_yaml_and_find_bayes(self, find_bayes_params=True):
         YR = self.setup_yaml_reader()
         config_paths = self.get_saved_config_paths(self.original_config_folder) if os.path.isdir(self.original_config_folder) else self.get_root_config_paths(YR.args)
         merge_argparse = self.merge_argparse_when_resuming if os.path.isdir(self.original_config_folder) else True
@@ -266,9 +270,11 @@ class BayesOptRunner(BaseRunner):
         if not os.path.isdir(self.original_config_folder):                                         
             c_f.save_config_files(self.original_config_folder, YR.args.dict_of_yamls, False, [])
 
-        bayes_params = []
-        set_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
-        return YR, bayes_params
+        if find_bayes_params:
+            bayes_params = []
+            set_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
+            return YR, bayes_params
+        return YR
 
 
     def set_experiment_name_and_place_to_save_configs(self, YR):
@@ -276,15 +282,17 @@ class BayesOptRunner(BaseRunner):
         YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
 
 
-    def starting_fresh(self, YR):
-        emag_utils.remove_dicts(YR.args.__dict__)
-        YR.args.dataset_root = self.dataset_root
-        YR.args.experiment_name = experiment_name
-        self.set_experiment_name_and_place_to_save_configs(YR)
+    def starting_fresh(self, experiment_name):
+        def _starting_fresh(YR):
+            emag_utils.remove_dicts(YR.args.__dict__)
+            YR.args.dataset_root = self.dataset_root
+            YR.args.experiment_name = experiment_name
+            self.set_experiment_name_and_place_to_save_configs(YR)
+        return _starting_fresh
 
     def get_simplified_yaml_reader(self, experiment_name):
         YR = self.setup_yaml_reader()
-        self.starting_fresh(YR)
+        self.starting_fresh(experiment_name)(YR)
         return YR
 
     def delete_sub_experiment_folder(self, sub_experiment_name):
@@ -297,7 +305,8 @@ class BayesOptRunner(BaseRunner):
     def try_resuming(self, YR, reproduction=False):
         try:
             SER = self.get_single_experiment_runner()
-            output = SER.reproduce_results(YR, starting_fresh_hook=self.starting_fresh) if reproduction else SER.run_new_experiment_or_resume(YR)
+            starting_fresh_hook = self.starting_fresh(YR.args.experiment_name)
+            output = SER.reproduce_results(YR, starting_fresh_hook=starting_fresh_hook) if reproduction else SER.run_new_experiment_or_resume(YR)
         except Exception as e:
             YR.args.resume_training = None
             logging.error(repr(e))
@@ -329,10 +338,8 @@ class BayesOptRunner(BaseRunner):
         local_YR, _ = self.read_yaml_and_find_bayes()
         for param_path, value in parameters.items():
             replace_with_optimizer_values(param_path, local_YR.args.__dict__, value)
-            dict_of_yamls = local_YR.args.dict_of_yamls
-            for config_name in dict_of_yamls.keys():
-                for sub_dict in dict_of_yamls[config_name].values():
-                    replace_with_optimizer_values(param_path, sub_dict, value)
+            for sub_dict in local_YR.args.dict_of_yamls.values():
+                replace_with_optimizer_values(param_path, sub_dict, value)
         local_YR.args.experiment_name = sub_experiment_name
         local_YR.args.resume_training = None
         self.set_experiment_name_and_place_to_save_configs(local_YR)
@@ -368,7 +375,8 @@ class BayesOptRunner(BaseRunner):
                 output = self.try_resuming(local_YR, reproduction=True)
             if output == RESUME_FAILURE:
                 SER = self.get_single_experiment_runner()
-                SER.reproduce_results(local_YR, starting_fresh_hook=self.starting_fresh)
+                starting_fresh_hook = self.starting_fresh(local_YR.args.experiment_name)
+                SER.reproduce_results(local_YR, starting_fresh_hook=starting_fresh_hook)
             self.test_model(local_YR.args.experiment_name)
 
 

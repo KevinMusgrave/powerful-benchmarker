@@ -525,12 +525,16 @@ class BaseAPIParser:
                 self.record_keeper.update_records({"is_trained": int(i==1)}, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
                 self.record_keeper.update_records({"timestamp": c_f.get_datetime()}, global_iteration=global_iteration, input_group_name_for_non_objects=group_name)
 
-                for irrelevant_key in ["epoch", "best_epoch", "best_accuracy"]:
-                    self.record_keeper.record_writer.records.pop(irrelevant_key, None)
+                for irrelevant_key in ["best_epoch", "best_accuracy"]:
+                    self.record_keeper.record_writer.records[group_name].pop(irrelevant_key, None)
                 self.record_keeper.save_records()
 
 
     def get_eval_record_name_dict(self, eval_type="non_meta", return_all=False):
+        if not getattr(self, "hooks", None):
+            self.hooks = logging_presets.HookContainer(None, primary_metric=self.args.eval_primary_metric)
+        if not getattr(self, "tester_obj", None):
+            self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
         prefix = self.hooks.record_group_name_prefix 
         self.hooks.record_group_name_prefix = "" #temporary
         non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in ["train", "val", "test"]}
