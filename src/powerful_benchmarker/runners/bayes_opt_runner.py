@@ -9,7 +9,6 @@ from ax.modelbridge.registry import Models
 from ax.core.base_trial import TrialStatus
 from ax.plot.slice import interact_slice
 from ax.plot.helper import get_range_parameters
-from ax.core.search_space import SearchSpace
 from ax.core.parameter import RangeParameter, ParameterType
 import re
 from easy_module_attribute_getter import utils as emag_utils, YamlReader
