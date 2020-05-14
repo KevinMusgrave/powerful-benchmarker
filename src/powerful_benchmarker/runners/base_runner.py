@@ -6,6 +6,7 @@ from ..utils import common_functions as c_f
 import argparse
 import glob
 import os
+from collections import defaultdict
 logging.info("Done importing packages in base_runner")
 
 
@@ -96,21 +97,21 @@ class BaseRunner:
             config_paths = self.get_saved_config_paths(args.place_to_save_configs)
         else:
             config_paths = self.get_root_config_paths(args)
-        return {"config_paths": config_paths}
+        return config_paths
 
 
     def get_saved_config_paths(self, config_location):
-        return [os.path.join(config_location,'%s.yaml'%v) for v in self.config_foldernames]
+        return {v: [os.path.join(config_location,'%s.yaml'%v)] for v in self.config_foldernames}
 
 
     def get_root_config_paths(self, args):
-        config_paths = []
+        config_paths = defaultdict(list)
         for subfolder in self.config_foldernames:
             for curr_yaml in getattr(args, subfolder):
                 with_subfolder = os.path.join(self.root_config_folder, subfolder, "%s.yaml"%curr_yaml)
                 without_subfolder = os.path.join(self.root_config_folder, "%s.yaml"%subfolder)
                 if os.path.isfile(with_subfolder):
-                    config_paths.append(with_subfolder)
+                    config_paths[subfolder].append(with_subfolder)
                 else:
-                    config_paths.append(without_subfolder)
+                    config_paths[subfolder].append(without_subfolder)
         return config_paths

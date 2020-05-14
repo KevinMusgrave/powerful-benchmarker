@@ -30,11 +30,11 @@ class BaseAPIParser:
         _model_folder = os.path.join("%s", "%s", "saved_models")
         _csv_folder = os.path.join("%s", "%s", "saved_csvs")
         _tensorboard_folder = os.path.join("%s", "%s", "tensorboard_logs")
-        self.sub_experiment_dirs = [
-            _model_folder,
-            _csv_folder,
-            _tensorboard_folder
-        ]
+        self.sub_experiment_dirs = {
+            "models": _model_folder,
+            "csvs": _csv_folder,
+            "tensorboard": _tensorboard_folder
+        }
 
         self.trainer, self.tester_obj = None, None
 
@@ -109,17 +109,18 @@ class BaseAPIParser:
         c_f.makedir_if_not_there(self.experiment_folder)
 
     def make_sub_experiment_dirs(self):
-        for s in self.sub_experiment_dirs:
+        for s in self.sub_experiment_dirs.values():
             for r in self.split_manager.split_scheme_names:
                 c_f.makedir_if_not_there(s % (self.experiment_folder, r))
 
     def set_curr_folders(self):
-        self.model_folder, self.csv_folder, self.tensorboard_folder = self.get_sub_experiment_dir_paths()[self.split_manager.curr_split_scheme_name]
+        folders = self.get_sub_experiment_dir_paths()[self.split_manager.curr_split_scheme_name]
+        self.model_folder, self.csv_folder, self.tensorboard_folder = folders["models"], folders["csvs"], folders["tensorboard"]
 
     def get_sub_experiment_dir_paths(self):
         sub_experiment_dir_paths = {}
         for k in self.split_manager.split_scheme_names:
-            sub_experiment_dir_paths[k] = [s % (self.experiment_folder, k) for s in self.sub_experiment_dirs]
+            sub_experiment_dir_paths[k] = {folder_type: s % (self.experiment_folder, k) for folder_type, s in self.sub_experiment_dirs.items()}
         return sub_experiment_dir_paths
 
     def set_num_epochs_dict(self):
@@ -132,7 +133,7 @@ class BaseAPIParser:
         self.latest_sub_experiment_epochs = c_f.latest_sub_experiment_epochs(self.get_sub_experiment_dir_paths())
         latest_epochs = list(self.latest_sub_experiment_epochs.values())
         if self.is_training():
-            c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training, self.args.reproduce_results, latest_epochs)
+            c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training, latest_epochs)
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 
@@ -317,7 +318,8 @@ class BaseAPIParser:
     def set_meta_record_keeper(self):
         is_new_experiment = self.beginning_of_training()
         if len(self.split_manager.split_scheme_names) > 1:
-            _, csv_folder, tensorboard_folder = [s % (self.experiment_folder, "meta_logs") for s in self.sub_experiment_dirs]
+            folders = {folder_type: s % (self.experiment_folder, "meta_logs") for folder_type, s in self.sub_experiment_dirs.items()}
+            csv_folder, tensorboard_folder = folders["csvs"], folders["tensorboard"]
             self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.global_db_path, self.args.experiment_name, is_new_experiment)
             self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
 
@@ -499,7 +501,6 @@ class BaseAPIParser:
         return trunk, embedder
 
     def meta_eval(self):
-        assert self.args.splits_to_eval == ["test"]
         meta_model_getter = getattr(self, "meta_"+self.args.meta_testing_method)
         self.models = {}
         self.record_keeper = self.meta_record_keeper

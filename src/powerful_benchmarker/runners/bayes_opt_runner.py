@@ -257,7 +257,6 @@ class BayesOptRunner(BaseRunner):
 
     def read_yaml_and_find_bayes(self):
         YR = self.setup_yaml_reader()
-        print("os.path.isdir(self.original_config_folder)", os.path.isdir(self.original_config_folder))
         config_paths = self.get_saved_config_paths(self.original_config_folder) if os.path.isdir(self.original_config_folder) else self.get_root_config_paths(YR.args)
         merge_argparse = self.merge_argparse_when_resuming if os.path.isdir(self.original_config_folder) else True
         YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths = config_paths, 
@@ -265,7 +264,7 @@ class BayesOptRunner(BaseRunner):
                                                         merge_argparse = merge_argparse)
 
         if not os.path.isdir(self.original_config_folder):                                         
-            c_f.save_config_files(self.original_config_folder, YR.args.dict_of_yamls, False, False, [])
+            c_f.save_config_files(self.original_config_folder, YR.args.dict_of_yamls, False, [])
 
         bayes_params = []
         set_optimizable_params_and_bounds(YR.args.__dict__, bayes_params, '')
@@ -277,14 +276,16 @@ class BayesOptRunner(BaseRunner):
         YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
 
 
-    def get_simplified_yaml_reader(self, experiment_name):
-        YR = self.setup_yaml_reader()
+    def starting_fresh(self, YR):
         emag_utils.remove_dicts(YR.args.__dict__)
         YR.args.dataset_root = self.dataset_root
         YR.args.experiment_name = experiment_name
         self.set_experiment_name_and_place_to_save_configs(YR)
-        return YR
 
+    def get_simplified_yaml_reader(self, experiment_name):
+        YR = self.setup_yaml_reader()
+        self.starting_fresh(YR)
+        return YR
 
     def delete_sub_experiment_folder(self, sub_experiment_name):
         logging.warning("Deleting and starting fresh for %s"%sub_experiment_name)
@@ -296,7 +297,7 @@ class BayesOptRunner(BaseRunner):
     def try_resuming(self, YR, reproduction=False):
         try:
             SER = self.get_single_experiment_runner()
-            output = SER.reproduce_results(YR) if reproduction else SER.run_new_experiment_or_resume(YR)
+            output = SER.reproduce_results(YR, starting_fresh_hook=self.starting_fresh) if reproduction else SER.run_new_experiment_or_resume(YR)
         except Exception as e:
             YR.args.resume_training = None
             logging.error(repr(e))
@@ -328,8 +329,10 @@ class BayesOptRunner(BaseRunner):
         local_YR, _ = self.read_yaml_and_find_bayes()
         for param_path, value in parameters.items():
             replace_with_optimizer_values(param_path, local_YR.args.__dict__, value)
-            for sub_dict in local_YR.args.dict_of_yamls.values():
-                replace_with_optimizer_values(param_path, sub_dict, value)
+            dict_of_yamls = local_YR.args.dict_of_yamls
+            for config_name in dict_of_yamls.keys():
+                for sub_dict in dict_of_yamls[config_name].values():
+                    replace_with_optimizer_values(param_path, sub_dict, value)
         local_YR.args.experiment_name = sub_experiment_name
         local_YR.args.resume_training = None
         self.set_experiment_name_and_place_to_save_configs(local_YR)
@@ -365,7 +368,7 @@ class BayesOptRunner(BaseRunner):
                 output = self.try_resuming(local_YR, reproduction=True)
             if output == RESUME_FAILURE:
                 SER = self.get_single_experiment_runner()
-                SER.reproduce_results(local_YR)
+                SER.reproduce_results(local_YR, starting_fresh_hook=self.starting_fresh)
             self.test_model(local_YR.args.experiment_name)
 
 
