@@ -1,0 +1,20 @@
+config_foldernames:
+  - config_eval
+  - config_general
+  - config_loss_and_miners
+  - config_models
+  - config_optimizers
+  - config_transforms
+  
+config_eval:
+  - default
+config_general:
+  - default
+config_loss_and_miners:
+  - default
+config_models:
+  - default
+config_optimizers:
+  - default
+config_transforms:
+  - default

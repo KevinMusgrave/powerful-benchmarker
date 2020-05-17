@@ -78,6 +78,7 @@ def remove_keywords(YR):
 class BayesOptRunner(BaseRunner):
     def __init__(self, bayes_opt_iters, reproductions, **kwargs):
         super().__init__(**kwargs)
+        self.set_YR(use_super=True)
         self.bayes_opt_iters = bayes_opt_iters
         self.reproductions = reproductions
         self.experiment_name = self.YR.args.experiment_name
@@ -92,7 +93,6 @@ class BayesOptRunner(BaseRunner):
         self.accuracy_report_detailed_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report_detailed.yaml")
         self.accuracy_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report.yaml")
         self.bayes_opt_table_name = "bayes_opt"
-        self.original_config_folder = "%s/original_configs"%(self.bayes_opt_root_experiment_folder)
         self.set_YR(use_super=False)
 
     def set_YR(self, use_super=True):
@@ -111,7 +111,7 @@ class BayesOptRunner(BaseRunner):
             if i in trials and trials[i].status == TrialStatus.COMPLETED:
                 continue
             logging.info("Optimization iteration %d"%i)
-            c_f.save_config_files(self.original_config_folder, temp_YR_for_config_diffs.args.dict_of_yamls, True, [i]) # save config diffs, if any
+            c_f.save_config_files(self.YR.args.place_to_save_configs, temp_YR_for_config_diffs.args.dict_of_yamls, True, [i]) # save config diffs, if any
             sub_experiment_name = self.get_sub_experiment_name(i)
             parameters, trial_index, experiment_func = self.get_parameters_and_trial_index(ax_client, sub_experiment_name, i)
             ax_client.complete_trial(trial_index=trial_index, raw_data=experiment_func(parameters, sub_experiment_name))
@@ -197,7 +197,7 @@ class BayesOptRunner(BaseRunner):
         exp_names = [os.path.basename(e) for e in exp_names]
         results, summary = {}, {}
 
-        for eval_type in ["meta", "meta_ConcatenateEmbeddings"]:
+        for eval_type in c_f.if_str_convert_to_singleton_list(self.YR.args.meta_testing_method):
             results[eval_type] = {}
             summary[eval_type] = collections.defaultdict(lambda: collections.defaultdict(list))
             table_name = eval_record_group_dicts[eval_type]["test"]
@@ -270,14 +270,16 @@ class BayesOptRunner(BaseRunner):
 
     def read_yaml_and_find_bayes(self, find_bayes_params=True):
         YR = self.setup_yaml_reader()
-        config_paths = self.get_saved_config_paths(self.original_config_folder) if os.path.isdir(self.original_config_folder) else self.get_root_config_paths(YR.args)
-        merge_argparse = self.merge_argparse_when_resuming if os.path.isdir(self.original_config_folder) else True
+        bayes_opt_config_exists = os.path.isdir(YR.args.place_to_save_configs)
+
+        config_paths = self.get_saved_config_paths(YR.args) if bayes_opt_config_exists else self.get_root_config_paths(YR.args)
+        merge_argparse = self.merge_argparse_when_resuming if bayes_opt_config_exists else True
         YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths = config_paths, 
                                                         max_merge_depth = float('inf'), 
                                                         merge_argparse = merge_argparse)
 
-        if not os.path.isdir(self.original_config_folder):                                         
-            c_f.save_config_files(self.original_config_folder, YR.args.dict_of_yamls, False, [])
+        if not bayes_opt_config_exists:                                         
+            c_f.save_config_files(YR.args.place_to_save_configs, YR.args.dict_of_yamls, False, [])
 
         if find_bayes_params:
             bayes_params = []
@@ -359,14 +361,12 @@ class BayesOptRunner(BaseRunner):
 
 
     def test_model(self, sub_experiment_name):
-        for meta_testing_method in [None, "ConcatenateEmbeddings"]:
-            local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
-            local_YR.args.evaluate = True
-            local_YR.args.resume_training = None
-            local_YR.args.splits_to_eval = ["test"]
-            local_YR.args.__dict__["meta_testing_method~OVERRIDE~"] = meta_testing_method
-            SER = self.get_single_experiment_runner()
-            SER.run_new_experiment_or_resume(local_YR)
+        local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
+        local_YR.args.evaluate = True
+        local_YR.args.resume_training = None
+        local_YR.args.splits_to_eval = ["test"]
+        SER = self.get_single_experiment_runner()
+        SER.run_new_experiment_or_resume(local_YR)
 
 
     def reproduce_results(self, sub_experiment_name):
@@ -395,9 +395,8 @@ class BayesOptRunner(BaseRunner):
     
     def get_single_experiment_runner(self):
         return SingleExperimentRunner(root_experiment_folder=self.bayes_opt_root_experiment_folder, 
-                                    root_config_folder=self.original_config_folder, 
+                                    root_config_folder=self.YR.args.place_to_save_configs, 
                                     dataset_root=self.dataset_root,
                                     pytorch_home=self.pytorch_home, 
-                                    config_foldernames=self.config_foldernames,
                                     global_db_path=self.global_db_path,
                                     merge_argparse_when_resuming=self.merge_argparse_when_resuming)

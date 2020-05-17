@@ -1,9 +1,13 @@
 training_method: MetricLossOnly
 testing_method: GlobalEmbeddingSpaceTester
-meta_testing_method: ConcatenateEmbeddings
+meta_testing_method: 
+  - meta_SeparateEmbeddings
+  - meta_ConcatenateEmbeddings
 
 dataset:  
   CUB200:
+splits_to_eval:
+  - val
 num_epochs_train: 1000
 iterations_per_epoch: 100
 save_interval: 2

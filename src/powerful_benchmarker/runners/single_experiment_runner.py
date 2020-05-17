@@ -12,6 +12,7 @@ logging.info("Done importing packages in single_experiment_runner")
 class SingleExperimentRunner(BaseRunner):
 
     def run(self):
+        self.set_YR()
         if self.YR.args.reproduce_results:
             self.reproduce_results(self.YR)
         else:
@@ -35,7 +36,7 @@ class SingleExperimentRunner(BaseRunner):
     def reproduce_results(self, YR, starting_fresh_hook=None):
         configs_folder = os.path.join(YR.args.reproduce_results, 'configs')
         all_config_paths = self.get_root_config_paths(YR.args)
-        experiment_config_paths = self.get_saved_config_paths(configs_folder)
+        experiment_config_paths = self.get_saved_config_paths(YR.args, config_folder=configs_folder)
         for k, v in experiment_config_paths.items():
             all_config_paths[k].extend(v)
         args, _, args.dict_of_yamls = YR.load_yamls(config_paths=all_config_paths, 

@@ -16,7 +16,6 @@ class BaseRunner:
                 root_experiment_folder="experiments", 
                 pytorch_home=None, 
                 root_config_folder=None, 
-                config_foldernames=None,
                 global_db_path=None,
                 merge_argparse_when_resuming=False):
         self.dataset_root = dataset_root
@@ -30,9 +29,8 @@ class BaseRunner:
             self.root_config_folder = root_config_folder
         else:
             self.root_config_folder = os.path.join(os.path.dirname(__file__), "../configs")
+        self.config_foldernames_base = "config_foldernames"
         self.init_pytorch_getter()
-        self.set_config_foldernames(config_foldernames)
-        self.set_YR()
         
     def register(self, module_type, module):
         self.pytorch_getter.register(module_type, module)
@@ -59,14 +57,6 @@ class BaseRunner:
         self.YR = self.setup_yaml_reader()
 
 
-    def set_config_foldernames(self, config_foldernames=None):
-        if config_foldernames:
-            self.config_foldernames = config_foldernames
-        else:
-            self.config_foldernames = ["config_general", "config_models", "config_optimizers",
-                                        "config_loss_and_miners", "config_transforms", "config_eval"]
-
-
     def run(self):
         raise NotImplementedError
 
@@ -80,10 +70,7 @@ class BaseRunner:
         parser.add_argument("--experiment_name", type=str, required=True)
         parser.add_argument("--resume_training", type=str, default=None, choices=["latest", "best"])
         parser.add_argument("--evaluate", action="store_true")
-        parser.add_argument("--splits_to_eval", nargs="+", type=str, default=["val"])
         parser.add_argument("--reproduce_results", type=str, default=None)
-        for c in self.config_foldernames:
-            parser.add_argument("--%s" % c, nargs="+", type=str, required=False, default=["default"])
         return parser
 
 
@@ -93,29 +80,49 @@ class BaseRunner:
         YR.args.dataset_root = self.dataset_root
         YR.args.experiment_folder = os.path.join(self.root_experiment_folder, YR.args.experiment_name)
         YR.args.place_to_save_configs = os.path.join(YR.args.experiment_folder, "configs")
+        config_foldernames_yaml = "{}.yaml".format(self.config_foldernames_base)
+        foldername_info = None
+        if not hasattr(YR.args, self.config_foldernames_base):
+            # first try loading config_foldernames from "place_to_save_configs", in case we're resuming
+            already_saved_config_foldernames = os.path.join(YR.args.place_to_save_configs, config_foldernames_yaml)
+            if os.path.isfile(already_saved_config_foldernames):
+                foldername_info = c_f.load_yaml(already_saved_config_foldernames)
+            else:
+                foldername_info = c_f.load_yaml(os.path.join(self.root_config_folder, config_foldernames_yaml))
+            YR.args.config_foldernames = foldername_info[self.config_foldernames_base]
+
+        for subfolder in YR.args.config_foldernames:
+            if not hasattr(YR.args, subfolder):
+                yaml_names = ["default"] if foldername_info is None else foldername_info[subfolder]
+                setattr(YR.args, subfolder, yaml_names)
         return YR
 
 
     def determine_where_to_get_yamls(self, args):
         if args.resume_training or args.evaluate:
-            config_paths = self.get_saved_config_paths(args.place_to_save_configs)
+            config_paths = self.get_saved_config_paths(args)
         else:
             config_paths = self.get_root_config_paths(args)
         return config_paths
 
 
-    def get_saved_config_paths(self, config_location):
-        return {v: [os.path.join(config_location,'%s.yaml'%v)] for v in self.config_foldernames}
+    def get_saved_config_paths(self, args, config_folder=None):
+        folder = args.place_to_save_configs if config_folder is None else config_folder
+        return {v: [os.path.join(folder,'%s.yaml'%v)] for v in self.get_list_of_yaml_names_to_load(args)}
 
 
     def get_root_config_paths(self, args):
         config_paths = defaultdict(list)
-        for subfolder in self.config_foldernames:
-            for curr_yaml in getattr(args, subfolder):
-                with_subfolder = os.path.join(self.root_config_folder, subfolder, "%s.yaml"%curr_yaml)
-                without_subfolder = os.path.join(self.root_config_folder, "%s.yaml"%subfolder)
-                if os.path.isfile(with_subfolder):
+        for subfolder in self.get_list_of_yaml_names_to_load(args):
+            without_subfolder = os.path.join(self.root_config_folder, "%s.yaml"%subfolder)
+            if os.path.isfile(without_subfolder):
+                config_paths[subfolder].append(without_subfolder)
+            else:
+                for curr_yaml in getattr(args, subfolder):
+                    with_subfolder = os.path.join(self.root_config_folder, subfolder, "%s.yaml"%curr_yaml)
                     config_paths[subfolder].append(with_subfolder)
-                else:
-                    config_paths[subfolder].append(without_subfolder)
         return config_paths
+
+
+    def get_list_of_yaml_names_to_load(self, args):
+        return args.config_foldernames + [self.config_foldernames_base]

@@ -46,7 +46,17 @@ class BaseAPIParser:
         self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
         self.set_meta_record_keeper()
-        if self.args.evaluate and self.args.meta_testing_method:
+        if self.args.evaluate:
+            return_dict = {}
+            for self.curr_meta_testing_method in c_f.if_str_convert_to_singleton_list(self.args.meta_testing_method):
+                return_dict[self.curr_meta_testing_method] = self.run_train_or_eval()
+            return return_dict
+        else:
+            return self.run_train_or_eval()
+
+
+    def run_train_or_eval(self):
+        if self.args.evaluate and self.get_curr_meta_testing_method():
             self.meta_eval()
         else:
             try:
@@ -337,7 +347,7 @@ class BaseAPIParser:
     def record_meta_logs(self):
         if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
             for split in self.args.splits_to_eval:
-                group_name = self.get_eval_record_name_dict("meta")[split]
+                group_name = self.get_eval_record_name_dict("meta_SeparateEmbeddings")[split]
                 len_of_existing_records = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
                 for i, is_trained in enumerate([0, 1]):
                     curr_dict = self.meta_accuracies[split][is_trained]
@@ -353,7 +363,7 @@ class BaseAPIParser:
 
     def return_val_accuracy_and_standard_error(self):
         if hasattr(self, "meta_record_keeper"):
-            group_name = self.get_eval_record_name_dict("meta")["val"]
+            group_name = self.get_eval_record_name_dict("meta_SeparateEmbeddings")["val"]
             def get_average_best_and_sem(key):
                 is_trained = 1
                 sem_key = "SEM_%s"%key
@@ -501,7 +511,7 @@ class BaseAPIParser:
         return trunk, embedder
 
     def meta_eval(self):
-        meta_model_getter = getattr(self, "meta_"+self.args.meta_testing_method)
+        meta_model_getter = getattr(self, self.get_curr_meta_testing_method())
         self.models = {}
         self.record_keeper = self.meta_record_keeper
         self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__, primary_metric=self.args.eval_primary_metric)
@@ -538,18 +548,24 @@ class BaseAPIParser:
         prefix = self.hooks.record_group_name_prefix 
         self.hooks.record_group_name_prefix = "" #temporary
         non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in ["train", "val", "test"]}
-        meta = {k:"meta_"+v for k,v in non_meta.items()}
-        meta_concatenated = {k:"meta_ConcatenateEmbeddings_"+v for k,v in non_meta.items()}
+        meta_separate = {k:"meta_SeparateEmbeddings_"+v for k,v in non_meta.items()}
+        meta_concatenate = {k:"meta_ConcatenateEmbeddings_"+v for k,v in non_meta.items()}
         self.hooks.record_group_name_prefix = prefix
 
         name_dict = {"non_meta": non_meta,
-                    "meta": meta,
-                    "meta_ConcatenateEmbeddings": meta_concatenated}
+                    "meta_SeparateEmbeddings": meta_separate,
+	                "meta_ConcatenateEmbeddings": meta_concatenate}
 
         if return_all:
             return name_dict
         return name_dict[eval_type]
 
+
+    def get_curr_meta_testing_method(self):
+        # SeparateEmbeddings is equivalent to the regular per-split eval
+        if self.curr_meta_testing_method == "meta_SeparateEmbeddings":
+            return None
+        return self.curr_meta_testing_method
 
 
 

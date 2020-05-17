@@ -152,3 +152,9 @@ def extract_progress(compressed_obj):
         length = len(iterable)
     for member in tqdm.tqdm(iterable, total=length):
         yield member
+
+
+def if_str_convert_to_singleton_list(input):
+    if isinstance(input, str):
+        return [input]
+    return input
