@@ -40,7 +40,7 @@ The easiest way to get started is to download the [example script](https://githu
 - root_experiment_folder is where you want all experiment data to be saved.
 
 ### Try a basic command
-The following command will run an experiment using the [default config files](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker/configs), as well as download the CUB200 dataset into your ```dataset_root```
+The following command will run an experiment using the [default config files](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/src/powerful_benchmarker/configs), as well as download the CUB200 dataset into your ```dataset_root```
 ```
 python run.py --experiment_name test1 --dataset {CUB200: {download: True}}
 ```
@@ -125,8 +125,11 @@ python run.py --experiment_name test1 --resume_training best
 
 Let's say you finished training for 100 epochs, and decide you want to train for another 50 epochs, for a total of 150. You would run:
 ```
-python run.py --experiment_name test1 --resume_training latest --num_epochs_train 150
+python run.py --experiment_name test1 --resume_training latest \
+--num_epochs_train 150 --merge_argparse_when_resuming
 ```
+(The ```merge_argparse_when_resuming``` tells the code that you want to make changes to the original experiment configuration. If you don't use this flag, then the code will ignore your command line arguments, and use the original configuration. The purpose of this is to avoid accidentally changing configs in the middle of an experiment.)
+
 Now in your experiments folder you'll see the original config files, and a new folder starting with ```resume_training```.
 ```
 <root_experiment_folder>
@@ -150,6 +153,16 @@ To reproduce an experiment from the benchmark spreadsheets, use the ```--reprodu
 python run.py --reproduce_results /home/experiments_to_reproduce/cub200_old_approach_triplet_batch_all \
 --experiment_name cub200_old_approach_triplet_batch_all_reproduced
 ```
+If you'd like to change some parameters when reproducing results, you can either make those changes in the config files, or at the command line. For example, maybe you'd like to change the number of dataloaders:
+```
+python run.py --reproduce_results /home/experiments_to_reproduce/cub200_old_approach_triplet_batch_all \
+--experiment_name cub200_old_approach_triplet_batch_all_reproduced \
+--dataloader_num_workers 16 \
+--eval_dataloader_num_workers 16 \
+--merge_argparse_when_resuming
+```
+The ```merge_argparse_when_resuming``` flag is required in order to use a different configuration from the one in the ```reproduce_results``` folder.
+
 
 ### Evaluation options
 By default, your model will be saved and evaluated on the validation set every ```save_interval``` epochs.
@@ -190,7 +203,9 @@ python run.py --bayes_opt_iters 50 \
 --experiment_name cub_bayes_opt \
 ```
 
-If you stop and want to resume bayesian optimization, simply use ```run.py``` with the same ```experiment_name``` you were using before. (Do not use the ```resume_training``` flag.) 
+If you stop and want to resume bayesian optimization, simply use ```run.py``` with the same ```experiment_name``` you were using before. 
+
+You can change the optimization bounds when resuming, by either changing the bounds in your config files or at the command line. If you're using the command line, make sure to also use the ```--merge_argparse_when_resuming``` flag.
 
 You can also run a number of reproductions for the best parameters, so that you can obtain a confidence interval for your results. Use the ```reproductions``` flag, and pass in the number of reproductions you want to perform at the end of bayesian optimization.
 
@@ -297,6 +312,8 @@ num_training_sets: <int> #number of partitions that are actually used as trainin
 label_hierarchy_level: <number>
 dataloader_num_workers: <number>
 check_untrained_accuracy: <boolean>
+skip_eval_if_already_done: <boolean>
+skip_meta_eval_if_already_done: <boolean>
 patience: <int> #Training will stop if validation accuracy has not improved after this number of epochs. If null, then it is ignored.
 
 ```
