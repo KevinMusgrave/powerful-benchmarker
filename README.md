@@ -108,7 +108,7 @@ python run.py \
 ### Combine yaml files at the command line
 The following merges the ```with_cars196``` config file into the ```default``` config file, in the ```config_general``` category.
 ```
-python run.py --experiment_name test1 --config_general default with_cars196
+python run.py --experiment_name test1 --config_general [default, with_cars196]
 ```
 This is convenient when you want to change a few settings (specified in ```with_cars196```), and keep all the other options unchanged (specified in ```default```). You can specify any number of config files to merge, and they get loaded and merged in the order that you specify.
 
@@ -167,7 +167,7 @@ The ```merge_argparse_when_resuming``` flag is required in order to use a differ
 ### Evaluation options
 By default, your model will be saved and evaluated on the validation set every ```save_interval``` epochs.
 
-To get accuracy for specific splits, use the ```--splits_to_eval``` flag and pass in a space-delimited list of split names. For example ```--splits_to_eval train test```
+To get accuracy for specific splits, use the ```--splits_to_eval``` flag and pass in a python-style list of split names. For example ```--splits_to_eval [train, test]```
 
 To run evaluation only, use the ```--evaluate``` flag.
 
@@ -295,11 +295,12 @@ Below is the format for the various config files. Click on the links to see the 
 ```yaml
 training_method: <type> #options: MetricLossOnly, TrainWithClassifier, CascadedEmbeddings, DeepAdversarialMetricLearning
 testing_method: <type> #options: GlobalEmbeddingSpaceTester, WithSameParentLabelTester
-meta_testing_method: <type> #options: null or ConcatenateEmbeddings
+meta_testing_method: <list> #options: meta_SeparateEmbeddings or meta_ConcatenateEmbeddings
 dataset:  
   <type>: #options: CUB200, Cars196, StanfordOnlineProducts
     <kwarg>: <value>
     ...
+splits_to_eval: <list> #strings corresponding to dataset split names, i.e. train, val, test.
 num_epochs_train: <how long to train for>
 iterations_per_epoch: <Optional. If set, an epoch will simply be a fixed number of iterations. Or you can set this to null or 0, and it will be ignored.>
 save_interval: <how often (in number of epochs) models will be saved and evaluated>
