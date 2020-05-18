@@ -11,14 +11,12 @@ class APITrainWithClassifier(BaseAPIParser):
         return super().get_embedder_model(model_type, input_size, output_size)
 
     def model_getter_dict(self):
-        logging.info("Setting dataset so that num labels can be determined")
-        self.split_manager.set_curr_split("train", is_training=True, log_split_details=True)        
         getter_dict = super().model_getter_dict()
         classifer_model_names = [x for x in list(self.args.models.keys()) if x.startswith("classifier")]
         for k in classifer_model_names:
             getter_dict[k] = lambda model_type: self.get_classifier_model(
                 model_type,
-                self.split_manager.get_num_labels(),
+                self.split_manager.get_num_labels("train", "train"),
             )
         return getter_dict
 

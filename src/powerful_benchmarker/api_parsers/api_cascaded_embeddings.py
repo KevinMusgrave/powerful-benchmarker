@@ -28,8 +28,8 @@ class APICascadedEmbeddings(APIMaybeExtendTrainWithClassifier):
     def get_trunk_model(self, model_type):
         model = self.inheriter.get_trunk_model(model_type)
         logging.info("GETTING SAMPLE DATA TO DETERMINE MLP SIZE")
-        self.set_transforms()
-        sample_input = self.split_manager.dataset[0]["data"].unsqueeze(0)
+        sample_dataset = self.split_manager.get_dataset("train", "train")
+        sample_input = sample_dataset[0]["data"].unsqueeze(0)
         (model_name, _), = model_type.items()
         model = arch.misc_models.LayerExtractor(
             model,

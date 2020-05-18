@@ -166,20 +166,24 @@ class BaseAPIParser:
             if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
 
     def set_split_manager(self):
-        chosen_dataset, dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
-        dataset_params = copy.deepcopy(dataset_params)
-        if "root" not in dataset_params:
-            dataset_params["root"] = self.args.dataset_root
-        chosen_dataset = chosen_dataset(**dataset_params)
-        self.split_manager = split_manager.SplitManager(dataset=chosen_dataset, 
+        chosen_dataset, original_dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
+        datasets = defaultdict(dict)
+
+        for train_or_eval, T in self.get_transforms().items():
+            dataset_params = copy.deepcopy(original_dataset_params)
+            dataset_params["transform"] = T
+            if "root" not in dataset_params:
+                dataset_params["root"] = self.args.dataset_root            
+            for split_name in self.args.split_names:
+                datasets[train_or_eval][split_name] = chosen_dataset(**dataset_params)
+
+        self.split_manager = split_manager.SplitManager(datasets=datasets, 
                                                         test_size=self.args.test_size,
                                                         test_start_idx=self.args.test_start_idx, 
                                                         num_training_partitions=self.args.num_training_partitions,
                                                         num_training_sets=self.args.num_training_sets,
-                                                        special_split_scheme_name=self.args.special_split_scheme_name,
                                                         hierarchy_level=self.args.label_hierarchy_level)
-        if not self.args.splits_to_eval: self.args.splits_to_eval = [x for x in self.split_manager.split_names if x!="test"]
-
+                                                        
     def get_transforms(self):
         try:
             trunk = self.models["trunk"]
@@ -188,16 +192,10 @@ class BaseAPIParser:
             model_transform_properties = {k:getattr(trunk, k) for k in ["mean", "std", "input_space", "input_range"]}
         except (KeyError, AttributeError):
             model_transform_properties = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
-        transforms = {"train": None, "eval": None}
+        self.transforms = {"train": None, "eval": None}
         for k, v in self.args.transforms.items():
-            transforms[k] = self.pytorch_getter.get_composed_img_transform(v, **model_transform_properties)
-        return transforms
-
-    def set_transforms(self):
-        logging.info("Setting dataset so that transform can be set")
-        self.split_manager.set_curr_split("train", is_training=True)
-        transforms = self.get_transforms()
-        self.split_manager.set_transforms(transforms["train"], transforms["eval"])
+            self.transforms[k] = self.pytorch_getter.get_composed_img_transform(v, **model_transform_properties)
+        return self.transforms
 
     def get_embedder_model(self, model_type, input_size=None, output_size=None):
         model, model_args = self.pytorch_getter.get("model", yaml_dict=model_type, return_uninitialized=True)
@@ -230,7 +228,8 @@ class BaseAPIParser:
         if self.args.sampler in [None, {}]:
             self.sampler = None
         else:
-            self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels":self.split_manager.labels})
+            labels = self.split_manager.get_labels("train", "train")
+            self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels": labels})
 
     def get_loss_function(self, loss_type):
         loss, loss_params = self.pytorch_getter.get("loss", yaml_dict=loss_type, return_uninitialized=True)
@@ -242,12 +241,12 @@ class BaseAPIParser:
             if "loss" in loss_params: loss_params["loss"] = self.get_loss_function(loss_params["loss"])
             if "miner" in loss_params: loss_params["miner"] = self.get_mining_function(loss_params["miner"])
         if c_f.check_init_arguments(loss, "num_classes"):
-            loss_params["num_classes"] = self.split_manager.get_num_labels()
+            loss_params["num_classes"] = self.split_manager.get_num_labels("train", "train")
             logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
         if "regularizer" in loss_params:
             loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
         if "num_class_per_param" in loss_params and loss_params["num_class_per_param"]:
-            loss_params["num_class_per_param"] = self.split_manager.get_num_labels()
+            loss_params["num_class_per_param"] = self.split_manager.get_num_labels("train", "train")
             logging.info("Passing %d as num_class_per_param to the loss function"%loss_params["num_class_per_param"])
 
         return loss(**loss_params)        
@@ -297,22 +296,21 @@ class BaseAPIParser:
 
     def eval_assertions(self, dataset_dict):
         for k, v in dataset_dict.items():
-            dataset = self.split_manager.curr_split_scheme[k]
-            assert v is dataset
-            assert v.dataset.transform is self.split_manager.eval_transform
+            assert v is self.split_manager.get_dataset("eval", k)
+            assert v.dataset.transform is self.transforms["eval"]
 
-    def eval_model(self, epoch, suffix, splits_to_eval=None, load_model=False, skip_eval_if_already_done=True):
+    def eval_model(self, epoch, suffix, load_model=False, skip_eval_if_already_done=True):
         logging.info("Launching evaluation for model %s"%suffix)
         if load_model:
             trunk_model, embedder_model = self.load_model_for_eval(suffix=suffix)
         else:
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
-        splits_to_exclude = self.get_splits_exclusion_list(splits_to_eval)
-        dataset_dict = self.split_manager.get_dataset_dict(inclusion_list=splits_to_eval, exclusion_list=splits_to_exclude, is_training=False)
+        splits_to_exclude = self.get_splits_exclusion_list(self.args.splits_to_eval)
+        dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval, exclusion_list=splits_to_exclude)
         self.eval_assertions(dataset_dict)
         return self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, 
-                                        splits_to_eval=splits_to_eval, collate_fn=None, skip_eval_if_already_done=skip_eval_if_already_done)
+                                        splits_to_eval=self.args.splits_to_eval, collate_fn=None, skip_eval_if_already_done=skip_eval_if_already_done)
 
     def flush_tensorboard(self):
         for keeper in ["record_keeper", "meta_record_keeper"]:
@@ -380,7 +378,6 @@ class BaseAPIParser:
 
     def set_models_optimizers_losses(self):
         self.set_model()
-        self.set_transforms()
         self.set_sampler()
         self.set_loss_function()
         self.set_mining_function()
@@ -412,7 +409,7 @@ class BaseAPIParser:
     def get_end_of_epoch_hook(self):
         logging.info("Creating end_of_epoch_hook kwargs")
         splits_to_exclude = self.get_splits_exclusion_list(self.args.splits_to_eval)
-        dataset_dict = self.split_manager.get_dataset_dict(inclusion_list=self.args.splits_to_eval, exclusion_list=splits_to_exclude, is_training=False)
+        dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval, exclusion_list=splits_to_exclude)
         helper_hook = self.hooks.end_of_epoch_hook(tester=self.tester_obj,
                                                     dataset_dict=dataset_dict,
                                                     model_folder=self.model_folder,
@@ -421,16 +418,13 @@ class BaseAPIParser:
                                                     test_collate_fn=None)
         def end_of_epoch_hook(trainer):
             torch.cuda.empty_cache()
-            for k in dataset_dict.keys(): self.split_manager.set_curr_split(k, is_training=False)
             self.eval_assertions(dataset_dict)
-            continue_training = helper_hook(trainer)
-            for k in dataset_dict.keys(): self.split_manager.set_curr_split(k, is_training=True)
-            self.training_assertions(trainer)
-            return continue_training
+            return helper_hook(trainer)
 
         return end_of_epoch_hook
 
     def get_trainer_kwargs(self):
+        logging.info("Getting trainer kwargs")
         return {
             "models": self.models,
             "optimizers": self.optimizers,
@@ -439,7 +433,7 @@ class BaseAPIParser:
             "collate_fn": None,
             "loss_funcs": self.loss_funcs,
             "mining_funcs": self.mining_funcs,
-            "dataset": self.split_manager.dataset,
+            "dataset": self.split_manager.get_dataset("train", "train", log_split_details=True),
             "data_device": self.device,
             "iterations_per_epoch": self.args.iterations_per_epoch,
             "lr_schedulers": self.lr_schedulers,
@@ -449,7 +443,7 @@ class BaseAPIParser:
             "dataloader_num_workers": self.args.dataloader_num_workers,
             "loss_weights": getattr(self.args, "loss_weights", None),
             "data_and_label_getter": lambda data: (data["data"], data["label"]),
-            "dataset_labels": self.split_manager.labels,
+            "dataset_labels": self.split_manager.get_labels("train", "train"),
             "set_min_label_to_zero": True,
             "end_of_iteration_hook": self.hooks.end_of_iteration_hook,
             "end_of_epoch_hook": self.get_end_of_epoch_hook()
@@ -471,27 +465,24 @@ class BaseAPIParser:
         return self.hooks.patience_remaining(self.epoch, best_epoch, self.args.patience) and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
     def training_assertions(self, trainer):
-        dataset = self.split_manager.curr_split_scheme["train"]
-        assert trainer.dataset is dataset
-        assert trainer.dataset.dataset.transform is self.split_manager.train_transform
-        assert np.array_equal(trainer.dataset_labels, self.split_manager.original_dataset.labels[dataset.indices])
+        assert trainer.dataset is self.split_manager.get_dataset("train", "train")
+        assert trainer.dataset.dataset.transform == self.transforms["train"]
+        assert np.array_equal(trainer.dataset_labels, self.split_manager.get_labels("train", "train"))
 
     def train(self, num_epochs):
         if self.args.check_untrained_accuracy:
             for epoch, name, load_model in [(-1, "-1", True), (0, "0", False)]:
-                self.eval_model(epoch, name,  splits_to_eval=self.args.splits_to_eval, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
+                self.eval_model(epoch, name, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
                 self.record_keeper.save_records()
-        self.split_manager.set_curr_split("train", is_training=True)
         self.training_assertions(self.trainer)        
         self.trainer.train(self.epoch, num_epochs)
-        self.epoch = self.trainer.epoch + 1
 
     def eval(self):
         best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val", ignore_epoch=(-1,0))
         eval_dict = {"best": best_epoch}
         if self.args.check_untrained_accuracy: eval_dict["-1"] = -1
         for name, epoch in eval_dict.items():
-            self.eval_model(epoch, name, splits_to_eval=self.args.splits_to_eval, load_model=True, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
+            self.eval_model(epoch, name, load_model=True, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
             self.record_keeper.save_records()
 
     def meta_ConcatenateEmbeddings(self, model_suffix): 
@@ -527,8 +518,7 @@ class BaseAPIParser:
 
         for name, i in eval_dict.items():
             self.models["trunk"], self.models["embedder"] = meta_model_getter(name)
-            self.set_transforms()
-            did_not_skip = self.eval_model(i, name, splits_to_eval=self.args.splits_to_eval, load_model=False, skip_eval_if_already_done=self.args.skip_meta_eval_if_already_done)
+            did_not_skip = self.eval_model(i, name, load_model=False, skip_eval_if_already_done=self.args.skip_meta_eval_if_already_done)
             if did_not_skip:
                 is_trained = int(i==1)
                 global_iteration = len_of_existing_records + is_trained + 1

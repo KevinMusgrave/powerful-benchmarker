@@ -1,0 +1,33 @@
+dataset:
+  CUB200:
+
+# multi_dataset:
+#   train:  
+#     CUB200:
+#   val:
+#     CUB200:
+#   test:
+#     CUB200:
+
+split_names:
+  - train
+  - val
+  - test
+
+splits_to_eval:
+  - val
+
+# split_combos_to_eval:
+#   train_val:
+#     - train
+#     - val
+#   train_distractor:
+#     - train
+#     - distractor
+
+test_size: 0.5
+test_start_idx: 0.5
+num_training_partitions: 4
+num_training_sets: 4
+
+label_hierarchy_level: 0

@@ -41,12 +41,10 @@ class StanfordOnlineProducts(Dataset):
         self.img_paths = []
         self.labels = []
         global_idx = 0
-        self.predefined_splits = {}
         for k, v in info_files.items():
             curr_file = read_csv(os.path.join(self.dataset_folder, v), delim_whitespace=True, header=0).values
             self.img_paths.extend([os.path.join(self.dataset_folder, x) for x in list(curr_file[:,3])])
             self.labels.extend(list(curr_file[:,1] - 1))
-            self.predefined_splits[k] = np.arange(global_idx, global_idx + len(curr_file))
             global_idx += len(curr_file)
         self.labels = np.array(self.labels)
 

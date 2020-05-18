@@ -6,6 +6,9 @@ import numpy as np
 import torch.utils.data
 
 
+def get_subset_dataset_labels(subset_dataset):
+    return subset_dataset.dataset.labels[subset_dataset.indices]
+
 def get_labels_by_hierarchy(labels, hierarchy_level):
     if labels.ndim == 2:
         labels = labels[:, hierarchy_level]
@@ -84,44 +87,29 @@ def split_lengths_from_ratios(class_ratios, num_labels):
     assert sum(v for _, v in split_lengths.items()) == num_labels
     return split_lengths
 
-def create_one_split_scheme(dataset, scheme_name=None, partition=None, num_training_partitions=None, test_size=None, test_start_idx=None, hierarchy_level=0):
-    """
-    Args:
-        dataset: type torch.utils.data.Dataset, the dataset to return a subset of
-        split_scheme_name: type string, the name of the split scheme to be returned
-    Returns:
-        A dictionary where each key is a split name (i.e. "train", "val", "test"),
-                and the value is a tuple: (subset_dataset, subset_labels)
-    """
+def create_one_class_disjoint_split_scheme(datasets, partition=None, num_training_partitions=None, test_size=None, test_start_idx=None, hierarchy_level=0):
+    sample_dataset = datasets[list(datasets.keys())[0]]
+
     traintest_dict = OrderedDict()
-    if scheme_name == "predefined":
-        for k, v in dataset.predefined_splits.items():
-            traintest_dict[k] = torch.utils.data.Subset(dataset, v)
-    else:
-        labels = get_labels_by_hierarchy(dataset.labels, hierarchy_level)
-        sorted_label_set = sorted(list(set(labels)))
-        num_labels = len(sorted_label_set)
+    labels = get_labels_by_hierarchy(sample_dataset.labels, hierarchy_level)
+    sorted_label_set = sorted(list(set(labels)))
+    num_labels = len(sorted_label_set)
 
-        if scheme_name == "old_approach":
-            split_lengths = split_lengths_from_ratios({"train": 0.5, "val": 0.5}, num_labels)
-            for k, class_rule in get_class_rules(0, split_lengths, sorted_label_set).items():
-                traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
-        else:
-            val_ratio = (1./num_training_partitions)*(1-test_size)
-            train_ratio = (1. - val_ratio)*(1-test_size)
-            class_ratios = {"train": train_ratio, "val": val_ratio, "test": test_size}
-            split_lengths = split_lengths_from_ratios(class_ratios, num_labels)
+    val_ratio = (1./num_training_partitions)*(1-test_size)
+    train_ratio = (1. - val_ratio)*(1-test_size)
+    class_ratios = {"train": train_ratio, "val": val_ratio, "test": test_size}
+    split_lengths = split_lengths_from_ratios(class_ratios, num_labels)
 
-            test_class_rule = get_single_class_rule(int(test_start_idx*num_labels), split_lengths["test"], sorted_label_set)
-            traintest_dict["test"] = create_label_based_subset(dataset, labels, test_class_rule)
-            split_lengths.pop("test", None)
-            exclusion_rule = lambda label: not test_class_rule(label)
-            sorted_label_set = sorted([x for x in sorted_label_set if exclusion_rule(x)])
-            num_labels = len(sorted_label_set)
+    test_class_rule = get_single_class_rule(int(test_start_idx*num_labels), split_lengths["test"], sorted_label_set)
+    traintest_dict["test"] = create_label_based_subset(datasets["test"], labels, test_class_rule)
+    split_lengths.pop("test", None)
+    exclusion_rule = lambda label: not test_class_rule(label)
+    sorted_label_set = sorted([x for x in sorted_label_set if exclusion_rule(x)])
+    num_labels = len(sorted_label_set)
 
-            start_idx = int((float(partition)/num_training_partitions)*num_labels)
-            class_rules = get_class_rules(start_idx, split_lengths, sorted_label_set, exclusion_rule)
-            for k, class_rule in class_rules.items():
-                traintest_dict[k] = create_label_based_subset(dataset, labels, class_rule)
+    start_idx = int((float(partition)/num_training_partitions)*num_labels)
+    class_rules = get_class_rules(start_idx, split_lengths, sorted_label_set, exclusion_rule)
+    for k, class_rule in class_rules.items():
+        traintest_dict[k] = create_label_based_subset(datasets[k], labels, class_rule)
 
     return traintest_dict
