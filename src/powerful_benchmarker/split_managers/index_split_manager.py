@@ -1,7 +1,9 @@
-from ..utils import dataset_utils as d_u
+from ..utils import dataset_utils as d_u, common_functions as c_f
 from .base_split_manager import BaseSplitManager
 import itertools
 from collections import OrderedDict
+from sklearn.model_selection import train_test_split, KFold
+import numpy as np
 
 class IndexSplitManager(BaseSplitManager):
     def __init__(self,
@@ -9,6 +11,8 @@ class IndexSplitManager(BaseSplitManager):
         test_start_idx,
         num_training_partitions,
         num_training_sets,
+        shuffle = False,
+        random_seed = None,
         *args,
         **kwargs
     ):
@@ -17,63 +21,53 @@ class IndexSplitManager(BaseSplitManager):
         self.test_start_idx = test_start_idx
         self.num_training_partitions = num_training_partitions
         self.num_training_sets = num_training_sets
+        self.shuffle = shuffle
+        self.random_seed = random_seed
 
-    def get_attribute_that_should_be_disjoint(self, dataset):
-        return dataset.indices
+    def get_trainval_and_test(self, dataset, input_list):
+        trainval_set, test_set, _, _ = train_test_split(input_list, 
+                                                        input_list, 
+                                                        test_size=self.test_size, 
+                                                        shuffle=self.shuffle, 
+                                                        random_state=self.random_seed)
+        return trainval_set, test_set
 
-    def assert_splits_are_disjoint(self):
-        for (split_scheme_name, split_scheme) in self.split_schemes.items():
-            for dataset_dict in split_scheme.values():
-                should_be_disjoint = []
-                for split, dataset in dataset_dict.items():
-                    should_be_disjoint.append(set(self.get_attribute_that_should_be_disjoint(dataset)))
-                for (x,y) in itertools.combinations(should_be_disjoint, 2):
-                    assert x.isdisjoint(y)
+    def get_kfold_generator(self, dataset, trainval_set):
+        kfolder = KFold(n_splits=self.num_training_partitions, shuffle=self.shuffle, random_state=self.random_seed)
+        return kfolder.split(trainval_set)
 
+    def get_list_for_splitting(self, dataset):
+        return np.arange(len(dataset))
+
+    def convert_to_subset_idx(self, dataset, split_from_kfolder):
+        return split_from_kfolder
 
     def _create_split_schemes(self, datasets):
-        for partition in range(self.num_training_sets):
-            name = self.get_split_name(partition)
-            self.split_schemes[name] = OrderedDict()
-            for train_or_eval, dataset_dict in datasets.items():
-                self.split_schemes[name][train_or_eval] = self.create_one_split_scheme(dataset_dict, partition)
+        # the assumption is all datasets are the same
+        sample_dataset = c_f.first_val_of_dict(c_f.first_val_of_dict(datasets))
+        list_for_splitting = self.get_list_for_splitting(sample_dataset)
+        if not self.shuffle:
+            num_idx = len(list_for_splitting)
+            test_start = int(self.test_start_idx*num_idx)
+            test_size = int(self.test_size*num_idx)
+            list_for_splitting = np.roll(list_for_splitting, test_start - test_size)
 
+        trainval_set, test_set = self.get_trainval_and_test(sample_dataset, list_for_splitting)
+        split_schemes = OrderedDict()
 
-    def split_assertions(self):
-        super().split_assertions()
-        self.assert_splits_are_disjoint()
+        for i, (train_idx, val_idx) in enumerate(self.get_kfold_generator(sample_dataset, trainval_set)):
+            split_dict = {"train": trainval_set[train_idx], "val": trainval_set[val_idx], "test": test_set}
+            name = self.get_split_name(i)
+            split_schemes[name] = OrderedDict()
+            for transform_type in datasets.keys():
+                split_schemes[name][transform_type] = OrderedDict()
+                if i < self.num_training_sets:
+                    for k, v in split_dict.items():
+                        curr_dataset = datasets[transform_type][k]
+                        subset_idx = self.convert_to_subset_idx(curr_dataset, v)
+                        split_schemes[name][transform_type][k] = d_u.create_subset(curr_dataset, subset_idx)
 
-    def get_list_for_split_scheme_rule_creation(self, dataset):
-        return list(range(len(dataset)))
-
-    def get_rule_input(self, dataset):
-        return self.get_list_for_split_scheme_rule_creation(dataset)
-
-    def create_one_split_scheme(self, datasets, partition):
-        sample_dataset = datasets[list(datasets.keys())[0]]
-        traintest_dict = OrderedDict()
-        list_for_rule_creation = self.get_list_for_split_scheme_rule(sample_dataset)
-        rule_input = self.get_rule_input(sample_dataset)
-        len_of_list_for_rule_creation = len(list_for_rule_creation)
-
-        val_ratio = (1./self.num_training_partitions)*(1-self.test_size)
-        train_ratio = (1. - val_ratio)*(1-self.test_size)
-        class_ratios = {"train": train_ratio, "val": val_ratio, "test": self.test_size}
-        split_lengths = d_u.split_lengths_from_ratios(class_ratios, len_of_list_for_rule_creation)
-
-        test_set_rule = d_u.get_single_wrapped_range_rule(int(self.test_start_idx*len_of_list_for_rule_creation), split_lengths["test"], list_for_rule_creation)
-        traintest_dict["test"] = d_u.create_rule_based_subset(datasets["test"], rule_input, test_set_rule)
-        split_lengths.pop("test", None)
-        exclusion_rule = lambda input_scalar: not test_set_rule(input_scalar)
-        list_for_rule_creation = [x for x in list_for_rule_creation if exclusion_rule(x)]
-        len_of_list_for_rule_creation = len(list_for_rule_creation)
-
-        start_idx = int((float(partition)/self.num_training_partitions)*len_of_list_for_rule_creation)
-        rules = d_u.get_wrapped_range_rules(start_idx, split_lengths, list_for_rule_creation, exclusion_rule)
-        for k, rule in rules.items():
-            traintest_dict[k] = d_u.create_rule_based_subset(datasets[k], rule_input, rule)
-
-        return traintest_dict
+        return split_schemes
 
 
     def get_base_split_name(self):

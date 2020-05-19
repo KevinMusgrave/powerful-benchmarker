@@ -169,14 +169,14 @@ class BaseAPIParser:
         chosen_dataset, original_dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
         datasets = defaultdict(dict)
 
-        for train_or_eval, T in self.get_transforms().items():
-            logging.info("{} transform: {}".format(train_or_eval, T))
+        for transform_type, T in self.get_transforms().items():
+            logging.info("{} transform: {}".format(transform_type, T))
             dataset_params = copy.deepcopy(original_dataset_params)
             dataset_params["transform"] = T
             if "root" not in dataset_params:
                 dataset_params["root"] = self.args.dataset_root            
             for split_name in self.args.split_names:
-                datasets[train_or_eval][split_name] = chosen_dataset(**dataset_params)
+                datasets[transform_type][split_name] = chosen_dataset(**dataset_params)
 
         self.split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
         self.split_manager.create_split_schemes(datasets)

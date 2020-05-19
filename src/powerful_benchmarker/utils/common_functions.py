@@ -158,3 +158,7 @@ def if_str_convert_to_singleton_list(input):
     if isinstance(input, str):
         return [input]
     return input
+
+
+def first_val_of_dict(input):
+    return input[list(input.keys())[0]]

@@ -7,59 +7,72 @@ from ..utils import dataset_utils as d_u
 import logging
 import itertools
 from collections import defaultdict
+from .split_scheme_holder import SplitSchemeHolder
+import copy
 
 class BaseSplitManager:
     def __init__(self, hierarchy_level=0):
         self.hierarchy_level = hierarchy_level
+        self.split_scheme_holder = SplitSchemeHolder()
 
-    def assert_same_test_set_across_schemes(self):
-        test_key = "test"
-        prev_indices = None
-        for (split_scheme_name, split_scheme) in self.split_schemes.items():
-            for dataset_dict in split_scheme.values():
-                curr_indices = np.array(dataset_dict[test_key].indices)
-                if prev_indices is not None:
-                    assert np.array_equal(curr_indices, prev_indices)
-                prev_indices = curr_indices
+    def dataset_attribute_to_assert(self, dataset):
+        return dataset.indices
 
-    def assert_same_sets_in_both_train_and_eval(self):
-        indices = defaultdict(dict)
-        for (split_scheme_name, split_scheme) in self.split_schemes.items():
-            for train_or_eval, dataset_dict in split_scheme.items():
-                for split, dataset in dataset_dict.items():
-                    indices[split][train_or_eval] = np.array(dataset.indices)
-        for split in indices.values():
-            prev_indices = None
-            for train_or_eval in split.values():
-                curr_indices = train_or_eval
-                if prev_indices is not None:
-                    assert np.array_equal(curr_indices, prev_indices)
-                prev_indices = curr_indices
+    def assert_across(self, across_what, assertion, within_group=False, attribute_descriptor="indices", attribute_getter=None, **input_kwargs):
+        if across_what == "split_scheme_names":
+            names = self.split_scheme_holder.get_split_scheme_names()
+        elif across_what == "transform_types":
+            names = self.split_scheme_holder.get_transform_types()
+        elif across_what == "split_names":
+            names = self.split_scheme_holder.get_split_names()
+        if attribute_getter is None:
+            attribute_getter = self.dataset_attribute_to_assert
+        datasets = []
+        kwargs = copy.deepcopy(input_kwargs)
+        for name in names:
+            kwargs[across_what] = [name]
+            datasets.append(self.split_scheme_holder.filter(**kwargs))
+        if not within_group:
+            datasets = zip(*datasets)
+        for ds in datasets:
+            for (x,y) in itertools.combinations(ds, 2):
+                x_a, y_a = attribute_getter(x), attribute_getter(y)
+                is_equal = np.array_equal(x_a, y_a)
+                if assertion == "equal":
+                    assert is_equal
+                elif assertion == "not equal":
+                    assert not is_equal
+                elif assertion == "disjoint":
+                    assert len(np.intersect1d(x_a, y_a)) == 0
+                else:
+                    raise ValueError('The assertion argument must be one of ["equal", "not_equal", "disjoint"]')
+        input_kwargs_as_string = ", ".join(["{}={}".format(k, v) for k,v in input_kwargs.items()])
+        splits = input_kwargs.pop("split_names")
+        across_or_within = "across" if not within_group else "within"
+        logging.info("Asserted: the {} set {} are {} {} {}".format(splits, attribute_descriptor, assertion, across_or_within, across_what))
 
-
+    # datasets is two-level dictionary:
+    # {train_transform: {train: dataset, val: dataset, test: dataset}, eval_transform:: {train: dataset, val: dataset, test: dataset}}
     def create_split_schemes(self, datasets):
-        self.split_schemes = OrderedDict()
-        self._create_split_schemes(datasets)
+        self.split_scheme_holder.set_split_schemes(self._create_split_schemes(datasets))
         self.split_assertions()
-        self.split_scheme_names = list(self.split_schemes.keys())
-
-
+        
     def _create_split_schemes(self, datasets):
         raise NotImplementedError
 
     def split_assertions(self):
-        self.assert_same_test_set_across_schemes()
-        self.assert_same_sets_in_both_train_and_eval()
+        for t_type in self.split_scheme_holder.get_transform_types():
+            self.assert_across("split_scheme_names", "equal", transform_types=[t_type], split_names=["test"])
+            self.assert_across("split_scheme_names", "not equal", transform_types=[t_type], split_names=["train"])
+            self.assert_across("split_scheme_names", "disjoint", transform_types=[t_type], split_names=["val"])
+            self.assert_across("split_scheme_names", "disjoint", within_group=True, transform_types=[t_type], split_names=self.split_scheme_holder.get_split_names())
+        self.assert_across("transform_types", "equal", split_names=self.split_scheme_holder.get_split_names())
 
     def set_curr_split_scheme(self, split_scheme_name):
-        self.curr_split_scheme_name = split_scheme_name
-        self.curr_split_scheme = self.split_schemes[self.curr_split_scheme_name]
+        self.split_scheme_holder.set_curr_split_scheme(split_scheme_name)
 
-    def get_dataset(self, train_or_eval, split_name, log_split_details=False):
-        dataset = self.curr_split_scheme[train_or_eval][split_name]
-        if log_split_details:
-            logging.info("Getting split: {} / {} / length {} / using {} transform".format(self.curr_split_scheme_name, split_name, len(dataset), train_or_eval))
-        return dataset
+    def get_dataset(self, *args, **kwargs):
+        return self.split_scheme_holder.get_dataset(*args, **kwargs)
 
     def get_labels(self, *args, **kwargs):
         dataset = self.get_dataset(*args, **kwargs)
@@ -67,17 +80,15 @@ class BaseSplitManager:
 
     def get_num_labels(self, *args, **kwargs):
         labels = self.get_labels(*args, **kwargs)
-        L = np.array(labels)
-        L = d_u.get_labels_by_hierarchy(L, self.hierarchy_level)
-        return len(set(L))
+        return len(d_u.get_label_set(labels, self.hierarchy_level))
 
-    def get_dataset_dict(self, train_or_eval, inclusion_list=None, exclusion_list=None):
-        dataset_dict = {}
-        curr_split_scheme = self.curr_split_scheme[train_or_eval]
-        inclusion_list = list(curr_split_scheme.keys()) if inclusion_list is None else inclusion_list
-        exclusion_list = [] if exclusion_list is None else exclusion_list
-        allowed_list = [x for x in inclusion_list if x not in exclusion_list]
-        for split_name, _ in curr_split_scheme.items():
-            if split_name in allowed_list:
-                dataset_dict[split_name] = self.get_dataset(train_or_eval, split_name, log_split_details=True)
-        return dataset_dict
+    def get_dataset_dict(self, *args, **kwargs):
+        return self.split_scheme_holder.get_dataset_dict(*args, **kwargs)
+
+    @property
+    def split_scheme_names(self):
+        return self.split_scheme_holder.get_split_scheme_names()
+
+    @property
+    def curr_split_scheme_name(self):
+        return self.split_scheme_holder.curr_split_scheme_name
