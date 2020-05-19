@@ -1,6 +1,6 @@
 import sys
 import copy
-from ..utils import common_functions as c_f, split_manager
+from ..utils import common_functions as c_f
 from pytorch_metric_learning import losses
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
@@ -170,6 +170,7 @@ class BaseAPIParser:
         datasets = defaultdict(dict)
 
         for train_or_eval, T in self.get_transforms().items():
+            logging.info("{} transform: {}".format(train_or_eval, T))
             dataset_params = copy.deepcopy(original_dataset_params)
             dataset_params["transform"] = T
             if "root" not in dataset_params:
@@ -177,16 +178,12 @@ class BaseAPIParser:
             for split_name in self.args.split_names:
                 datasets[train_or_eval][split_name] = chosen_dataset(**dataset_params)
 
-        self.split_manager = split_manager.SplitManager(datasets=datasets, 
-                                                        test_size=self.args.test_size,
-                                                        test_start_idx=self.args.test_start_idx, 
-                                                        num_training_partitions=self.args.num_training_partitions,
-                                                        num_training_sets=self.args.num_training_sets,
-                                                        hierarchy_level=self.args.label_hierarchy_level)
+        self.split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
+        self.split_manager.create_split_schemes(datasets)
                                                         
     def get_transforms(self):
         try:
-            trunk = self.models["trunk"]
+            trunk = self.get_trunk_model(self.args.models["trunk"])
             if isinstance(trunk, torch.nn.DataParallel):
                 trunk = trunk.module
             model_transform_properties = {k:getattr(trunk, k) for k in ["mean", "std", "input_space", "input_range"]}

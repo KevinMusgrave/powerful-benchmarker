@@ -1,43 +1,16 @@
 #! /usr/bin/env python3
 
 from collections import OrderedDict
-
 import numpy as np
 import torch
-from . import dataset_utils as d_u
+from ..utils import dataset_utils as d_u
 import logging
 import itertools
 from collections import defaultdict
 
-class SplitManager:
-    def __init__(
-        self,
-        datasets=None,
-        train_transform=None,
-        eval_transform=None,
-        test_size=None,
-        test_start_idx=None,
-        num_training_partitions=2,
-        num_training_sets=1,
-        hierarchy_level=0
-    ):
-        self.train_transform = train_transform
-        self.eval_transform = eval_transform
-        self.test_size = test_size
-        self.test_start_idx = test_start_idx
-        self.num_training_partitions = num_training_partitions
-        self.num_training_sets = num_training_sets
+class BaseSplitManager:
+    def __init__(self, hierarchy_level=0):
         self.hierarchy_level = hierarchy_level
-        self.create_split_schemes(datasets)
-
-    def assert_splits_are_class_disjoint(self):
-        for (split_scheme_name, split_scheme) in self.split_schemes.items():
-            for dataset_dict in split_scheme.values():
-                labels = []
-                for split, dataset in dataset_dict.items():
-                    labels.append(set(d_u.get_labels_by_hierarchy(d_u.get_subset_dataset_labels(dataset), self.hierarchy_level)))
-                for (x,y) in itertools.combinations(labels, 2):
-                    assert x.isdisjoint(y)
 
     def assert_same_test_set_across_schemes(self):
         test_key = "test"
@@ -48,7 +21,6 @@ class SplitManager:
                 if prev_indices is not None:
                     assert np.array_equal(curr_indices, prev_indices)
                 prev_indices = curr_indices
-
 
     def assert_same_sets_in_both_train_and_eval(self):
         indices = defaultdict(dict)
@@ -67,20 +39,17 @@ class SplitManager:
 
     def create_split_schemes(self, datasets):
         self.split_schemes = OrderedDict()
-        for partition in range(self.num_training_sets):
-            name = d_u.get_base_split_name(self.test_size, self.test_start_idx, self.num_training_partitions, partition=partition)
-            self.split_schemes[name] = OrderedDict()
-            for train_or_eval, dataset_dict in datasets.items():
-                self.split_schemes[name][train_or_eval] = d_u.create_one_class_disjoint_split_scheme(dataset_dict, 
-                                                                                                    partition=partition,
-                                                                                                    num_training_partitions=self.num_training_partitions,
-                                                                                                    test_size=self.test_size, 
-                                                                                                    test_start_idx=self.test_start_idx,
-                                                                                                    hierarchy_level=self.hierarchy_level)
-        self.assert_splits_are_class_disjoint()
+        self._create_split_schemes(datasets)
+        self.split_assertions()
+        self.split_scheme_names = list(self.split_schemes.keys())
+
+
+    def _create_split_schemes(self, datasets):
+        raise NotImplementedError
+
+    def split_assertions(self):
         self.assert_same_test_set_across_schemes()
         self.assert_same_sets_in_both_train_and_eval()
-        self.split_scheme_names = list(self.split_schemes.keys())
 
     def set_curr_split_scheme(self, split_scheme_name):
         self.curr_split_scheme_name = split_scheme_name

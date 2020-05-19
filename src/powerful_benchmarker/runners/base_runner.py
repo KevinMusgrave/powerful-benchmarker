@@ -37,9 +37,7 @@ class BaseRunner:
 
     def init_pytorch_getter(self):
         from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers, utils
-        from .. import architectures
-        from .. import datasets
-        from .. import api_parsers
+        from .. import architectures, datasets, api_parsers, split_managers
         self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
         self.pytorch_getter.register('model', architectures.misc_models)
         self.pytorch_getter.register('loss', losses)
@@ -50,7 +48,8 @@ class BaseRunner:
         self.pytorch_getter.register('tester', testers)
         self.pytorch_getter.register('dataset', datasets)
         self.pytorch_getter.register('api_parser', api_parsers)
-        self.pytorch_getter.register('accuracy_calculator', utils.AccuracyCalculator)
+        self.pytorch_getter.register('accuracy_calculator', utils.accuracy_calculator.AccuracyCalculator)
+        self.pytorch_getter.register('split_manager', split_managers)
 
 
     def set_YR(self):
