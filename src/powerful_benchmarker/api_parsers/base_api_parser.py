@@ -1,6 +1,6 @@
 import sys
 import copy
-from ..utils import common_functions as c_f
+from ..utils import common_functions as c_f, dataset_utils as d_u
 from pytorch_metric_learning import losses
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
@@ -150,6 +150,9 @@ class BaseAPIParser:
     def get_accuracy_calculator(self):
         return self.pytorch_getter.get("accuracy_calculator", yaml_dict=self.args.eval_accuracy_calculator)
 
+    def get_collate_fn(self):
+        return None
+
     def set_optimizers(self):
         self.optimizers, self.lr_schedulers, self.gradient_clippers = {}, {}, {}
         for k, v in self.args.optimizers.items():
@@ -165,22 +168,33 @@ class BaseAPIParser:
             if s is not None: self.lr_schedulers = {"%s_%s"%(basename, k):v for k,v in s.items()}
             if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
 
-    def set_split_manager(self):
-        chosen_dataset, original_dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
-        datasets = defaultdict(dict)
 
+    def set_split_manager(self):
+        self.split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
+
+        if self.args.multi_dataset is not None:
+            chosen_dataset, original_dataset_params = {}, {}
+            for split_name, yaml_dict in self.args.multi_dataset.items():
+                chosen_dataset[split_name], original_dataset_params[split_name] = self.pytorch_getter.get("dataset", yaml_dict=yaml_dict, return_uninitialized=True)
+            self.split_manager.split_names = list(self.args.multi_dataset.keys())
+        else:
+            chosen_dataset, original_dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
+            chosen_dataset = {k:chosen_dataset for k in self.split_manager.split_names}
+            original_dataset_params = {k:original_dataset_params for k in self.split_manager.split_names}
+
+        datasets = defaultdict(dict)
         for transform_type, T in self.get_transforms().items():
             logging.info("{} transform: {}".format(transform_type, T))
-            dataset_params = copy.deepcopy(original_dataset_params)
-            dataset_params["transform"] = T
-            if "root" not in dataset_params:
-                dataset_params["root"] = self.args.dataset_root            
-            for split_name in self.args.split_names:
-                datasets[transform_type][split_name] = chosen_dataset(**dataset_params)
-
-        self.split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
+            for split_name in self.split_manager.split_names:
+                dataset_params = copy.deepcopy(original_dataset_params[split_name])
+                dataset_params["transform"] = T
+                if "root" not in dataset_params:
+                    dataset_params["root"] = self.args.dataset_root            
+                datasets[transform_type][split_name] = chosen_dataset[split_name](**dataset_params)
+        
         self.split_manager.create_split_schemes(datasets)
-                                                        
+
+
     def get_transforms(self):
         try:
             trunk = self.get_trunk_model(self.args.models["trunk"])
@@ -225,8 +239,12 @@ class BaseAPIParser:
         if self.args.sampler in [None, {}]:
             self.sampler = None
         else:
-            labels = self.split_manager.get_labels("train", "train")
-            self.sampler = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, additional_params={"labels": labels})
+            sampler, sampler_params = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, return_uninitialized=True)
+            if c_f.check_init_arguments(sampler, "labels"):
+                sampler_params = copy.deepcopy(sampler_params)
+                sampler_params["labels"] = self.split_manager.get_labels("train", "train")
+            self.sampler = sampler(**sampler_params)
+            
 
     def get_loss_function(self, loss_type):
         loss, loss_params = self.pytorch_getter.get("loss", yaml_dict=loss_type, return_uninitialized=True)
@@ -294,7 +312,7 @@ class BaseAPIParser:
     def eval_assertions(self, dataset_dict):
         for k, v in dataset_dict.items():
             assert v is self.split_manager.get_dataset("eval", k)
-            assert v.dataset.transform is self.transforms["eval"]
+            assert d_u.get_underlying_dataset(v).transform is self.transforms["eval"]
 
     def eval_model(self, epoch, suffix, load_model=False, skip_eval_if_already_done=True):
         logging.info("Launching evaluation for model %s"%suffix)
@@ -307,7 +325,7 @@ class BaseAPIParser:
         dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval, exclusion_list=splits_to_exclude)
         self.eval_assertions(dataset_dict)
         return self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, 
-                                        splits_to_eval=self.args.splits_to_eval, collate_fn=None, skip_eval_if_already_done=skip_eval_if_already_done)
+                                        splits_to_eval=self.args.splits_to_eval, collate_fn=self.get_collate_fn(), skip_eval_if_already_done=skip_eval_if_already_done)
 
     def flush_tensorboard(self):
         for keeper in ["record_keeper", "meta_record_keeper"]:
@@ -397,7 +415,7 @@ class BaseAPIParser:
             "data_device": self.device,
             "dataloader_num_workers": self.args.eval_dataloader_num_workers,
             "pca": self.args.eval_pca,
-            "data_and_label_getter": lambda data: (data["data"], data["label"]),
+            "data_and_label_getter": self.split_manager.data_and_label_getter,
             "label_hierarchy_level": self.args.label_hierarchy_level,
             "end_of_testing_hook": self.hooks.end_of_testing_hook,
             "accuracy_calculator": self.get_accuracy_calculator() 
@@ -412,7 +430,7 @@ class BaseAPIParser:
                                                     model_folder=self.model_folder,
                                                     test_interval=self.args.save_interval,
                                                     patience=self.args.patience,
-                                                    test_collate_fn=None)
+                                                    test_collate_fn=self.get_collate_fn())
         def end_of_epoch_hook(trainer):
             torch.cuda.empty_cache()
             self.eval_assertions(dataset_dict)
@@ -427,7 +445,7 @@ class BaseAPIParser:
             "optimizers": self.optimizers,
             "batch_size": self.args.batch_size,
             "sampler": self.sampler,
-            "collate_fn": None,
+            "collate_fn": self.get_collate_fn(),
             "loss_funcs": self.loss_funcs,
             "mining_funcs": self.mining_funcs,
             "dataset": self.split_manager.get_dataset("train", "train", log_split_details=True),
@@ -439,8 +457,8 @@ class BaseAPIParser:
             "label_hierarchy_level": self.args.label_hierarchy_level,
             "dataloader_num_workers": self.args.dataloader_num_workers,
             "loss_weights": getattr(self.args, "loss_weights", None),
-            "data_and_label_getter": lambda data: (data["data"], data["label"]),
-            "dataset_labels": self.split_manager.get_labels("train", "train"),
+            "data_and_label_getter": self.split_manager.data_and_label_getter,
+            "dataset_labels": list(self.split_manager.get_label_set("train", "train")),
             "set_min_label_to_zero": True,
             "end_of_iteration_hook": self.hooks.end_of_iteration_hook,
             "end_of_epoch_hook": self.get_end_of_epoch_hook()
@@ -463,8 +481,7 @@ class BaseAPIParser:
 
     def training_assertions(self, trainer):
         assert trainer.dataset is self.split_manager.get_dataset("train", "train")
-        assert trainer.dataset.dataset.transform == self.transforms["train"]
-        assert np.array_equal(trainer.dataset_labels, self.split_manager.get_labels("train", "train"))
+        assert d_u.get_underlying_dataset(trainer.dataset).transform == self.transforms["train"]
 
     def train(self, num_epochs):
         if self.args.check_untrained_accuracy:
@@ -534,7 +551,7 @@ class BaseAPIParser:
             self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
         prefix = self.hooks.record_group_name_prefix 
         self.hooks.record_group_name_prefix = "" #temporary
-        non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in ["train", "val", "test"]}
+        non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in self.split_manager.split_names}
         meta_separate = {k:"meta_SeparateEmbeddings_"+v for k,v in non_meta.items()}
         meta_concatenate = {k:"meta_ConcatenateEmbeddings_"+v for k,v in non_meta.items()}
         self.hooks.record_group_name_prefix = prefix

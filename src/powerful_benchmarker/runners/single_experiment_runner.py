@@ -44,11 +44,8 @@ class SingleExperimentRunner(BaseRunner):
                                                     merge_argparse=self.merge_argparse_when_resuming)
 
         # check if there were config diffs if training was resumed
-        if YR.args.special_split_scheme_name:
-            base_split_name = YR.args.special_split_scheme_name
-        else:
-            base_split_name = d_u.get_base_split_name(YR.args.test_size, YR.args.test_start_idx, YR.args.num_training_partitions)
-        resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, base_split_name)
+        temp_split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
+        resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, temp_split_manager)
 
         if len(resume_training_dict) > 0:
             for sub_folder, num_epochs_dict in resume_training_dict.items():

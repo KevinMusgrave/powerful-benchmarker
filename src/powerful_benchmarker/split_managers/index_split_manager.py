@@ -24,6 +24,11 @@ class IndexSplitManager(BaseSplitManager):
         self.shuffle = shuffle
         self.random_seed = random_seed
 
+    def split_assertions(self):
+        super().split_assertions()
+        for t_type in self.split_scheme_holder.get_transform_types():
+            self.assert_across("split_scheme_names", "disjoint", transform_types=[t_type], split_names=["val"])
+
     def get_trainval_and_test(self, dataset, input_list):
         trainval_set, test_set, _, _ = train_test_split(input_list, 
                                                         input_list, 
@@ -57,7 +62,7 @@ class IndexSplitManager(BaseSplitManager):
 
         for i, (train_idx, val_idx) in enumerate(self.get_kfold_generator(sample_dataset, trainval_set)):
             split_dict = {"train": trainval_set[train_idx], "val": trainval_set[val_idx], "test": test_set}
-            name = self.get_split_name(i)
+            name = self.get_split_scheme_name(i)
             split_schemes[name] = OrderedDict()
             for transform_type in datasets.keys():
                 split_schemes[name][transform_type] = OrderedDict()
@@ -70,11 +75,11 @@ class IndexSplitManager(BaseSplitManager):
         return split_schemes
 
 
-    def get_base_split_name(self):
+    def get_base_split_scheme_name(self):
         test_size = int(self.test_size*100)
         test_start_idx = int(self.test_start_idx*100)
         return 'Test%02d_%02d_Partitions%d_'%(test_size, test_start_idx, self.num_training_partitions)
 
 
-    def get_split_name(self, partition):
-        return "{}{}".format(self.get_base_split_name(), partition)
+    def get_split_scheme_name(self, partition):
+        return "{}{}".format(self.get_base_split_scheme_name(), partition)

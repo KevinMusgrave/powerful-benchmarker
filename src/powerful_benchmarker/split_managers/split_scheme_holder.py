@@ -42,7 +42,7 @@ class SplitSchemeHolder:
         return list(c_f.first_val_of_dict(self.split_schemes).keys())
 
     def get_split_names(self):
-        return list(c_f.first_val_of_dict(c_f.first_val_of_dict(self.split_schemes)))
+        return list(c_f.first_val_of_dict(c_f.first_val_of_dict(self.split_schemes)).keys())
 
     def get_dataset(self, transform_type, split_name, log_split_details=False):
         dataset = self.curr_split_scheme[transform_type][split_name]

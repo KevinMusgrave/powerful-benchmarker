@@ -5,16 +5,13 @@ import numpy as np
 class ClassDisjointSplitManager(IndexSplitManager):
 
     def get_list_for_splitting(self, dataset):
-        label_set = d_u.get_label_set(dataset.labels, self.hierarchy_level)
-        return sorted(list(label_set))
+        return sorted(list(self.get_label_set(dataset=dataset)))
 
     def convert_to_subset_idx(self, dataset, split_from_kfolder):
-        return np.where(np.isin(dataset.labels, split_from_kfolder))[0]
+        return np.where(np.isin(self.get_labels(dataset=dataset), split_from_kfolder))[0]
 
     def get_list_for_class_disjoint_assertion(self, dataset):
-        labels = d_u.get_subset_dataset_labels(dataset)
-        label_set = d_u.get_label_set(labels, self.hierarchy_level)
-        return list(label_set)
+        return self.get_list_for_splitting(dataset)
 
     def split_assertions(self):
         super().split_assertions()

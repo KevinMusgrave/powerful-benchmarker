@@ -2,9 +2,23 @@
 
 import torch.utils.data
 import numpy as np
+from . import common_functions as c_f
 
-def get_subset_dataset_labels(subset_dataset):
-    return subset_dataset.dataset.labels[subset_dataset.indices]
+def get_underlying_dataset(dataset):
+    if isinstance(dataset, torch.utils.data.Subset):
+        return dataset.dataset
+    return dataset
+
+def get_dataset_attr(dataset, attr_name):
+    if isinstance(dataset, torch.utils.data.Subset):
+        dataset = get_underlying_dataset(dataset)
+    return c_f.get_attr_and_try_as_function(dataset, attr_name)    
+
+def get_dataset_labels(dataset, labels_attr_name):
+    labels = np.array(get_dataset_attr(dataset, labels_attr_name))
+    if isinstance(dataset, torch.utils.data.Subset):
+        return labels[dataset.indices]
+    return labels
 
 def get_labels_by_hierarchy(labels, hierarchy_level):
     if labels.ndim == 2:

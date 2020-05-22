@@ -65,15 +65,12 @@ def get_sorted_config_diff_folders(config_folder):
             latest_epochs.append([c]+[int(x) for x in c.replace(full_base_path,"").split('_')])
         num_training_sets = len(latest_epochs[0])-1
         latest_epochs = sorted(latest_epochs, key=operator.itemgetter(*list(range(1, num_training_sets+1))))
-        return [x[0] for x in latest_epochs], [x[1:] for x in latest_epochs], num_training_sets
-    return [], [], 0
+        return [x[0] for x in latest_epochs], [x[1:] for x in latest_epochs]
+    return [], []
 
-def get_all_resume_training_config_diffs(config_folder, split_scheme_name):
-    config_diffs, latest_epochs, num_training_sets = get_sorted_config_diff_folders(config_folder)
-    if num_training_sets > 1:
-        split_scheme_names = ["%s%d"%(split_scheme_name,i) for i in range(num_training_sets)]
-    else:
-        split_scheme_names = [split_scheme_name]
+def get_all_resume_training_config_diffs(config_folder, split_manager):
+    config_diffs, latest_epochs = get_sorted_config_diff_folders(config_folder)
+    split_scheme_names = [split_manager.get_split_scheme_name(i) for i in range(len(latest_epochs))]
     resume_training_dict = {}
     for i, k in enumerate(config_diffs):
         resume_training_dict[k] = {split_scheme:epoch for (split_scheme,epoch) in zip(split_scheme_names, latest_epochs[i])}
@@ -83,7 +80,7 @@ def get_all_resume_training_config_diffs(config_folder, split_scheme_name):
 def save_config_files(config_folder, dict_of_yamls, resume_training, latest_epochs):
     makedir_if_not_there(config_folder)
     new_dir = None
-    existing_config_diff_folders, _, _ = get_sorted_config_diff_folders(config_folder)
+    existing_config_diff_folders, _ = get_sorted_config_diff_folders(config_folder)
 
     for config_name, config_dict in dict_of_yamls.items():
         fname = os.path.join(config_folder, '%s.yaml'%config_name)
@@ -162,3 +159,11 @@ def if_str_convert_to_singleton_list(input):
 
 def first_val_of_dict(input):
     return input[list(input.keys())[0]]
+
+
+def get_attr_and_try_as_function(input_object, input_attr):
+    attr = getattr(input_object, input_attr)
+    try:
+        return attr()
+    except TypeError:
+        return attr

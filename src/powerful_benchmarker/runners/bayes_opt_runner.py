@@ -69,12 +69,6 @@ def open_log(log_paths):
     return ax_client
 
 
-def remove_keywords(YR):
-    emag_utils.remove_key_word_recursively(YR.args.__dict__, "~OVERRIDE~")
-    for keyword in BAYESIAN_KEYWORDS:
-        emag_utils.remove_key_word_recursively(YR.args.__dict__, keyword)
-
-
 class BayesOptRunner(BaseRunner):
     def __init__(self, bayes_opt_iters, reproductions, **kwargs):
         super().__init__(**kwargs)

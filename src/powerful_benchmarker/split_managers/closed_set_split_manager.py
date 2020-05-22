@@ -14,4 +14,4 @@ class ClosedSetSplitManager(IndexSplitManager):
 
     def get_kfold_generator(self, dataset, trainval_set):
         kfolder = StratifiedKFold(n_splits=self.num_training_partitions, shuffle=self.shuffle, random_state=self.random_seed)
-        return kfolder.split(trainval_set, dataset.labels[trainval_set])
+        return kfolder.split(trainval_set, self.get_labels(dataset=dataset)[trainval_set])
