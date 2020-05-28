@@ -1,7 +1,6 @@
 from ..utils import dataset_utils as d_u, common_functions as c_f
 from .base_split_manager import BaseSplitManager
 import itertools
-from collections import OrderedDict
 from sklearn.model_selection import train_test_split, KFold
 import numpy as np
 
@@ -47,6 +46,7 @@ class IndexSplitManager(BaseSplitManager):
     def convert_to_subset_idx(self, dataset, split_from_kfolder):
         return split_from_kfolder
 
+
     def _create_split_schemes(self, datasets):
         # the assumption is all datasets are the same
         sample_dataset = c_f.first_val_of_dict(c_f.first_val_of_dict(datasets))
@@ -58,21 +58,15 @@ class IndexSplitManager(BaseSplitManager):
             list_for_splitting = np.roll(list_for_splitting, test_start - test_size)
 
         trainval_set, test_set = self.get_trainval_and_test(sample_dataset, list_for_splitting)
-        split_schemes = OrderedDict()
+        trainval_idx_tuples = self.get_kfold_generator(sample_dataset, trainval_set)
 
-        for i, (train_idx, val_idx) in enumerate(self.get_kfold_generator(sample_dataset, trainval_set)):
-            split_dict = {"train": trainval_set[train_idx], "val": trainval_set[val_idx], "test": test_set}
-            name = self.get_split_scheme_name(i)
-            split_schemes[name] = OrderedDict()
-            for transform_type in datasets.keys():
-                split_schemes[name][transform_type] = OrderedDict()
-                if i < self.num_training_sets:
-                    for k, v in split_dict.items():
-                        curr_dataset = datasets[transform_type][k]
-                        subset_idx = self.convert_to_subset_idx(curr_dataset, v)
-                        split_schemes[name][transform_type][k] = d_u.create_subset(curr_dataset, subset_idx)
-
-        return split_schemes
+        return d_u.create_subset_datasets_from_indices(datasets, 
+                                                        trainval_idx_tuples,
+                                                        trainval_set, 
+                                                        test_set, 
+                                                        self.get_split_scheme_name,
+                                                        self.num_training_sets,
+                                                        self.convert_to_subset_idx)
 
 
     def get_base_split_scheme_name(self):

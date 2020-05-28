@@ -388,9 +388,12 @@ class BayesOptRunner(BaseRunner):
 
     
     def get_single_experiment_runner(self):
-        return SingleExperimentRunner(root_experiment_folder=self.bayes_opt_root_experiment_folder, 
+        SER = SingleExperimentRunner(root_experiment_folder=self.bayes_opt_root_experiment_folder, 
                                     root_config_folder=self.YR.args.place_to_save_configs, 
                                     dataset_root=self.dataset_root,
                                     pytorch_home=self.pytorch_home, 
                                     global_db_path=self.global_db_path,
                                     merge_argparse_when_resuming=self.merge_argparse_when_resuming)
+        
+        SER.pytorch_getter = self.pytorch_getter
+        return SER

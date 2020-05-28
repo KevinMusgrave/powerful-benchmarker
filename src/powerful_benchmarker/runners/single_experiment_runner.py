@@ -44,7 +44,7 @@ class SingleExperimentRunner(BaseRunner):
                                                     merge_argparse=self.merge_argparse_when_resuming)
 
         # check if there were config diffs if training was resumed
-        temp_split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
+        temp_split_manager = self.pytorch_getter.get("split_manager", yaml_dict=args.split_manager)
         resume_training_dict = c_f.get_all_resume_training_config_diffs(configs_folder, temp_split_manager)
 
         if len(resume_training_dict) > 0:

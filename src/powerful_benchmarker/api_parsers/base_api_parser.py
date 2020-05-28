@@ -170,7 +170,11 @@ class BaseAPIParser:
 
 
     def set_split_manager(self):
-        self.split_manager = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager)
+        split_manager, split_manager_params = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager, return_uninitialized=True)
+        if c_f.check_init_arguments(split_manager, "model"):
+            split_manager_params = copy.deepcopy(split_manager_params)
+            split_manager_params["model"] = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"])).to(self.device)
+        self.split_manager = split_manager(**split_manager_params)
 
         if self.args.multi_dataset is not None:
             chosen_dataset, original_dataset_params = {}, {}

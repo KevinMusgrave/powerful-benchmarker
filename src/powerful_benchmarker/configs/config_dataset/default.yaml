@@ -2,24 +2,11 @@ dataset:
   CUB200:
 
 multi_dataset: null
-  # train:  
-  #   CIFAR100:
-  #     train: True
-  #     download: True
-  # val:
-  #   CIFAR100:
-  #     train: False
-  #     download: True
 
 splits_to_eval:
   - val
 
-
 split_manager:
-  # PredefinedSplitManager:
-  #   labels_attr_name: targets
-  #   data_and_label_getter_keys: null
-
   ClassDisjointSplitManager:
     test_size: 0.5
     test_start_idx: 0.5
@@ -27,22 +14,5 @@ split_manager:
     num_training_sets: 4
     hierarchy_level: 0
     data_and_label_getter_keys: [data, label]
-    # labels_attr_name: targets
-
-  # EmbeddingSpaceSplitManager:
-  #   train_size: 0.3
-  #   val_size: 0.2
-  #   test_size: 0.5
-
-
-# split_combos_to_eval:
-#   train_val:
-#     - train
-#     - val
-#   train_distractor:
-#     - train
-#     - distractor
-
-
 
 label_hierarchy_level: 0

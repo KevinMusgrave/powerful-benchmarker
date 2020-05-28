@@ -70,7 +70,7 @@ def get_sorted_config_diff_folders(config_folder):
 
 def get_all_resume_training_config_diffs(config_folder, split_manager):
     config_diffs, latest_epochs = get_sorted_config_diff_folders(config_folder)
-    split_scheme_names = [split_manager.get_split_scheme_name(i) for i in range(len(latest_epochs))]
+    split_scheme_names = [split_manager.get_split_scheme_name(i) for i in range(len(latest_epochs[0]))]
     resume_training_dict = {}
     for i, k in enumerate(config_diffs):
         resume_training_dict[k] = {split_scheme:epoch for (split_scheme,epoch) in zip(split_scheme_names, latest_epochs[i])}
