@@ -285,8 +285,6 @@ r.register("api_parser", APIYourTrainer)
 r.run()
 ```
 
-If your trainer's ```__init__``` arguments are identical to the one you're extending, then you can just set ```APIYourTrainer = api_parsers.BaseAPIParser```. (Note that ```BaseAPIParser``` is the same as ```APIMetricLossOnly```)
-
 
 ## Config options guide
 Below is the format for the various config files. Click on the links to see the default yaml file for each category.
