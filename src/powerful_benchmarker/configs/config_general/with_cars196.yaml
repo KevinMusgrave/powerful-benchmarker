@@ -1,4 +1,2 @@
-dataset~OVERRIDE~:
-  Cars196:
 save_interval: 5
 patience: 14

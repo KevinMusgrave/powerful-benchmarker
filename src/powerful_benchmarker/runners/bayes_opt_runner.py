@@ -16,7 +16,7 @@ import glob
 import os
 import csv
 import pandas as pd
-from ..utils import common_functions as c_f
+from ..utils import common_functions as c_f, constants as const
 from .base_runner import BaseRunner
 from .single_experiment_runner import SingleExperimentRunner
 import pytorch_metric_learning.utils.logging_presets as logging_presets
@@ -27,11 +27,8 @@ import collections
 import json
 logging.info("Done importing packages in bayes_opt_runner")
 
-BAYESIAN_KEYWORDS=("~BAYESIAN~", "~LOG_BAYESIAN~", "~INT_BAYESIAN~")
-RESUME_FAILURE="RESUME_FAILURE"
 
-
-def set_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywords=BAYESIAN_KEYWORDS):
+def set_optimizable_params_and_bounds(args_dict, bayes_params, parent_key, keywords=const.BAYESIAN_KEYWORDS):
     for k, v in args_dict.items():
         if not isinstance(v, dict):
             for keyword in keywords:
@@ -199,31 +196,31 @@ class BayesOptRunner(BaseRunner):
             for exp in exp_names:
                 results[eval_type][exp] = {}
                 exp_id = global_record_keeper.record_writer.global_db.get_experiment_id(exp)
-                base_query = "SELECT * FROM %s WHERE experiment_id=? AND id=? AND is_trained=?"%table_name
-                max_id_query = "SELECT max(id) FROM %s WHERE experiment_id=? AND is_trained=?"%table_name
+                base_query = "SELECT * FROM {} WHERE experiment_id=? AND id=? AND {}=?".format(table_name, const.TRAINED_STATUS_COL_NAME)
+                max_id_query = "SELECT max(id) FROM {} WHERE experiment_id=? AND {}=?".format(table_name, const.TRAINED_STATUS_COL_NAME)
                 qs = {}
 
-                for key, is_trained in [("trained", 1), ("untrained", 0)]:
-                    max_id = global_record_keeper.query(max_id_query, values=(exp_id, is_trained), use_global_db=True)[0]["max(id)"]
-                    q = global_record_keeper.query(base_query, values=(exp_id, max_id, is_trained), use_global_db=True)
+                for trained_status in [const.UNTRAINED_TRUNK, const.UNTRAINED_TRUNK_AND_EMBEDDER, const.TRAINED]:
+                    max_id = global_record_keeper.query(max_id_query, values=(exp_id, trained_status), use_global_db=True)[0]["max(id)"]
+                    q = global_record_keeper.query(base_query, values=(exp_id, max_id, trained_status), use_global_db=True)
                     if len(q) > 0:
-                        qs[key] = q[0]
+                        qs[trained_status] = q[0]
 
-                for is_trained, v1 in qs.items():
+                for trained_status, v1 in qs.items():
                     q_as_dict = dict(v1)
-                    results[eval_type][exp][is_trained] = q_as_dict
+                    results[eval_type][exp][trained_status] = q_as_dict
                     for acc_key, v2 in q_as_dict.items():
-                        if all(not acc_key.startswith(x) for x in ["epoch", "is_trained", "SEM", "id", "experiment_id", "timestamp"]):
-                            summary[eval_type][is_trained][acc_key].append(v2)
+                        if all(not acc_key.startswith(x) for x in [const.TRAINED_STATUS_COL_NAME, "epoch", "SEM", "id", "experiment_id", "timestamp"]):
+                            summary[eval_type][trained_status][acc_key].append(v2)
 
 
-            for is_trained, v1 in summary[eval_type].items():
+            for trained_status, v1 in summary[eval_type].items():
                 for acc_key in v1.keys():
                     v2 = v1[acc_key]
                     mean = np.mean(v2)
                     cf_low, cf_high = scipy_stats.t.interval(0.95, len(v2)-1, loc=np.mean(v2), scale=scipy_stats.sem(v2)) #https://stackoverflow.com/a/34474255
                     cf_width = mean-cf_low
-                    summary[eval_type][is_trained][acc_key] = {"mean": float(mean), 
+                    summary[eval_type][trained_status][acc_key] = {"mean": float(mean), 
                                                                     "95%_confidence_interval": (float(cf_low), float(cf_high)),
                                                                     "95%_confidence_interval_width": float(cf_width)}
 
@@ -317,7 +314,7 @@ class BayesOptRunner(BaseRunner):
             logging.error(repr(e))
             logging.warning("Could not resume training for %s"%YR.args.experiment_name)
             self.delete_sub_experiment_folder(YR.args.experiment_name)
-            output = RESUME_FAILURE
+            output = const.RESUME_FAILURE
         return output
 
 
@@ -335,8 +332,8 @@ class BayesOptRunner(BaseRunner):
             self.delete_sub_experiment_folder(sub_experiment_name)
             parameter_load_successful = False
 
-        output = self.try_resuming(local_YR) if parameter_load_successful else RESUME_FAILURE
-        return self.run_new_experiment(parameters, sub_experiment_name) if output == RESUME_FAILURE else output
+        output = self.try_resuming(local_YR) if parameter_load_successful else const.RESUME_FAILURE
+        return self.run_new_experiment(parameters, sub_experiment_name) if output == const.RESUME_FAILURE else output
 
 
     def run_new_experiment(self, parameters, sub_experiment_name):
@@ -372,11 +369,11 @@ class BayesOptRunner(BaseRunner):
             local_YR = self.get_simplified_yaml_reader("%s_reproduction%d"%(sub_experiment_name, i))
             local_YR.args.reproduce_results = self.get_sub_experiment_path(sub_experiment_name)
             local_YR.args.resume_training = None
-            output = RESUME_FAILURE
+            output = const.RESUME_FAILURE
             if os.path.isdir(local_YR.args.experiment_folder):
                 local_YR.args.resume_training = self.get_resume_training_value()
                 output = self.try_resuming(local_YR, reproduction=True)
-            if output == RESUME_FAILURE:
+            if output == const.RESUME_FAILURE:
                 SER = self.get_single_experiment_runner()
                 starting_fresh_hook = self.starting_fresh(local_YR.args.experiment_name)
                 SER.reproduce_results(local_YR, starting_fresh_hook=starting_fresh_hook)
