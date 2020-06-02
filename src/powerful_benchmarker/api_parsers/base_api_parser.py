@@ -67,7 +67,7 @@ class BaseAPIParser:
                     logging.error(error_string)
                     mean, sem = 0, 0
                     self.delete_old_objects()
-                    return mean, sem if hasattr(self, "meta_record_keeper") else mean
+                    return mean, sem if self.split_manager.num_split_schemes > 1 else mean
                 else:
                     raise ValueError
             self.record_meta_logs()
@@ -343,27 +343,25 @@ class BaseAPIParser:
 
     def set_meta_record_keeper(self):
         is_new_experiment = self.beginning_of_training()
-        if len(self.split_manager.split_scheme_names) > 1:
-            folders = {folder_type: s % (self.experiment_folder, "meta_logs") for folder_type, s in self.sub_experiment_dirs.items()}
-            csv_folder, tensorboard_folder = folders["csvs"], folders["tensorboard"]
-            self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.global_db_path, self.args.experiment_name, is_new_experiment)
-            self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+        folders = {folder_type: s % (self.experiment_folder, "meta_logs") for folder_type, s in self.sub_experiment_dirs.items()}
+        csv_folder, tensorboard_folder = folders["csvs"], folders["tensorboard"]
+        self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.global_db_path, self.args.experiment_name, is_new_experiment)
+        self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
 
     def update_meta_record_keeper(self, split_scheme_name):
-        if hasattr(self, "meta_accuracies"):
-            for split in self.args.splits_to_eval:
-                untrained_trunk_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, const.UNTRAINED_TRUNK_INT)
-                untrained_trunk_embedder_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, const.UNTRAINED_TRUNK_AND_EMBEDDER_INT)
-                best_split_accuracies, _ = self.hooks.get_accuracies_of_best_epoch(self.tester_obj, split, ignore_epoch=const.IGNORE_ALL_UNTRAINED)
-                accuracies_dict = {const.UNTRAINED_TRUNK: untrained_trunk_accuracies, const.UNTRAINED_TRUNK_AND_EMBEDDER: untrained_trunk_embedder_accuracies, const.TRAINED: best_split_accuracies}
-                for trained_status, accuracies in accuracies_dict.items():
-                    if len(accuracies) > 0:
-                        accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in self.tester_obj.accuracy_calculator.get_curr_metrics())]
-                        for k in accuracy_keys:
-                            self.meta_accuracies[split][trained_status][k][split_scheme_name] = accuracies[0][k]
+        for split in self.args.splits_to_eval:
+            untrained_trunk_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, const.UNTRAINED_TRUNK_INT)
+            untrained_trunk_embedder_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, const.UNTRAINED_TRUNK_AND_EMBEDDER_INT)
+            best_split_accuracies, _ = self.hooks.get_accuracies_of_best_epoch(self.tester_obj, split, ignore_epoch=const.IGNORE_ALL_UNTRAINED)
+            accuracies_dict = {const.UNTRAINED_TRUNK: untrained_trunk_accuracies, const.UNTRAINED_TRUNK_AND_EMBEDDER: untrained_trunk_embedder_accuracies, const.TRAINED: best_split_accuracies}
+            for trained_status, accuracies in accuracies_dict.items():
+                if len(accuracies) > 0:
+                    accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in self.tester_obj.accuracy_calculator.get_curr_metrics())]
+                    for k in accuracy_keys:
+                        self.meta_accuracies[split][trained_status][k][split_scheme_name] = accuracies[0][k]
 
     def record_meta_logs(self):
-        if hasattr(self, "meta_accuracies") and len(self.meta_accuracies) > 0:
+        if len(self.meta_accuracies) > 0:
             for split in self.args.splits_to_eval:
                 group_name = self.get_eval_record_name_dict(const.META_SEPARATE_EMBEDDINGS)[split]
                 len_of_existing_records = c_f.try_getting_db_count(self.meta_record_keeper, group_name)
@@ -371,25 +369,30 @@ class BaseAPIParser:
                     if len(accuracies) > 0:
                         len_of_existing_records += 1
                         averages = {k: np.mean(list(v.values())) for k, v in accuracies.items()}
-                        standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in accuracies.items()}
                         self.meta_record_keeper.update_records(averages, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
-                        self.meta_record_keeper.update_records(standard_errors, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
+                        if self.split_manager.num_split_schemes > 1:
+                            standard_errors = {"SEM_%s"%k: scipy_stats.sem(list(v.values())) for k, v in accuracies.items()}
+                            self.meta_record_keeper.update_records(standard_errors, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
                         self.meta_record_keeper.update_records({const.TRAINED_STATUS_COL_NAME: trained_status}, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
                         self.meta_record_keeper.update_records({"timestamp": c_f.get_datetime()}, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
             self.meta_record_keeper.save_records()
 
     def return_val_accuracy_and_standard_error(self):
-        if hasattr(self, "meta_record_keeper"):
-            group_name = self.get_eval_record_name_dict(const.META_SEPARATE_EMBEDDINGS)["val"]
-            def get_average_best_and_sem(key):
+        group_name = self.get_eval_record_name_dict(const.META_SEPARATE_EMBEDDINGS)["val"]
+        def get_average_best_and_sem(key):
+            if self.split_manager.num_split_schemes > 1:
                 sem_key = "SEM_%s"%key
-                query = "SELECT {0}, {1} FROM {2} WHERE {3}=? AND id=(SELECT MAX(id) FROM {2})".format(key, sem_key, group_name, const.TRAINED_STATUS_COL_NAME)
-                return self.meta_record_keeper.query(query, values=(const.TRAINED,), use_global_db=False), key, sem_key
-            q, key, sem_key = self.hooks.try_primary_metric(self.tester_obj, get_average_best_and_sem)
-            return q[0][key], q[0][sem_key]
-        _, best_accuracy = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val", ignore_epoch=const.IGNORE_ALL_UNTRAINED)
-        return best_accuracy
-
+                columns = "%s, %s".format(key, sem_key)
+                return_keys = (key, sem_key)
+            else:
+                columns = key
+                return_keys = (key, )
+            query = "SELECT {0} FROM {1} WHERE {2}=? AND id=(SELECT MAX(id) FROM {1})".format(columns, group_name, const.TRAINED_STATUS_COL_NAME)
+            return self.meta_record_keeper.query(query, values=(const.TRAINED,), use_global_db=False), return_keys
+        q, keys = self.hooks.try_primary_metric(self.tester_obj, get_average_best_and_sem)
+        if len(keys) > 1:
+            return tuple(q[0][k] for k in keys)
+        return q[0][keys[0]]
 
     def maybe_load_latest_saved_models(self):
         return self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device, best=self.args.resume_training=="best")
@@ -487,13 +490,13 @@ class BaseAPIParser:
 
     def get_eval_dict(self, best, untrained_trunk, untrained_trunk_and_embedder, randomize_embedder):
         eval_dict = {}
-        if best:
-            best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val", ignore_epoch=const.IGNORE_ALL_UNTRAINED)
-            eval_dict["best"] = (best_epoch, True)
         if untrained_trunk:
             eval_dict[const.UNTRAINED_TRUNK] = (const.UNTRAINED_TRUNK_INT, True)
         if untrained_trunk_and_embedder:
             eval_dict[const.UNTRAINED_TRUNK_AND_EMBEDDER] = (const.UNTRAINED_TRUNK_AND_EMBEDDER_INT, randomize_embedder)
+        if best:
+            best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val", ignore_epoch=const.IGNORE_ALL_UNTRAINED)
+            eval_dict["best"] = (best_epoch, True)
         return eval_dict
 
     def train(self, num_epochs):
@@ -537,10 +540,11 @@ class BaseAPIParser:
                                                 self.args.testing_method, 
                                                 self.get_tester_kwargs())
 
-        models_to_eval = [const.TRAINED]
+        models_to_eval = []
         if self.args.check_untrained_accuracy: 
             models_to_eval.append(const.UNTRAINED_TRUNK)
             models_to_eval.append(const.UNTRAINED_TRUNK_AND_EMBEDDER)
+        models_to_eval.append(const.TRAINED)
 
         group_names = [self.get_eval_record_name_dict(self.curr_meta_testing_method)[split_name] for split_name in self.args.splits_to_eval]
 

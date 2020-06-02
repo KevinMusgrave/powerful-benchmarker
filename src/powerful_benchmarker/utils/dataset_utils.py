@@ -44,12 +44,12 @@ def create_subset_datasets_from_indices(datasets,
                                     create_subset_idx_func):
     split_schemes = OrderedDict()
     for i, (train_idx, val_idx) in enumerate(trainval_subset_idx):
-        split_dict = {"train": trainval_global_idx[train_idx], "val": trainval_global_idx[val_idx], "test": test_set_idx}
-        name = split_scheme_name_func(i)
-        split_schemes[name] = OrderedDict()
-        for transform_type in datasets.keys():
-            split_schemes[name][transform_type] = OrderedDict()
-            if i < num_training_sets:
+        if i < num_training_sets:
+            split_dict = {"train": trainval_global_idx[train_idx], "val": trainval_global_idx[val_idx], "test": test_set_idx}
+            name = split_scheme_name_func(i)
+            split_schemes[name] = OrderedDict()
+            for transform_type in datasets.keys():
+                split_schemes[name][transform_type] = OrderedDict()
                 for k, v in split_dict.items():
                     curr_dataset = datasets[transform_type][k]
                     subset_idx = create_subset_idx_func(curr_dataset, v)

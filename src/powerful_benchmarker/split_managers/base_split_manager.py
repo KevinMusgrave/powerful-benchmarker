@@ -103,6 +103,10 @@ class BaseSplitManager:
         return self.split_scheme_holder.get_dataset_dict(*args, **kwargs)
 
     @property
+    def num_split_schemes(self):
+        return len(self.split_scheme_names)
+
+    @property
     def split_scheme_names(self):
         return self.split_scheme_holder.get_split_scheme_names()
 
