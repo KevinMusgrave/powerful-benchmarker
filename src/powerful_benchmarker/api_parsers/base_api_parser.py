@@ -169,11 +169,14 @@ class BaseAPIParser:
             if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
 
 
-    def get_split_manager(self):
-        split_manager, split_manager_params = self.pytorch_getter.get("split_manager", yaml_dict=self.args.split_manager, return_uninitialized=True)
+    def get_split_manager(self, yaml_dict=None):
+        yaml_dict = self.args.split_manager if yaml_dict is None else yaml_dict
+        split_manager, split_manager_params = self.pytorch_getter.get("split_manager", yaml_dict=yaml_dict, return_uninitialized=True)
+        split_manager_params = copy.deepcopy(split_manager_params)
         if c_f.check_init_arguments(split_manager, "model"):
-            split_manager_params = copy.deepcopy(split_manager_params)
             split_manager_params["model"] = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"])).to(self.device)
+        if "helper_split_manager" in split_manager_params:
+            split_manager_params["helper_split_manager"] = self.get_split_manager(yaml_dict=split_manager_params["helper_split_manager"])
         return split_manager(**split_manager_params)
 
     def set_split_manager(self):
