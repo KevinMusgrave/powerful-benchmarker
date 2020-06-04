@@ -382,7 +382,7 @@ class BaseAPIParser:
         def get_average_best_and_sem(key):
             if self.split_manager.num_split_schemes > 1:
                 sem_key = "SEM_%s"%key
-                columns = "%s, %s".format(key, sem_key)
+                columns = "%s, %s"%(key, sem_key)
                 return_keys = (key, sem_key)
             else:
                 columns = key
@@ -481,7 +481,7 @@ class BaseAPIParser:
             c_f.move_optimizer_to_gpu(v, self.device)
 
     def should_train(self, num_epochs, split_scheme_name):
-        best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val", ignore_epoch=const.IGNORE_UNTRAINED_TRUNK)
+        best_epoch, _ = pml_cf.latest_version(self.model_folder, best=True)
         return self.hooks.patience_remaining(self.epoch, best_epoch, self.args.patience) and self.latest_sub_experiment_epochs[split_scheme_name] < num_epochs
 
     def training_assertions(self, trainer):
@@ -495,7 +495,7 @@ class BaseAPIParser:
         if untrained_trunk_and_embedder:
             eval_dict[const.UNTRAINED_TRUNK_AND_EMBEDDER] = (const.UNTRAINED_TRUNK_AND_EMBEDDER_INT, randomize_embedder)
         if best:
-            best_epoch, _ = self.hooks.get_best_epoch_and_accuracy(self.tester_obj, "val", ignore_epoch=const.IGNORE_ALL_UNTRAINED)
+            best_epoch, _ = pml_cf.latest_version(self.model_folder, best=True)
             eval_dict["best"] = (best_epoch, True)
         return eval_dict
 
@@ -526,9 +526,12 @@ class BaseAPIParser:
         embedder_input_sizes = [self.base_model_output_size] * len(list_of_trunks)
         if isinstance(embedder_input_sizes[0], list):
             embedder_input_sizes = [np.sum(x) for x in embedder_input_sizes]
-        operation_before_concat = (lambda x: torch.nn.functional.normalize(x, p=2, dim=1)) if self.args.eval_normalize_embeddings else None
-        trunk = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_trunks))
-        embedder = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_embedders, embedder_input_sizes, operation_before_concat))
+        normalize_embeddings_func = lambda x: torch.nn.functional.normalize(x, p=2, dim=1)
+        embedder_operation_before_concat = normalize_embeddings_func if self.args.eval_normalize_embeddings else None
+        trunk_operation_before_concat = normalize_embeddings_func if self.args.eval_use_trunk_output else None
+
+        trunk = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_trunks, operation_before_concat=trunk_operation_before_concat))
+        embedder = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_embedders, embedder_input_sizes, embedder_operation_before_concat))
         return trunk, embedder
 
     def meta_eval(self):
