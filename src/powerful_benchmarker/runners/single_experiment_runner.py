@@ -27,6 +27,7 @@ class SingleExperimentRunner(BaseRunner):
         return run_output
 
     def run_new_experiment_or_resume(self, YR):
+        # merge_argparse at the beginning of training, or when evaluating
         merge_argparse = self.merge_argparse_when_resuming if YR.args.resume_training else True
         args, _, args.dict_of_yamls = YR.load_yamls(self.determine_where_to_get_yamls(YR.args), 
                                                     max_merge_depth=float('inf'), 

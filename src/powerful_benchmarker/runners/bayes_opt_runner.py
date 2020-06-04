@@ -81,8 +81,6 @@ class BayesOptRunner(BaseRunner):
         self.ax_log_folder = os.path.join(self.bayes_opt_root_experiment_folder, "bayes_opt_ax_logs")
         self.best_parameters_filename = os.path.join(self.bayes_opt_root_experiment_folder, "best_parameters.yaml")
         self.most_recent_parameters_filename = os.path.join(self.bayes_opt_root_experiment_folder, "most_recent_parameters.yaml")
-        self.accuracy_report_detailed_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report_detailed.yaml")
-        self.accuracy_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "accuracy_report.yaml")
         self.bayes_opt_table_name = "bayes_opt"
         self.set_YR(use_super=False)
 
@@ -180,7 +178,8 @@ class BayesOptRunner(BaseRunner):
         return best_sub_experiment_name
 
     def create_accuracy_report(self, best_sub_experiment_name):
-        dummy_api_parser = self.get_api_parser(self.YR.args)
+        dummy_YR = self.read_yaml_and_find_bayes(find_bayes_params=False, merge_argparse=True)
+        dummy_api_parser = self.get_api_parser(dummy_YR.args)
         eval_record_group_dicts = dummy_api_parser.get_eval_record_name_dict(return_all=True)
         global_record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.global_db_path, "", False)
         exp_names = glob.glob(os.path.join(self.bayes_opt_root_experiment_folder, "%s*"%best_sub_experiment_name))
@@ -188,7 +187,7 @@ class BayesOptRunner(BaseRunner):
         exp_names = [os.path.basename(e) for e in exp_names]
         results, summary = {}, {}
 
-        for eval_type in c_f.if_str_convert_to_singleton_list(self.YR.args.meta_testing_method):
+        for eval_type in c_f.if_str_convert_to_singleton_list(dummy_YR.args.meta_testing_method):
             results[eval_type] = {}
             summary[eval_type] = collections.defaultdict(lambda: collections.defaultdict(list))
             table_name = eval_record_group_dicts[eval_type]["test"]
@@ -224,8 +223,11 @@ class BayesOptRunner(BaseRunner):
                                                                     "95%_confidence_interval": (float(cf_low), float(cf_high)),
                                                                     "95%_confidence_interval_width": float(cf_width)}
 
-        c_f.write_yaml(self.accuracy_report_detailed_filename, results, open_as="w")
-        c_f.write_yaml(self.accuracy_report_filename, json.loads(json.dumps(summary)), open_as="w")
+        eval_name = c_f.first_val_of_dict(dummy_api_parser.get_eval_record_name_dict(eval_type=const.NON_META, return_base_record_group_name=True))
+        detailed_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "detailed_report_{}.yaml".format(eval_name))
+        report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "report_{}.yaml".format(eval_name))
+        c_f.write_yaml(detailed_report_filename, results, open_as="w")
+        c_f.write_yaml(report_filename, json.loads(json.dumps(summary)), open_as="w")
 
 
     def update_bayes_opt_search_space(self, ax_client):
@@ -262,12 +264,12 @@ class BayesOptRunner(BaseRunner):
             f.write(render_report_elements(self.experiment_name, html_elements))
 
 
-    def read_yaml_and_find_bayes(self, find_bayes_params=True):
+    def read_yaml_and_find_bayes(self, find_bayes_params=True, merge_argparse=False):
         YR = self.setup_yaml_reader()
         bayes_opt_config_exists = os.path.isdir(YR.args.place_to_save_configs)
 
         config_paths = self.get_saved_config_paths(YR.args) if bayes_opt_config_exists else self.get_root_config_paths(YR.args)
-        merge_argparse = self.merge_argparse_when_resuming if bayes_opt_config_exists else True
+        merge_argparse = (self.merge_argparse_when_resuming or merge_argparse) if bayes_opt_config_exists else True
         YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths = config_paths, 
                                                         max_merge_depth = float('inf'), 
                                                         merge_argparse = merge_argparse)

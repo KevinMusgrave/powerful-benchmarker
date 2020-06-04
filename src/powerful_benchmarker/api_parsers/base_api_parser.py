@@ -565,7 +565,7 @@ class BaseAPIParser:
                 self.record_keeper.save_records()
 
 
-    def get_eval_record_name_dict(self, eval_type=const.NON_META, return_all=False):
+    def get_eval_record_name_dict(self, eval_type=const.NON_META, return_all=False, return_base_record_group_name=False):
         if not getattr(self, "hooks", None):
             self.hooks = logging_presets.HookContainer(None, primary_metric=self.args.eval_primary_metric)
         if not getattr(self, "tester_obj", None):
@@ -574,7 +574,10 @@ class BaseAPIParser:
             self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
         prefix = self.hooks.record_group_name_prefix 
         self.hooks.record_group_name_prefix = "" #temporary
-        non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in self.split_manager.split_names}
+        if return_base_record_group_name:
+            non_meta = {"base_record_group_name": self.hooks.base_record_group_name(self.tester_obj)}
+        else:
+            non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in self.split_manager.split_names}
         meta_separate = {k:"{}_{}".format(const.META_SEPARATE_EMBEDDINGS, v) for k,v in non_meta.items()}
         meta_concatenate = {k:"{}_{}".format(const.META_CONCATENATE_EMBEDDINGS, v) for k,v in non_meta.items()}
         self.hooks.record_group_name_prefix = prefix
