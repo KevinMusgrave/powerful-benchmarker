@@ -115,6 +115,9 @@ class BaseSplitManager:
         return self.split_scheme_holder.curr_split_scheme_name
 
 
+    def get_test_set_name(self):
+        raise NotImplementedError
+
     def get_base_split_scheme_name(self):
         raise NotImplementedError
 

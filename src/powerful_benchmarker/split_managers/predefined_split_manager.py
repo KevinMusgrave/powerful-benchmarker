@@ -8,7 +8,7 @@ class PredefinedSplitManager(BaseSplitManager):
         pass
 
     def get_base_split_scheme_name(self):
-        return "PredefinedSplitScheme_"
+        return "PredefinedSplitScheme"
 
     def get_split_scheme_name(self, partition):
-        return "{}{}".format(self.get_base_split_scheme_name(), partition)
+        return "{}_{}".format(self.get_base_split_scheme_name(), partition)

@@ -10,6 +10,11 @@ class ClassDisjointSplitManager(IndexSplitManager):
     def convert_to_subset_idx(self, dataset, split_from_kfolder):
         return np.where(np.isin(self.get_labels(dataset=dataset), split_from_kfolder))[0]
 
+    def get_trainval_and_test_from_helper_split_manager(self, dataset):
+        test_set = list(self.helper_split_manager.get_label_set("eval", "test"))
+        trainval_set = np.array(sorted(list(self.get_label_set(dataset=dataset) - set(test_set))))
+        return trainval_set, test_set
+
     def get_list_for_class_disjoint_assertion(self, dataset):
         return self.get_list_for_splitting(dataset)
 
