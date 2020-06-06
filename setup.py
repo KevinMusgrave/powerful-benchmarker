@@ -29,11 +29,11 @@ setuptools.setup(
           'torch',
           'torchvision',
           'easy-module-attribute-getter >= 0.9.38',
-          'record-keeper >= 0.9.25',
+          'record-keeper >= 0.9.26',
           'tensorboard',
           'matplotlib',
           'pretrainedmodels',
-          'pytorch-metric-learning >= 0.9.87.dev0',
+          'pytorch-metric-learning == 0.9.87.dev4',
           'pandas',
           'ax-platform',
           'faiss-gpu'
