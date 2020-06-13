@@ -324,8 +324,10 @@ class BaseAPIParser:
     def eval_model(self, epoch, model_name, load_model=False, skip_eval_if_already_done=True):
         logging.info("Launching evaluation for model %s"%model_name)
         if load_model:
+            logging.info("Initializing/loading models for evaluation")
             trunk_model, embedder_model = self.load_model_for_eval(model_name=model_name)
         else:
+            logging.info("Using self.models for evaluation")
             trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
         dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval)
@@ -504,7 +506,7 @@ class BaseAPIParser:
 
     def train(self, num_epochs):
         if self.args.check_untrained_accuracy:
-            eval_dict = self.get_eval_dict(False, True, True, randomize_embedder = self.epoch==1)
+            eval_dict = self.get_eval_dict(False, True, True, randomize_embedder = self.epoch!=1)
             for name, (epoch, load_model) in eval_dict.items():
                 self.eval_model(epoch, name, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
                 self.record_keeper.save_records()
