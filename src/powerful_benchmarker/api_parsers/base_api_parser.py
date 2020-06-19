@@ -265,14 +265,11 @@ class BaseAPIParser:
         if loss == losses.CrossBatchMemory:
             if "loss" in loss_params: loss_params["loss"] = self.get_loss_function(loss_params["loss"])
             if "miner" in loss_params: loss_params["miner"] = self.get_mining_function(loss_params["miner"])
-        if c_f.check_init_arguments(loss, "num_classes"):
+        if c_f.check_init_arguments(loss, "num_classes") and ("num_classes" not in loss_params):
             loss_params["num_classes"] = self.split_manager.get_num_labels("train", "train")
             logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
         if "regularizer" in loss_params:
             loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
-        if "num_class_per_param" in loss_params and loss_params["num_class_per_param"]:
-            loss_params["num_class_per_param"] = self.split_manager.get_num_labels("train", "train")
-            logging.info("Passing %d as num_class_per_param to the loss function"%loss_params["num_class_per_param"])
 
         return loss(**loss_params)        
 
@@ -344,13 +341,25 @@ class BaseAPIParser:
 
     def set_record_keeper(self):
         is_new_experiment = self.beginning_of_training() and self.curr_split_count == 0
-        self.record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.global_db_path, self.args.experiment_name, is_new_experiment)
+        self.record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder = self.csv_folder, 
+                                                                    tensorboard_folder = self.tensorboard_folder, 
+                                                                    global_db_path = self.global_db_path, 
+                                                                    experiment_name = self.args.experiment_name, 
+                                                                    is_new_experiment = is_new_experiment, 
+                                                                    save_figures = self.args.save_figures_on_tensorboard,
+                                                                    save_lists = self.args.save_lists_in_db)
 
     def set_meta_record_keeper(self):
         is_new_experiment = self.beginning_of_training()
         folders = {folder_type: s % (self.experiment_folder, "meta_logs") for folder_type, s in self.sub_experiment_dirs.items()}
         csv_folder, tensorboard_folder = folders["csvs"], folders["tensorboard"]
-        self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder, tensorboard_folder,  self.global_db_path, self.args.experiment_name, is_new_experiment)
+        self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder = csv_folder, 
+                                                                        tensorboard_folder = tensorboard_folder,
+                                                                        global_db_path = self.global_db_path, 
+                                                                        experiment_name = self.args.experiment_name, 
+                                                                        is_new_experiment = is_new_experiment,
+                                                                        save_figures = self.args.save_figures_on_tensorboard,
+                                                                        save_lists = self.args.save_lists_in_db)
         self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
 
     def update_meta_record_keeper(self, split_scheme_name):

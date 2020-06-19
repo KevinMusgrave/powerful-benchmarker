@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="powerful-benchmarker",
-    version="0.9.28.dev0",
+    version="0.9.28.dev1",
     author="Kevin Musgrave",
     author_email="tkm45@cornell.edu",
     description="A highly-configurable tool that enables thorough evaluation of deep metric learning algorithms. ",
@@ -29,11 +29,11 @@ setuptools.setup(
           'torch',
           'torchvision',
           'easy-module-attribute-getter >= 0.9.38',
-          'record-keeper >= 0.9.26',
+          'record-keeper >= 0.9.27',
           'tensorboard',
           'matplotlib',
           'pretrainedmodels',
-          'pytorch-metric-learning == 0.9.87.dev4',
+          'pytorch-metric-learning == 0.9.87.dev5',
           'pandas',
           'ax-platform',
           'faiss-gpu'

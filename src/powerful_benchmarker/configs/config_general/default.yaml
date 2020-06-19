@@ -13,3 +13,5 @@ check_untrained_accuracy: True
 skip_eval_if_already_done: True
 skip_meta_eval_if_already_done: True
 patience: 9
+save_figures_on_tensorboard: False
+save_lists_in_db: False

@@ -215,7 +215,9 @@ class BayesOptRunner(BaseRunner):
 
             for trained_status, v1 in summary[eval_type].items():
                 for acc_key in v1.keys():
-                    v2 = v1[acc_key]
+                    v2 = [v3 for v3 in v1[acc_key] if v3 is not None]
+                    if len(v2) == 0:
+                        continue
                     mean = np.mean(v2)
                     cf_low, cf_high = scipy_stats.t.interval(0.95, len(v2)-1, loc=np.mean(v2), scale=scipy_stats.sem(v2)) #https://stackoverflow.com/a/34474255
                     cf_width = mean-cf_low
