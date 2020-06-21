@@ -203,8 +203,7 @@ class BaseAPIParser:
                 datasets[transform_type][split_name] = chosen_dataset[split_name](**dataset_params)
         
         self.split_manager.create_split_schemes(datasets)
-
-
+        
     def get_transforms(self):
         try:
             trunk = self.get_trunk_model(self.args.models["trunk"])
@@ -253,6 +252,9 @@ class BaseAPIParser:
             if c_f.check_init_arguments(sampler, "labels"):
                 sampler_params = copy.deepcopy(sampler_params)
                 sampler_params["labels"] = self.split_manager.get_labels("train", "train")
+            if sampler_params.get("length_before_new_iter") == "dataset_length":
+                sampler_params["length_before_new_iter"] = len(self.split_manager.get_dataset("train", "train"))
+                logging.info("Set sampler length_before_new_iter to {}".format(sampler_params["length_before_new_iter"]))
             self.sampler = sampler(**sampler_params)
             
 
