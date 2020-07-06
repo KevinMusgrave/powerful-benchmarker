@@ -1,0 +1,23 @@
+site_name: Powerful Benchmarker
+nav:
+    - Home: index.md
+    - API Parsers: apiparsers.md
+    - Architectures: architectures.md
+    - Configs: configs.md
+    - Datasets: datasets.md
+    - Runners: runners.md
+    - Split Managers: splitmanagers.md
+    - Utils: utils.md
+    - Papers:
+      - A Metric Learning Reality Check: mlrc.md
+theme:
+  name: 'material'
+  palette:
+    primary: 'black'
+    accent: 'black'
+markdown_extensions:
+  - codehilite
+  - toc:
+      permalink: true
+repo_name: 'KevinMusgrave/powerful-benchmarker'
+repo_url: 'https://github.com/KevinMusgrave/powerful-benchmarker'
