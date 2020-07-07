@@ -31,18 +31,18 @@
       
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
-      <link rel="shortcut icon" href="/assets/images/favicon.png">
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.1.dev0, mkdocs-material-4.6.0">
     
     
       
-        <title>Powerful Benchmarker</title>
+        <title>Config Loss and Miners - Powerful Benchmarker</title>
       
     
     
-      <link rel="stylesheet" href="/assets/stylesheets/application.1b62728e.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/application.1b62728e.css">
       
-        <link rel="stylesheet" href="/assets/stylesheets/application-palette.a8b3c06d.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/application-palette.a8b3c06d.css">
       
       
         
@@ -51,7 +51,7 @@
       
     
     
-      <script src="/assets/javascripts/modernizr.268332fc.js"></script>
+      <script src="../../assets/javascripts/modernizr.268332fc.js"></script>
     
     
       
@@ -60,7 +60,7 @@
         <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
       
     
-    <link rel="stylesheet" href="/assets/fonts/material-icons.css">
+    <link rel="stylesheet" href="../../assets/fonts/material-icons.css">
     
     
     
@@ -85,12 +85,16 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#config_loss_and_miners" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
     <div class="md-flex">
       <div class="md-flex__cell md-flex__cell--shrink">
-        <a href="/." title="Powerful Benchmarker" class="md-header-nav__button md-logo">
+        <a href="../.." title="Powerful Benchmarker" class="md-header-nav__button md-logo">
           
             <i class="md-icon"></i>
           
@@ -107,7 +111,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                
+                Config Loss and Miners
               
             </span>
           
@@ -182,7 +186,7 @@
                   <div class="md-sidebar__inner">
                     <nav class="md-nav md-nav--primary" data-md-level="0">
   <label class="md-nav__title md-nav__title--site" for="__drawer">
-    <a href="/." title="Powerful Benchmarker" class="md-nav__button md-logo">
+    <a href="../.." title="Powerful Benchmarker" class="md-nav__button md-logo">
       
         <i class="md-icon"></i>
       
@@ -218,7 +222,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/." title="Home" class="md-nav__link">
+    <a href="../.." title="Home" class="md-nav__link">
       Home
     </a>
   </li>
@@ -230,7 +234,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/api_parsers/" title="API Parsers" class="md-nav__link">
+    <a href="../../api_parsers/" title="API Parsers" class="md-nav__link">
       API Parsers
     </a>
   </li>
@@ -242,7 +246,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/architectures/" title="Architectures" class="md-nav__link">
+    <a href="../../architectures/" title="Architectures" class="md-nav__link">
       Architectures
     </a>
   </li>
@@ -252,10 +256,12 @@
       
       
 
+  
 
-  <li class="md-nav__item md-nav__item--nested">
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
     
     <label class="md-nav__link" for="nav-4">
       Configs
@@ -273,7 +279,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/configs/config_dataset/" title="Config Dataset" class="md-nav__link">
+    <a href="../config_dataset/" title="Config Dataset" class="md-nav__link">
       Config Dataset
     </a>
   </li>
@@ -285,7 +291,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/configs/config_eval/" title="Config Eval" class="md-nav__link">
+    <a href="../config_eval/" title="Config Eval" class="md-nav__link">
       Config Eval
     </a>
   </li>
@@ -297,7 +303,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/configs/config_general/" title="Config General" class="md-nav__link">
+    <a href="../config_general/" title="Config General" class="md-nav__link">
       Config General
     </a>
   </li>
@@ -307,11 +313,63 @@
           
           
 
+  
 
-  <li class="md-nav__item">
-    <a href="/configs/config_loss_and_miners/" title="Config Loss and Miners" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Config Loss and Miners
+      </label>
+    
+    <a href="./" title="Config Loss and Miners" class="md-nav__link md-nav__link--active">
       Config Loss and Miners
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loss_funcs" class="md-nav__link">
+    loss_funcs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sampler" class="md-nav__link">
+    sampler
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mining_funcs" class="md-nav__link">
+    mining_funcs
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
         
@@ -321,7 +379,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/configs/config_models/" title="Config Models" class="md-nav__link">
+    <a href="../config_models/" title="Config Models" class="md-nav__link">
       Config Models
     </a>
   </li>
@@ -333,7 +391,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/configs/config_optimizers/" title="Config Optimizers" class="md-nav__link">
+    <a href="../config_optimizers/" title="Config Optimizers" class="md-nav__link">
       Config Optimizers
     </a>
   </li>
@@ -345,7 +403,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/configs/config_transforms/" title="Config Transforms" class="md-nav__link">
+    <a href="../config_transforms/" title="Config Transforms" class="md-nav__link">
       Config Transforms
     </a>
   </li>
@@ -362,7 +420,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/datasets/" title="Datasets" class="md-nav__link">
+    <a href="../../datasets/" title="Datasets" class="md-nav__link">
       Datasets
     </a>
   </li>
@@ -374,7 +432,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/runners/" title="Runners" class="md-nav__link">
+    <a href="../../runners/" title="Runners" class="md-nav__link">
       Runners
     </a>
   </li>
@@ -386,7 +444,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/split_managers/" title="Split Managers" class="md-nav__link">
+    <a href="../../split_managers/" title="Split Managers" class="md-nav__link">
       Split Managers
     </a>
   </li>
@@ -398,7 +456,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/utils/" title="Utils" class="md-nav__link">
+    <a href="../../utils/" title="Utils" class="md-nav__link">
       Utils
     </a>
   </li>
@@ -429,7 +487,7 @@
 
 
   <li class="md-nav__item">
-    <a href="/papers/mlrc/" title="A Metric Learning Reality Check" class="md-nav__link">
+    <a href="../../papers/mlrc/" title="A Metric Learning Reality Check" class="md-nav__link">
       A Metric Learning Reality Check
     </a>
   </li>
@@ -447,12 +505,111 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loss_funcs" class="md-nav__link">
+    loss_funcs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sampler" class="md-nav__link">
+    sampler
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mining_funcs" class="md-nav__link">
+    mining_funcs
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
-  <h1>404 - Not found</h1>
+                
+                  <a href="https://github.com/KevinMusgrave/powerful-benchmarker/edit/master/docs/configs/config_loss_and_miners.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="config_loss_and_miners">config_loss_and_miners<a class="headerlink" href="#config_loss_and_miners" title="Permanent link">&para;</a></h1>
+<h2 id="loss_funcs">loss_funcs<a class="headerlink" href="#loss_funcs" title="Permanent link">&para;</a></h2>
+<p>An object mapping from strings to loss classes. The strings should match the loss names used by your trainer.</p>
+<p>Default yaml:</p>
+<div class="codehilite"><pre><span></span><span class="nt">loss_funcs</span><span class="p">:</span>
+  <span class="nt">metric_loss</span><span class="p">:</span> 
+    <span class="nt">ContrastiveLoss</span><span class="p">:</span>
+</pre></div>
 
+
+<p>Command line:</p>
+<div class="codehilite"><pre><span></span>--loss_funcs <span class="o">{</span>metric_loss: <span class="o">{</span>ContrastiveLoss: <span class="o">{}}}</span>
+</pre></div>
+
+
+<h2 id="sampler">sampler<a class="headerlink" href="#sampler" title="Permanent link">&para;</a></h2>
+<p>The sampler class, or <code>null</code> if you want random sampling.</p>
+<p>Default yaml:</p>
+<div class="codehilite"><pre><span></span><span class="nt">sampler</span><span class="p">:</span>
+  <span class="nt">MPerClassSampler</span><span class="p">:</span>
+    <span class="nt">m</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">4</span>
+</pre></div>
+
+
+<p>Command line:</p>
+<div class="codehilite"><pre><span></span>--sampler <span class="o">{</span>MPerClassSampler: <span class="o">{</span>m: <span class="m">4</span><span class="o">}}</span>
+</pre></div>
+
+
+<h2 id="mining_funcs">mining_funcs<a class="headerlink" href="#mining_funcs" title="Permanent link">&para;</a></h2>
+<p>An object mapping from strings to mining classes. The strings should match the mining names used by your trainer.</p>
+<p>Default yaml:</p>
+<div class="codehilite"><pre><span></span><span class="nt">mining_funcs</span><span class="p">:</span> <span class="p p-Indicator">{}</span>
+</pre></div>
+
+
+<p>A non-empty yaml example:</p>
+<div class="codehilite"><pre><span></span><span class="nt">mining_funcs</span><span class="p">:</span>
+  <span class="nt">tuple_miner</span><span class="p">:</span>
+    <span class="nt">MultiSimilarityMiner</span><span class="p">:</span>
+       <span class="nt">epsilon</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+</pre></div>
+
+
+<p>Command line:</p>
+<div class="codehilite"><pre><span></span>--mining_funcs <span class="o">{</span>tuple_miner: <span class="o">{</span>MultiSimilarityMiner: <span class="o">{</span>epsilon: <span class="m">0</span>.1<span class="o">}}}</span>
+</pre></div>
+                
+                  
+                
+                
+              
               
                 
 
@@ -465,6 +622,41 @@
       
         
 <footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../config_general/" title="Config General" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Config General
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../config_models/" title="Config Models" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Config Models
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -483,9 +675,9 @@
       
     </div>
     
-      <script src="/assets/javascripts/application.808e90bb.js"></script>
+      <script src="../../assets/javascripts/application.808e90bb.js"></script>
       
-      <script>app.initialize({version:"1.1.dev0",url:{base:"/"}})</script>
+      <script>app.initialize({version:"1.1.dev0",url:{base:"../.."}})</script>
       
     
   </body>
