@@ -14,5 +14,3 @@ split_manager:
     num_training_sets: 4
     hierarchy_level: 0
     data_and_label_getter_keys: [data, label]
-
-label_hierarchy_level: 0

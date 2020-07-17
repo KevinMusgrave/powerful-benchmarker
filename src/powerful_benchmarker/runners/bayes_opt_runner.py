@@ -89,6 +89,8 @@ class BayesOptRunner(BaseRunner):
             super().set_YR()
         else:
             self.YR, self.bayes_params = self.read_yaml_and_find_bayes()
+            self.eval_primary_metric = c_f.first_val_of_dict(self.YR.args.hook_container)["primary_metric"]
+
 
     def run(self):    
         ax_client = self.get_ax_client()
@@ -164,13 +166,13 @@ class BayesOptRunner(BaseRunner):
         record_keeper.save_records()
 
     def save_best_parameters(self, record_keeper, ax_client):
-        q = record_keeper.query("SELECT * FROM {0} WHERE {1}=(SELECT max({1}) FROM {0})".format(self.bayes_opt_table_name, self.YR.args.eval_primary_metric))[0]
+        q = record_keeper.query("SELECT * FROM {0} WHERE {1}=(SELECT max({1}) FROM {0})".format(self.bayes_opt_table_name, self.eval_primary_metric))[0]
         best_trial_index = int(q['trial_index'])
         best_sub_experiment_name = self.get_sub_experiment_name(best_trial_index)
         logging.info("BEST SUB EXPERIMENT NAME: %s"%best_sub_experiment_name)
 
         best_parameters, best_values = get_best_raw_objective_point(ax_client.experiment)
-        assert np.isclose(best_values[self.YR.args.eval_primary_metric][0], q[self.YR.args.eval_primary_metric])
+        assert np.isclose(best_values[self.eval_primary_metric][0], q[self.eval_primary_metric])
         best_parameters_dict = {"best_sub_experiment_name": best_sub_experiment_name,
                                 "best_parameters": best_parameters, 
                                 "best_values": {k:{"mean": float(v[0]), "SEM": float(v[1])} for k,v in best_values.items()}}
@@ -247,7 +249,7 @@ class BayesOptRunner(BaseRunner):
             self.update_bayes_opt_search_space(ax_client)
         if ax_client is None:
             ax_client = AxClient()
-            ax_client.create_experiment(parameters=self.bayes_params, name=self.YR.args.experiment_name, minimize=False, objective_name=self.YR.args.eval_primary_metric)
+            ax_client.create_experiment(parameters=self.bayes_params, name=self.YR.args.experiment_name, minimize=False, objective_name=self.eval_primary_metric)
         return ax_client
 
 
@@ -257,9 +259,9 @@ class BayesOptRunner(BaseRunner):
         model_params = get_range_parameters(model)
         try:
             if len(model_params) > 1:
-                html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.YR.args.eval_primary_metric)))
+                html_elements.append(plot_config_to_html(interact_contour(model=model, metric_name=self.eval_primary_metric)))
             else:
-                html_elements.append(plot_config_to_html(interact_slice(model=model, param_name=model_params[0].name, metric_name=self.YR.args.eval_primary_metric)))
+                html_elements.append(plot_config_to_html(interact_slice(model=model, param_name=model_params[0].name, metric_name=self.eval_primary_metric)))
         except TypeError:
             pass
         with open(os.path.join(self.bayes_opt_root_experiment_folder, "optimization_plots.html"), 'w') as f:

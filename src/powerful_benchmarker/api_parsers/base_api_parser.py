@@ -4,6 +4,7 @@ from ..utils import common_functions as c_f, dataset_utils as d_u, constants as 
 from pytorch_metric_learning import losses
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
+from easy_module_attribute_getter import utils as emag_utils
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
@@ -36,7 +37,7 @@ class BaseAPIParser:
             "tensorboard": _tensorboard_folder
         }
 
-        self.trainer, self.tester_obj = None, None
+        self.trainer, self.tester = None, None
 
     def run(self):
         if self.beginning_of_training():
@@ -147,8 +148,8 @@ class BaseAPIParser:
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 
-    def get_accuracy_calculator(self):
-        return self.pytorch_getter.get("accuracy_calculator", yaml_dict=self.args.eval_accuracy_calculator)
+    def get_accuracy_calculator(self, accuracy_type):
+        return self.pytorch_getter.get("accuracy_calculator", yaml_dict=accuracy_type)
 
     def get_collate_fn(self):
         return None
@@ -232,7 +233,7 @@ class BaseAPIParser:
     def get_trunk_model(self, model_type):
         model = self.pytorch_getter.get("model", yaml_dict=model_type)
         self.base_model_output_size = c_f.get_last_linear(model).in_features
-        c_f.set_last_linear(model, architectures.misc_models.Identity())
+        c_f.set_last_linear(model, pml_cf.Identity())
         return model
 
     def get_mining_function(self, miner_type):
@@ -299,7 +300,7 @@ class BaseAPIParser:
         untrained_trunk_and_embedder = model_name in const.UNTRAINED_TRUNK_AND_EMBEDDER_ALIASES
         trunk_model = self.get_trunk_model(self.args.models["trunk"])
         if untrained_trunk:
-            embedder_model = architectures.misc_models.Identity()
+            embedder_model = pml_cf.Identity()
         else:
             embedder_model = self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size)
             if not untrained_trunk_and_embedder: 
@@ -331,7 +332,7 @@ class BaseAPIParser:
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
         dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval)
         self.eval_assertions(dataset_dict)
-        return self.hooks.run_tester_separately(self.tester_obj, dataset_dict, epoch, trunk_model, embedder_model, 
+        return self.hooks.run_tester_separately(self.tester, dataset_dict, epoch, trunk_model, embedder_model, 
                                         splits_to_eval=self.args.splits_to_eval, collate_fn=self.get_collate_fn(), skip_eval_if_already_done=skip_eval_if_already_done)
 
     def flush_tensorboard(self):
@@ -366,13 +367,13 @@ class BaseAPIParser:
 
     def update_meta_record_keeper(self, split_scheme_name):
         for split in self.args.splits_to_eval:
-            untrained_trunk_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, const.UNTRAINED_TRUNK_INT)
-            untrained_trunk_embedder_accuracies = self.hooks.get_accuracies_of_epoch(self.tester_obj, split, const.UNTRAINED_TRUNK_AND_EMBEDDER_INT)
-            best_split_accuracies, _ = self.hooks.get_accuracies_of_best_epoch(self.tester_obj, split, ignore_epoch=const.IGNORE_ALL_UNTRAINED)
+            untrained_trunk_accuracies = self.hooks.get_accuracies_of_epoch(self.tester, split, const.UNTRAINED_TRUNK_INT)
+            untrained_trunk_embedder_accuracies = self.hooks.get_accuracies_of_epoch(self.tester, split, const.UNTRAINED_TRUNK_AND_EMBEDDER_INT)
+            best_split_accuracies, _ = self.hooks.get_accuracies_of_best_epoch(self.tester, split, ignore_epoch=const.IGNORE_ALL_UNTRAINED)
             accuracies_dict = {const.UNTRAINED_TRUNK: untrained_trunk_accuracies, const.UNTRAINED_TRUNK_AND_EMBEDDER: untrained_trunk_embedder_accuracies, const.TRAINED: best_split_accuracies}
             for trained_status, accuracies in accuracies_dict.items():
                 if len(accuracies) > 0:
-                    accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in self.tester_obj.accuracy_calculator.get_curr_metrics())]
+                    accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in self.tester.accuracy_calculator.get_curr_metrics())]
                     for k in accuracy_keys:
                         self.meta_accuracies[split][trained_status][k][split_scheme_name] = accuracies[0][k]
 
@@ -405,7 +406,7 @@ class BaseAPIParser:
                 return_keys = (key, )
             query = "SELECT {0} FROM {1} WHERE {2}=? AND id=(SELECT MAX(id) FROM {1})".format(columns, group_name, const.TRAINED_STATUS_COL_NAME)
             return self.meta_record_keeper.query(query, values=(const.TRAINED,), use_global_db=False), return_keys
-        q, keys = self.hooks.try_primary_metric(self.tester_obj, get_average_best_and_sem)
+        q, keys = self.hooks.try_primary_metric(self.tester, get_average_best_and_sem)
         if len(keys) > 1:
             return tuple(q[0][k] for k in keys)
         return q[0][keys[0]]
@@ -420,33 +421,38 @@ class BaseAPIParser:
         self.set_mining_function()
         self.set_optimizers()
         self.set_record_keeper()
-        self.hooks = logging_presets.HookContainer(self.record_keeper, primary_metric=self.args.eval_primary_metric, validation_split_name="val")
-        self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
-        self.trainer = self.pytorch_getter.get("trainer", self.args.training_method, self.get_trainer_kwargs())
+        self.hooks = self.get_hook_container(self.args.hook_container)
+        self.tester = self.get_tester(self.args.tester)
+        self.trainer = self.get_trainer(self.args.trainer)
         if self.is_training():
             self.epoch = self.maybe_load_latest_saved_models()
         self.set_dataparallel()
         self.set_devices()
 
-    def get_tester_kwargs(self):
-        return {
-            "reference_set": self.args.eval_reference_set,
-            "normalize_embeddings": self.args.eval_normalize_embeddings,
-            "use_trunk_output": self.args.eval_use_trunk_output,
-            "batch_size": self.args.eval_batch_size,
-            "data_device": self.device,
-            "dataloader_num_workers": self.args.eval_dataloader_num_workers,
-            "pca": self.args.eval_pca,
-            "data_and_label_getter": self.split_manager.data_and_label_getter,
-            "label_hierarchy_level": self.args.label_hierarchy_level,
-            "end_of_testing_hook": self.hooks.end_of_testing_hook,
-            "accuracy_calculator": self.get_accuracy_calculator() 
-        }
+    def get_hook_container(self, hook_container_type, **kwargs):
+        hooks, hooks_params = self.pytorch_getter.get("hook_container", yaml_dict=hook_container_type, return_uninitialized=True)
+        if "record_keeper" not in kwargs:
+            hooks_params["record_keeper"] = self.record_keeper
+        hooks_params = emag_utils.merge_two_dicts(hooks_params, kwargs)
+        return hooks(**hooks_params)
+
+    @property
+    def tester_settings(self):
+        return c_f.first_val_of_dict(self.args.tester)
+
+    def get_tester(self, tester_type):
+        tester, tester_params = self.pytorch_getter.get("tester", yaml_dict=tester_type, return_uninitialized=True)
+        other_args = {"data_device": self.device,
+                    "data_and_label_getter": self.split_manager.data_and_label_getter,
+                    "end_of_testing_hook": self.hooks.end_of_testing_hook,
+                    "accuracy_calculator": self.get_accuracy_calculator(tester_params["accuracy_calculator"])}
+        tester_params = emag_utils.merge_two_dicts(tester_params, other_args)
+        return tester(**tester_params)
 
     def get_end_of_epoch_hook(self):
         logging.info("Creating end_of_epoch_hook kwargs")
         dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval)
-        helper_hook = self.hooks.end_of_epoch_hook(tester=self.tester_obj,
+        helper_hook = self.hooks.end_of_epoch_hook(tester=self.tester,
                                                     dataset_dict=dataset_dict,
                                                     model_folder=self.model_folder,
                                                     test_interval=self.args.save_interval,
@@ -459,31 +465,26 @@ class BaseAPIParser:
 
         return end_of_epoch_hook
 
-    def get_trainer_kwargs(self):
-        logging.info("Getting trainer kwargs")
-        return {
+    def get_trainer(self, trainer_type):
+        trainer, trainer_params = self.pytorch_getter.get("trainer", yaml_dict=trainer_type, return_uninitialized=True)
+        other_args = {
             "models": self.models,
             "optimizers": self.optimizers,
-            "batch_size": self.args.batch_size,
             "sampler": self.sampler,
             "collate_fn": self.get_collate_fn(),
             "loss_funcs": self.loss_funcs,
             "mining_funcs": self.mining_funcs,
             "dataset": self.split_manager.get_dataset("train", "train", log_split_details=True),
             "data_device": self.device,
-            "iterations_per_epoch": self.args.iterations_per_epoch,
             "lr_schedulers": self.lr_schedulers,
             "gradient_clippers": self.gradient_clippers,
-            "freeze_trunk_batchnorm": self.args.freeze_batchnorm,
-            "label_hierarchy_level": self.args.label_hierarchy_level,
-            "dataloader_num_workers": self.args.dataloader_num_workers,
-            "loss_weights": getattr(self.args, "loss_weights", None),
             "data_and_label_getter": self.split_manager.data_and_label_getter,
             "dataset_labels": list(self.split_manager.get_label_set("train", "train")),
-            "set_min_label_to_zero": True,
             "end_of_iteration_hook": self.hooks.end_of_iteration_hook,
             "end_of_epoch_hook": self.get_end_of_epoch_hook()
         }
+        trainer_params = emag_utils.merge_two_dicts(trainer_params, other_args)
+        return trainer(**trainer_params)
 
     def set_dataparallel(self):
         for k, v in self.models.items():
@@ -543,8 +544,8 @@ class BaseAPIParser:
         if isinstance(embedder_input_sizes[0], list):
             embedder_input_sizes = [np.sum(x) for x in embedder_input_sizes]
         normalize_embeddings_func = lambda x: torch.nn.functional.normalize(x, p=2, dim=1)
-        embedder_operation_before_concat = normalize_embeddings_func if self.args.eval_normalize_embeddings else None
-        trunk_operation_before_concat = normalize_embeddings_func if self.args.eval_use_trunk_output else None
+        embedder_operation_before_concat = normalize_embeddings_func if self.tester_settings["normalize_embeddings"] else None
+        trunk_operation_before_concat = normalize_embeddings_func if self.tester_settings["use_trunk_output"] else None
 
         trunk = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_trunks, operation_before_concat=trunk_operation_before_concat))
         embedder = torch.nn.DataParallel(architectures.misc_models.ListOfModels(list_of_embedders, embedder_input_sizes, embedder_operation_before_concat))
@@ -554,10 +555,8 @@ class BaseAPIParser:
         meta_model_getter = getattr(self, self.get_curr_meta_testing_method())
         self.models = {}
         self.record_keeper = self.meta_record_keeper
-        self.hooks = logging_presets.HookContainer(self.record_keeper, record_group_name_prefix=meta_model_getter.__name__, primary_metric=self.args.eval_primary_metric)
-        self.tester_obj = self.pytorch_getter.get("tester", 
-                                                self.args.testing_method, 
-                                                self.get_tester_kwargs())
+        self.hooks = self.get_hook_container(self.args.hook_container, record_group_name_prefix=meta_model_getter.__name__)
+        self.tester = self.get_tester(self.args.tester)
 
         models_to_eval = []
         if self.args.check_untrained_accuracy: 
@@ -583,17 +582,17 @@ class BaseAPIParser:
 
     def get_eval_record_name_dict(self, eval_type=const.NON_META, return_all=False, return_base_record_group_name=False):
         if not getattr(self, "hooks", None):
-            self.hooks = logging_presets.HookContainer(None, primary_metric=self.args.eval_primary_metric)
-        if not getattr(self, "tester_obj", None):
+            self.hooks = self.get_hook_container(self.args.hook_container, record_keeper=None)
+        if not getattr(self, "tester", None):
             if not getattr(self, "split_manager", None):
                 self.split_manager = self.get_split_manager()
-            self.tester_obj = self.pytorch_getter.get("tester", self.args.testing_method, self.get_tester_kwargs())
+            self.tester = self.get_tester(self.args.tester)
         prefix = self.hooks.record_group_name_prefix 
         self.hooks.record_group_name_prefix = "" #temporary
         if return_base_record_group_name:
-            non_meta = {"base_record_group_name": self.hooks.base_record_group_name(self.tester_obj)}
+            non_meta = {"base_record_group_name": self.hooks.base_record_group_name(self.tester)}
         else:
-            non_meta = {k:self.hooks.record_group_name(self.tester_obj, k) for k in self.split_manager.split_names}
+            non_meta = {k:self.hooks.record_group_name(self.tester, k) for k in self.split_manager.split_names}
         meta_separate = {k:"{}_{}".format(const.META_SEPARATE_EMBEDDINGS, v) for k,v in non_meta.items()}
         meta_concatenate = {k:"{}_{}".format(const.META_CONCATENATE_EMBEDDINGS, v) for k,v in non_meta.items()}
         self.hooks.record_group_name_prefix = prefix

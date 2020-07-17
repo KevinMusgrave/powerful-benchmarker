@@ -80,13 +80,3 @@ class MLP(nn.Module):
 
     def forward(self, x):
         return self.net(x)
-
-
-class Identity(nn.Module):
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x):
-        return x
-

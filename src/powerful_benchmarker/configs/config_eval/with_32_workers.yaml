@@ -1,1 +1,2 @@
-eval_dataloader_num_workers: 32
+tester~APPLY~1:
+  dataloader_num_workers: 32

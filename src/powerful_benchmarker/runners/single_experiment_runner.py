@@ -2,7 +2,6 @@
 import logging
 logging.info("Importing packages in single_experiment_runner")
 from ..utils import common_functions as c_f, dataset_utils as d_u
-from easy_module_attribute_getter import utils as emag_utils
 from .base_runner import BaseRunner
 import glob
 import os
@@ -21,7 +20,7 @@ class SingleExperimentRunner(BaseRunner):
     def start_experiment(self, args):
         api_parser = self.get_api_parser(args)
         run_output = api_parser.run()
-        del api_parser.tester_obj
+        del api_parser.tester
         del api_parser.trainer
         del api_parser
         return run_output

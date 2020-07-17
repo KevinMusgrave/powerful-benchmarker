@@ -50,6 +50,7 @@ class BaseRunner:
         self.pytorch_getter.register('api_parser', api_parsers)
         self.pytorch_getter.register('accuracy_calculator', utils.accuracy_calculator.AccuracyCalculator)
         self.pytorch_getter.register('split_manager', split_managers)
+        self.pytorch_getter.register('hook_container', utils.logging_presets.HookContainer)
 
 
     def set_YR(self):
@@ -62,7 +63,7 @@ class BaseRunner:
 
     def get_api_parser(self, args):
         api_parser_kwargs = {"args": args, "pytorch_getter": self.pytorch_getter, "global_db_path": self.global_db_path}
-        return self.pytorch_getter.get('api_parser', class_name="API"+args.training_method, params=api_parser_kwargs)
+        return self.pytorch_getter.get('api_parser', class_name="API"+c_f.first_key_of_dict(args.trainer), params=api_parser_kwargs)
 
     def setup_argparser(self):
         parser = argparse.ArgumentParser(allow_abbrev=False)

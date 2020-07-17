@@ -158,9 +158,11 @@ def if_str_convert_to_singleton_list(input):
         return [input]
     return input
 
+def first_key_of_dict(input):
+    return list(input.keys())[0]
 
 def first_val_of_dict(input):
-    return input[list(input.keys())[0]]
+    return input[first_key_of_dict(input)]
 
 
 def get_attr_and_try_as_function(input_object, input_attr):

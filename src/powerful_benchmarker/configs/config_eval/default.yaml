@@ -1,10 +1,18 @@
-eval_reference_set: compared_to_self
-eval_normalize_embeddings: True
-eval_use_trunk_output: False
-eval_batch_size: 32
-eval_primary_metric: mean_average_precision_at_r
-eval_dataloader_num_workers: 2
-eval_pca: null
-eval_accuracy_calculator:
-  AccuracyCalculator:
+tester:
+  GlobalEmbeddingSpaceTester:
+    reference_set: compared_to_self
+    normalize_embeddings: True
+    use_trunk_output: False
+    batch_size: 32
+    dataloader_num_workers: 2
+    pca: null
+    accuracy_calculator:
+      AccuracyCalculator:
+    label_hierarchy_level: 0
+
+
+hook_container:
+  HookContainer:
+    primary_metric: mean_average_precision_at_r
+    validation_split_name: val
     
