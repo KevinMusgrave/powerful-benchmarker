@@ -1,7 +1,6 @@
 import sys
 import copy
 from ..utils import common_functions as c_f, dataset_utils as d_u, constants as const
-from pytorch_metric_learning import losses
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
 from easy_module_attribute_getter import utils as emag_utils
@@ -16,6 +15,7 @@ import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
+from ..factories import ModelFactory, LossFactory, MinerFactory
 
 
 class BaseAPIParser:
@@ -38,6 +38,12 @@ class BaseAPIParser:
         }
 
         self.trainer, self.tester = None, None
+        self.factories = {"model": ModelFactory,
+                        "loss": LossFactory,
+                        "miner": MinerFactory}
+        for k,v in self.factories.items():
+            self.factories[k] = v(getter=self.pytorch_getter)
+                
 
     def run(self):
         if self.beginning_of_training():
@@ -175,7 +181,8 @@ class BaseAPIParser:
         split_manager, split_manager_params = self.pytorch_getter.get("split_manager", yaml_dict=yaml_dict, return_uninitialized=True)
         split_manager_params = copy.deepcopy(split_manager_params)
         if c_f.check_init_arguments(split_manager, "model"):
-            split_manager_params["model"] = torch.nn.DataParallel(self.get_trunk_model(self.args.models["trunk"])).to(self.device)
+            trunk_model = self.factories["model"].create(named_specs=self.args.models, subset="trunk")
+            split_manager_params["model"] = torch.nn.DataParallel(trunk_model).to(self.device)
         if "helper_split_manager" in split_manager_params:
             split_manager_params["helper_split_manager"] = self.get_split_manager(yaml_dict=split_manager_params["helper_split_manager"])
         return split_manager(**split_manager_params)
@@ -207,7 +214,7 @@ class BaseAPIParser:
         
     def get_transforms(self):
         try:
-            trunk = self.get_trunk_model(self.args.models["trunk"])
+            trunk = self.factories["model"].create(named_specs=self.args.models, subset="trunk")
             if isinstance(trunk, torch.nn.DataParallel):
                 trunk = trunk.module
             model_transform_properties = {k:getattr(trunk, k) for k in ["mean", "std", "input_space", "input_range"]}
@@ -218,32 +225,6 @@ class BaseAPIParser:
             self.transforms[k] = self.pytorch_getter.get_composed_img_transform(v, **model_transform_properties)
         return self.transforms
 
-    def get_embedder_model(self, model_type, input_size=None, output_size=None):
-        model, model_args = self.pytorch_getter.get("model", yaml_dict=model_type, return_uninitialized=True)
-        model_args = copy.deepcopy(model_args)
-        if model == architectures.misc_models.MLP:
-            if input_size:
-                model_args["layer_sizes"].insert(0, input_size)
-            if output_size:
-                model_args["layer_sizes"].append(output_size)
-        model = model(**model_args)
-        logging.info("EMBEDDER MODEL %s"%model)
-        return model
-
-    def get_trunk_model(self, model_type):
-        model = self.pytorch_getter.get("model", yaml_dict=model_type)
-        self.base_model_output_size = c_f.get_last_linear(model).in_features
-        c_f.set_last_linear(model, pml_cf.Identity())
-        return model
-
-    def get_mining_function(self, miner_type):
-        if miner_type:
-            miner, miner_params = self.pytorch_getter.get("miner", yaml_dict=miner_type, return_uninitialized=True)
-            miner_params = copy.deepcopy(miner_params)
-            if "loss" in miner_params: miner_params["loss"] = self.get_loss_function(miner_params["loss"])
-            if "miner" in miner_params: miner_params["miner"] = self.get_mining_function(miner_params["miner"])
-            return miner(**miner_params)
-        return None
 
     def set_sampler(self):
         if self.args.sampler in [None, {}]:
@@ -257,52 +238,27 @@ class BaseAPIParser:
                 sampler_params["length_before_new_iter"] = len(self.split_manager.get_dataset("train", "train"))
                 logging.info("Set sampler length_before_new_iter to {}".format(sampler_params["length_before_new_iter"]))
             self.sampler = sampler(**sampler_params)
-            
-
-    def get_loss_function(self, loss_type):
-        loss, loss_params = self.pytorch_getter.get("loss", yaml_dict=loss_type, return_uninitialized=True)
-        loss_params = copy.deepcopy(loss_params)
-        if loss == losses.MultipleLosses:
-            loss_funcs = [self.get_loss_function({k:v}) for k,v in loss_params["losses"].items()]
-            return loss(loss_funcs) 
-        if loss == losses.CrossBatchMemory:
-            if "loss" in loss_params: loss_params["loss"] = self.get_loss_function(loss_params["loss"])
-            if "miner" in loss_params: loss_params["miner"] = self.get_mining_function(loss_params["miner"])
-        if c_f.check_init_arguments(loss, "num_classes") and ("num_classes" not in loss_params):
-            loss_params["num_classes"] = self.split_manager.get_num_labels("train", "train")
-            logging.info("Passing %d as num_classes to the loss function"%loss_params["num_classes"])
-        if "regularizer" in loss_params:
-            loss_params["regularizer"] = self.pytorch_getter.get("regularizer", yaml_dict=loss_params["regularizer"])
-
-        return loss(**loss_params)        
+               
 
     def set_loss_function(self):
-        self.loss_funcs = {}
-        for k, v in self.args.loss_funcs.items():
-            self.loss_funcs[k] = self.get_loss_function(v)
+        num_classes = self.split_manager.get_num_labels("train", "train")
+        additional_kwargs = {k:{"num_classes":num_classes} for k in self.args.loss_funcs.keys()}
+        self.loss_funcs = self.factories["loss"].create(named_specs=self.args.loss_funcs, additional_kwargs=additional_kwargs)
 
     def set_mining_function(self):
-        self.mining_funcs = {}
-        for k, v in self.args.mining_funcs.items():
-            self.mining_funcs[k] = self.get_mining_function(v)
-
-    def model_getter_dict(self):
-        return {"trunk": lambda model_type: self.get_trunk_model(model_type),
-                "embedder": lambda model_type: self.get_embedder_model(model_type, input_size=self.base_model_output_size)}
+        self.mining_funcs = self.factories["miner"].create(named_specs=self.args.mining_funcs)
 
     def set_model(self):
-        self.models = {}
-        for k, v in self.model_getter_dict().items():
-            self.models[k] = v(self.args.models[k])
+        self.models = self.factories["model"].create(named_specs=self.args.models)
 
     def load_model_for_eval(self, model_name):
         untrained_trunk = model_name in const.UNTRAINED_TRUNK_ALIASES
         untrained_trunk_and_embedder = model_name in const.UNTRAINED_TRUNK_AND_EMBEDDER_ALIASES
-        trunk_model = self.get_trunk_model(self.args.models["trunk"])
+        trunk_model = self.factories["model"].create(named_specs=self.args.models, subset="trunk")
         if untrained_trunk:
             embedder_model = pml_cf.Identity()
         else:
-            embedder_model = self.get_embedder_model(self.args.models["embedder"], self.base_model_output_size)
+            embedder_model = self.factories["model"].create(named_specs=self.args.models, subset="embedder")
             if not untrained_trunk_and_embedder: 
                 if model_name in const.TRAINED_ALIASES:
                     _, model_name = pml_cf.latest_version(self.model_folder, best=True)
