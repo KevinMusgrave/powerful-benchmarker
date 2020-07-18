@@ -22,6 +22,8 @@ class BaseFactory:
                 output = self._create(named_specs, subset, additional_kwargs)
             return output
         else:
+            if specs == {}:
+                return None
             if additional_kwargs is None:
                 additional_kwargs = {}
             kwargs = self.maybe_add_more_kwargs(additional_kwargs, "general")

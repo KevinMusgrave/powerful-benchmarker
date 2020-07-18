@@ -15,7 +15,7 @@ import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
-from ..factories import ModelFactory, LossFactory, MinerFactory
+from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory
 
 
 class BaseAPIParser:
@@ -40,7 +40,8 @@ class BaseAPIParser:
         self.trainer, self.tester = None, None
         self.factories = {"model": ModelFactory,
                         "loss": LossFactory,
-                        "miner": MinerFactory}
+                        "miner": MinerFactory,
+                        "sampler": SamplerFactory}
         for k,v in self.factories.items():
             self.factories[k] = v(getter=self.pytorch_getter)
                 
@@ -227,19 +228,10 @@ class BaseAPIParser:
 
 
     def set_sampler(self):
-        if self.args.sampler in [None, {}]:
-            self.sampler = None
-        else:
-            sampler, sampler_params = self.pytorch_getter.get("sampler", yaml_dict=self.args.sampler, return_uninitialized=True)
-            if c_f.check_init_arguments(sampler, "labels"):
-                sampler_params = copy.deepcopy(sampler_params)
-                sampler_params["labels"] = self.split_manager.get_labels("train", "train")
-            if sampler_params.get("length_before_new_iter") == "dataset_length":
-                sampler_params["length_before_new_iter"] = len(self.split_manager.get_dataset("train", "train"))
-                logging.info("Set sampler length_before_new_iter to {}".format(sampler_params["length_before_new_iter"]))
-            self.sampler = sampler(**sampler_params)
+        additional_kwargs = {"labels": self.split_manager.get_labels("train", "train"),
+                            "dataset_length": len(self.split_manager.get_dataset("train", "train"))}
+        self.sampler = self.factories["sampler"].create(self.args.sampler, additional_kwargs=additional_kwargs)
                
-
     def set_loss_function(self):
         num_classes = self.split_manager.get_num_labels("train", "train")
         additional_kwargs = {k:{"num_classes":num_classes} for k in self.args.loss_funcs.keys()}
