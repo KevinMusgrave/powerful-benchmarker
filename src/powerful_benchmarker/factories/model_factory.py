@@ -35,6 +35,8 @@ class ModelFactory(BaseFactory):
         assert specs.keys() == {"trunk", "embedder"}, "The model names must be trunk and embedder"
         return ["trunk", "embedder"]
 
-    def embedder_kwargs(self):
-        return {"input_size": self.base_model_output_size}
+    def key_specific_kwargs(self, key):
+        if key == "embedder":
+            return {"input_size": self.base_model_output_size}
+        return {}
         

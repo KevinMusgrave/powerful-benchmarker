@@ -18,6 +18,7 @@ class BaseFactory:
                 for k in self.creation_order(named_specs):
                     if k in subset:
                         output[k] = self._create(named_specs, k, additional_kwargs)
+                output = self.format_named_specs_output(output)
             else:
                 output = self._create(named_specs, subset, additional_kwargs)
             return output
@@ -26,7 +27,7 @@ class BaseFactory:
                 return None
             if additional_kwargs is None:
                 additional_kwargs = {}
-            kwargs = self.maybe_add_more_kwargs(additional_kwargs, "general")
+            kwargs = self.merge_key_specific_kwargs(additional_kwargs, None)
             return self._create_general(specs, **kwargs)
 
     def _create(self, named_specs, key, additional_kwargs):
@@ -35,18 +36,21 @@ class BaseFactory:
             creator_func = getattr(self, "create_{}".format(key))
         except AttributeError:
             creator_func = self._create_general
-        kwargs = self.maybe_add_more_kwargs(additional_kwargs[key], key)
+        kwargs = self.merge_key_specific_kwargs(additional_kwargs[key], key)
         return creator_func(v, **kwargs)
 
-    def maybe_add_more_kwargs(self, additional_kwargs, name):
-        try:
-            even_more_kwargs = getattr(self, "{}_kwargs".format(name))()
-            return emag_utils.merge_two_dicts(additional_kwargs, even_more_kwargs)
-        except AttributeError:
-            return additional_kwargs
+    def merge_key_specific_kwargs(self, additional_kwargs, key):
+        key_specific_kwargs = self.key_specific_kwargs(key)
+        return emag_utils.merge_two_dicts(additional_kwargs, key_specific_kwargs)
+
+    def key_specific_kwargs(self, key):
+        return {}
 
     def creation_order(self, named_specs):
         return list(named_specs.keys())
 
     def _create_general(self, specs):
         raise NotImplementedError
+
+    def format_named_specs_output(self, named_specs_output):
+        return named_specs_output

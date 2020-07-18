@@ -15,7 +15,7 @@ import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
-from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory
+from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory, OptimizerFactory
 
 
 class BaseAPIParser:
@@ -41,7 +41,8 @@ class BaseAPIParser:
         self.factories = {"model": ModelFactory,
                         "loss": LossFactory,
                         "miner": MinerFactory,
-                        "sampler": SamplerFactory}
+                        "sampler": SamplerFactory,
+                        "optimizer": OptimizerFactory}
         for k,v in self.factories.items():
             self.factories[k] = v(getter=self.pytorch_getter)
                 
@@ -162,21 +163,9 @@ class BaseAPIParser:
         return None
 
     def set_optimizers(self):
-        self.optimizers, self.lr_schedulers, self.gradient_clippers = {}, {}, {}
-        for k, v in self.args.optimizers.items():
-            basename = k.replace("_optimizer", '')
-            param_source = None
-            for possible_params in [self.models, self.loss_funcs]:
-                if basename in possible_params:
-                    param_source = possible_params[basename]
-                    break
-            o, s, g = self.pytorch_getter.get_optimizer(param_source, yaml_dict=v)
-            logging.info("%s\n%s" % (k, o))
-            if o is not None: self.optimizers[k] = o
-            if s is not None: self.lr_schedulers = {"%s_%s"%(basename, k):v for k,v in s.items()}
-            if g is not None: self.gradient_clippers[basename + "_grad_clipper"] = g
-
-
+        self.factories["optimizer"].param_sources = [self.models, self.loss_funcs]
+        self.optimizers, self.lr_schedulers, self.gradient_clippers = self.factories["optimizer"].create(named_specs=self.args.optimizers)
+        
     def get_split_manager(self, yaml_dict=None):
         yaml_dict = self.args.split_manager if yaml_dict is None else yaml_dict
         split_manager, split_manager_params = self.pytorch_getter.get("split_manager", yaml_dict=yaml_dict, return_uninitialized=True)
