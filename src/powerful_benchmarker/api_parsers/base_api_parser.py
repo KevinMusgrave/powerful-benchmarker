@@ -15,7 +15,7 @@ import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
-from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory, OptimizerFactory
+from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory, OptimizerFactory, TesterFactory
 
 
 class BaseAPIParser:
@@ -42,7 +42,8 @@ class BaseAPIParser:
                         "loss": LossFactory,
                         "miner": MinerFactory,
                         "sampler": SamplerFactory,
-                        "optimizer": OptimizerFactory}
+                        "optimizer": OptimizerFactory,
+                        "tester": TesterFactory}
         for k,v in self.factories.items():
             self.factories[k] = v(getter=self.pytorch_getter)
                 
@@ -155,9 +156,6 @@ class BaseAPIParser:
             c_f.save_config_files(self.args.place_to_save_configs, self.args.dict_of_yamls, self.args.resume_training, latest_epochs)
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
-
-    def get_accuracy_calculator(self, accuracy_type):
-        return self.pytorch_getter.get("accuracy_calculator", yaml_dict=accuracy_type)
 
     def get_collate_fn(self):
         return None
@@ -359,7 +357,7 @@ class BaseAPIParser:
         self.set_optimizers()
         self.set_record_keeper()
         self.hooks = self.get_hook_container(self.args.hook_container)
-        self.tester = self.get_tester(self.args.tester)
+        self.set_tester()
         self.trainer = self.get_trainer(self.args.trainer)
         if self.is_training():
             self.epoch = self.maybe_load_latest_saved_models()
@@ -377,14 +375,11 @@ class BaseAPIParser:
     def tester_settings(self):
         return c_f.first_val_of_dict(self.args.tester)
 
-    def get_tester(self, tester_type):
-        tester, tester_params = self.pytorch_getter.get("tester", yaml_dict=tester_type, return_uninitialized=True)
-        other_args = {"data_device": self.device,
-                    "data_and_label_getter": self.split_manager.data_and_label_getter,
-                    "end_of_testing_hook": self.hooks.end_of_testing_hook,
-                    "accuracy_calculator": self.get_accuracy_calculator(tester_params["accuracy_calculator"])}
-        tester_params = emag_utils.merge_two_dicts(tester_params, other_args)
-        return tester(**tester_params)
+    def set_tester(self):
+        additional_kwargs = {"device": self.device,
+                            "data_and_label_getter": self.split_manager.data_and_label_getter,
+                            "end_of_testing_hook": self.hooks.end_of_testing_hook}
+        self.tester = self.factories["tester"].create(self.args.tester, additional_kwargs=additional_kwargs)
 
     def get_end_of_epoch_hook(self):
         logging.info("Creating end_of_epoch_hook kwargs")
@@ -493,7 +488,7 @@ class BaseAPIParser:
         self.models = {}
         self.record_keeper = self.meta_record_keeper
         self.hooks = self.get_hook_container(self.args.hook_container, record_group_name_prefix=meta_model_getter.__name__)
-        self.tester = self.get_tester(self.args.tester)
+        self.set_tester()
 
         models_to_eval = []
         if self.args.check_untrained_accuracy: 
@@ -523,7 +518,7 @@ class BaseAPIParser:
         if not getattr(self, "tester", None):
             if not getattr(self, "split_manager", None):
                 self.split_manager = self.get_split_manager()
-            self.tester = self.get_tester(self.args.tester)
+            self.set_tester()
         prefix = self.hooks.record_group_name_prefix 
         self.hooks.record_group_name_prefix = "" #temporary
         if return_base_record_group_name:
