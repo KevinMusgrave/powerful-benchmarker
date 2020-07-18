@@ -7,3 +7,7 @@ from .optimizer_factory import OptimizerFactory
 from .tester_factory import TesterFactory
 from .trainer_factory import TrainerFactory
 from .factory_factory import FactoryFactory
+from .transform_factory import TransformFactory
+from .split_manager_factory import SplitManagerFactory
+from .record_keeper_factory import RecordKeeperFactory
+from .hook_factory import HookFactory

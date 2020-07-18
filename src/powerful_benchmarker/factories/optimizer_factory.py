@@ -4,14 +4,14 @@ import logging
 import copy
 
 class OptimizerFactory(BaseFactory):
-    def __init__(self, param_sources=None, **kwargs):
+    def __init__(self, param_sources, **kwargs):
         super().__init__(**kwargs)
         self.param_sources = param_sources
 
     def _create_general(self, optimizer_type, k):
         basename = k.replace("_optimizer", '')
         param_source = None
-        for possible_params in self.param_sources:
+        for possible_params in [getattr(self.api_parser, x) for x in self.param_sources]:
             if basename in possible_params:
                 param_source = possible_params[basename]
                 break
@@ -35,3 +35,5 @@ class OptimizerFactory(BaseFactory):
             if "lr_scheduler" in v: lr_schedulers[k] = v["lr_scheduler"]
             if "gradient_clipper" in v: gradient_clipper[k] = v["gradient_clipper"]
         return optimizers, lr_schedulers, gradient_clippers
+
+    

@@ -4,7 +4,6 @@ from ..utils import common_functions as c_f, dataset_utils as d_u, constants as 
 import pytorch_metric_learning.utils.logging_presets as logging_presets
 import pytorch_metric_learning.utils.common_functions as pml_cf
 from easy_module_attribute_getter import utils as emag_utils
-from torch.utils.tensorboard import SummaryWriter
 import torch.nn
 import torch
 import os
@@ -40,9 +39,11 @@ class BaseAPIParser:
         self.trainer, self.tester = None, None
         self.factories = FactoryFactory(api_parser=self, getter=self.pytorch_getter).create(named_specs=self.args.factories)
 
+
     def run(self):
         if self.beginning_of_training():
             self.make_dir()
+        self.set_transforms()
         self.set_split_manager()
         self.save_config_files()
         self.set_num_epochs_dict()
@@ -78,6 +79,7 @@ class BaseAPIParser:
         if self.is_training():
             return self.return_val_accuracy_and_standard_error()
 
+
     def run_for_each_split_scheme(self):
         for self.curr_split_count, split_scheme_name in enumerate(self.split_manager.split_scheme_names):
             num_epochs = self.num_epochs[split_scheme_name]
@@ -90,6 +92,7 @@ class BaseAPIParser:
                 self.train(num_epochs)
             self.update_meta_record_keeper(split_scheme_name)
             self.delete_old_objects()
+
 
     def delete_old_objects(self):
         for attr_name in ["models", "loss_funcs", "mining_funcs", "optimizers", "lr_schedulers", "gradient_clippers"]:
@@ -105,11 +108,22 @@ class BaseAPIParser:
         except AttributeError:
             pass
 
+
+    def flush_tensorboard(self):
+        for keeper in ["record_keeper", "meta_record_keeper"]:
+            k = getattr(self, keeper, None)
+            if k:
+                k.tensorboard_writer.flush()
+                k.tensorboard_writer.close()
+
+
     def is_training(self):
         return not self.args.evaluate
 
+
     def beginning_of_training(self):
         return (not self.args.resume_training) and (not self.args.evaluate)
+
 
     def make_dir(self):
         root = pathlib.Path(self.experiment_folder)
@@ -120,14 +134,17 @@ class BaseAPIParser:
             sys.exit()
         c_f.makedir_if_not_there(self.experiment_folder)
 
+
     def make_sub_experiment_dirs(self):
         for s in self.sub_experiment_dirs.values():
             for r in self.split_manager.split_scheme_names:
                 c_f.makedir_if_not_there(s % (self.experiment_folder, r))
 
+
     def set_curr_folders(self):
         folders = self.get_sub_experiment_dir_paths()[self.split_manager.curr_split_scheme_name]
         self.model_folder, self.csv_folder, self.tensorboard_folder = folders["models"], folders["csvs"], folders["tensorboard"]
+
 
     def get_sub_experiment_dir_paths(self):
         sub_experiment_dir_paths = {}
@@ -135,11 +152,6 @@ class BaseAPIParser:
             sub_experiment_dir_paths[k] = {folder_type: s % (self.experiment_folder, k) for folder_type, s in self.sub_experiment_dirs.items()}
         return sub_experiment_dir_paths
 
-    def set_num_epochs_dict(self):
-        if isinstance(self.args.num_epochs_train, int):
-            self.num_epochs = {k: self.args.num_epochs_train for k in self.split_manager.split_scheme_names}
-        else:
-            self.num_epochs = self.args.num_epochs_train
 
     def save_config_files(self):
         self.latest_sub_experiment_epochs = c_f.latest_sub_experiment_epochs(self.get_sub_experiment_dir_paths())
@@ -149,62 +161,22 @@ class BaseAPIParser:
         delattr(self.args, "dict_of_yamls")
         delattr(self.args, "place_to_save_configs")
 
-    def get_collate_fn(self):
-        return None
+
+    def set_num_epochs_dict(self):
+        if isinstance(self.args.num_epochs_train, int):
+            self.num_epochs = {k: self.args.num_epochs_train for k in self.split_manager.split_scheme_names}
+        else:
+            self.num_epochs = self.args.num_epochs_train
+
 
     def set_optimizers(self):
-        self.factories["optimizer"].param_sources = [self.models, self.loss_funcs]
         self.optimizers, self.lr_schedulers, self.gradient_clippers = self.factories["optimizer"].create(named_specs=self.args.optimizers)
         
-    def get_split_manager(self, yaml_dict=None):
-        yaml_dict = self.args.split_manager if yaml_dict is None else yaml_dict
-        split_manager, split_manager_params = self.pytorch_getter.get("split_manager", yaml_dict=yaml_dict, return_uninitialized=True)
-        split_manager_params = copy.deepcopy(split_manager_params)
-        if c_f.check_init_arguments(split_manager, "model"):
-            trunk_model = self.factories["model"].create(named_specs=self.args.models, subset="trunk")
-            split_manager_params["model"] = torch.nn.DataParallel(trunk_model).to(self.device)
-        if "helper_split_manager" in split_manager_params:
-            split_manager_params["helper_split_manager"] = self.get_split_manager(yaml_dict=split_manager_params["helper_split_manager"])
-        return split_manager(**split_manager_params)
+    def set_transforms(self):
+        self.transforms = self.factories["transform"].create(named_specs=self.args.transforms)
 
     def set_split_manager(self):
-        self.split_manager = self.get_split_manager()
-
-        if self.args.multi_dataset is not None:
-            chosen_dataset, original_dataset_params = {}, {}
-            for split_name, yaml_dict in self.args.multi_dataset.items():
-                chosen_dataset[split_name], original_dataset_params[split_name] = self.pytorch_getter.get("dataset", yaml_dict=yaml_dict, return_uninitialized=True)
-            self.split_manager.split_names = list(self.args.multi_dataset.keys())
-        else:
-            chosen_dataset, original_dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
-            chosen_dataset = {k:chosen_dataset for k in self.split_manager.split_names}
-            original_dataset_params = {k:original_dataset_params for k in self.split_manager.split_names}
-
-        datasets = defaultdict(dict)
-        for transform_type, T in self.get_transforms().items():
-            logging.info("{} transform: {}".format(transform_type, T))
-            for split_name in self.split_manager.split_names:
-                dataset_params = copy.deepcopy(original_dataset_params[split_name])
-                dataset_params["transform"] = T
-                if "root" not in dataset_params:
-                    dataset_params["root"] = self.args.dataset_root            
-                datasets[transform_type][split_name] = chosen_dataset[split_name](**dataset_params)
-        
-        self.split_manager.create_split_schemes(datasets)
-        
-    def get_transforms(self):
-        try:
-            trunk = self.factories["model"].create(named_specs=self.args.models, subset="trunk")
-            if isinstance(trunk, torch.nn.DataParallel):
-                trunk = trunk.module
-            model_transform_properties = {k:getattr(trunk, k) for k in ["mean", "std", "input_space", "input_range"]}
-        except (KeyError, AttributeError):
-            model_transform_properties = {"mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225]}
-        self.transforms = {"train": None, "eval": None}
-        for k, v in self.args.transforms.items():
-            self.transforms[k] = self.pytorch_getter.get_composed_img_transform(v, **model_transform_properties)
-        return self.transforms
-
+        self.split_manager = self.factories["split_manager"].create(self.args.split_manager)
 
     def set_sampler(self):
         self.sampler = self.factories["sampler"].create(self.args.sampler)
@@ -217,6 +189,34 @@ class BaseAPIParser:
 
     def set_model(self):
         self.models = self.factories["model"].create(named_specs=self.args.models)
+
+    def set_tester(self):
+        self.tester = self.factories["tester"].create(self.args.tester)
+
+    def set_trainer(self):
+        self.trainer = self.factories["trainer"].create(self.args.trainer)
+
+    def set_record_keeper(self):
+        self.record_keeper = self.factories["record_keeper"].create_record_keeper()
+
+    def set_meta_record_keeper(self):
+        self.meta_record_keeper = self.factories["record_keeper"].create_meta_record_keeper()
+        self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+
+    def set_hooks(self):
+        self.hooks = self.factories["hook"].create_hook_container(self.args.hook_container)
+
+    def set_dataparallel(self):
+        for k, v in self.models.items():
+            self.models[k] = torch.nn.DataParallel(v)
+
+    def set_devices(self):
+        for obj_dict in [self.models, self.loss_funcs, self.mining_funcs]:
+            for v in obj_dict.values():
+                v.to(self.device)
+        for v in self.optimizers.values():
+            c_f.move_optimizer_to_gpu(v, self.device)
+            
 
     def load_model_for_eval(self, model_name):
         untrained_trunk = model_name in const.UNTRAINED_TRUNK_ALIASES
@@ -239,10 +239,12 @@ class BaseAPIParser:
                 )
         return torch.nn.DataParallel(trunk_model), torch.nn.DataParallel(embedder_model)
 
+
     def eval_assertions(self, dataset_dict):
         for k, v in dataset_dict.items():
             assert v is self.split_manager.get_dataset("eval", k)
             assert d_u.get_underlying_dataset(v).transform is self.transforms["eval"]
+
 
     def eval_model(self, epoch, model_name, load_model=False, skip_eval_if_already_done=True):
         logging.info("Launching evaluation for model %s"%model_name)
@@ -256,37 +258,8 @@ class BaseAPIParser:
         dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval)
         self.eval_assertions(dataset_dict)
         return self.hooks.run_tester_separately(self.tester, dataset_dict, epoch, trunk_model, embedder_model, 
-                                        splits_to_eval=self.args.splits_to_eval, collate_fn=self.get_collate_fn(), skip_eval_if_already_done=skip_eval_if_already_done)
+                                        splits_to_eval=self.args.splits_to_eval, collate_fn=self.split_manager.collate_fn, skip_eval_if_already_done=skip_eval_if_already_done)
 
-    def flush_tensorboard(self):
-        for keeper in ["record_keeper", "meta_record_keeper"]:
-            k = getattr(self, keeper, None)
-            if k:
-                k.tensorboard_writer.flush()
-                k.tensorboard_writer.close()
-
-    def set_record_keeper(self):
-        is_new_experiment = self.beginning_of_training() and self.curr_split_count == 0
-        self.record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder = self.csv_folder, 
-                                                                    tensorboard_folder = self.tensorboard_folder, 
-                                                                    global_db_path = self.global_db_path, 
-                                                                    experiment_name = self.args.experiment_name, 
-                                                                    is_new_experiment = is_new_experiment, 
-                                                                    save_figures = self.args.save_figures_on_tensorboard,
-                                                                    save_lists = self.args.save_lists_in_db)
-
-    def set_meta_record_keeper(self):
-        is_new_experiment = self.beginning_of_training()
-        folders = {folder_type: s % (self.experiment_folder, "meta_logs") for folder_type, s in self.sub_experiment_dirs.items()}
-        csv_folder, tensorboard_folder = folders["csvs"], folders["tensorboard"]
-        self.meta_record_keeper, _, _ = logging_presets.get_record_keeper(csv_folder = csv_folder, 
-                                                                        tensorboard_folder = tensorboard_folder,
-                                                                        global_db_path = self.global_db_path, 
-                                                                        experiment_name = self.args.experiment_name, 
-                                                                        is_new_experiment = is_new_experiment,
-                                                                        save_figures = self.args.save_figures_on_tensorboard,
-                                                                        save_lists = self.args.save_lists_in_db)
-        self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
 
     def update_meta_record_keeper(self, split_scheme_name):
         for split in self.args.splits_to_eval:
@@ -299,6 +272,7 @@ class BaseAPIParser:
                     accuracy_keys = [k for k in accuracies[0].keys() if any(acc in k for acc in self.tester.accuracy_calculator.get_curr_metrics())]
                     for k in accuracy_keys:
                         self.meta_accuracies[split][trained_status][k][split_scheme_name] = accuracies[0][k]
+
 
     def record_meta_logs(self):
         if len(self.meta_accuracies) > 0:
@@ -317,6 +291,7 @@ class BaseAPIParser:
                         self.meta_record_keeper.update_records({"timestamp": c_f.get_datetime()}, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
             self.meta_record_keeper.save_records()
 
+
     def return_val_accuracy_and_standard_error(self):
         group_name = self.get_eval_record_name_dict(const.META_SEPARATE_EMBEDDINGS)["val"]
         def get_average_best_and_sem(key):
@@ -334,8 +309,6 @@ class BaseAPIParser:
             return tuple(q[0][k] for k in keys)
         return q[0][keys[0]]
 
-    def maybe_load_latest_saved_models(self):
-        return self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device, best=self.args.resume_training=="best")
 
     def set_models_optimizers_losses(self):
         self.set_model()
@@ -344,57 +317,17 @@ class BaseAPIParser:
         self.set_mining_function()
         self.set_optimizers()
         self.set_record_keeper()
-        self.hooks = self.get_hook_container(self.args.hook_container)
+        self.set_hooks()
         self.set_tester()
         self.set_trainer()
         if self.is_training():
-            self.epoch = self.maybe_load_latest_saved_models()
+            self.epoch = self.hooks.load_latest_saved_models(self.trainer, self.model_folder, self.device, best=self.args.resume_training=="best")
         self.set_dataparallel()
         self.set_devices()
-
-    def get_hook_container(self, hook_container_type, **kwargs):
-        hooks, hooks_params = self.pytorch_getter.get("hook_container", yaml_dict=hook_container_type, return_uninitialized=True)
-        if "record_keeper" not in kwargs:
-            hooks_params["record_keeper"] = self.record_keeper
-        hooks_params = emag_utils.merge_two_dicts(hooks_params, kwargs)
-        return hooks(**hooks_params)
 
     @property
     def tester_settings(self):
         return c_f.first_val_of_dict(self.args.tester)
-
-    def set_tester(self):
-        self.tester = self.factories["tester"].create(self.args.tester)
-
-    def get_end_of_epoch_hook(self):
-        logging.info("Creating end_of_epoch_hook kwargs")
-        dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval)
-        helper_hook = self.hooks.end_of_epoch_hook(tester=self.tester,
-                                                    dataset_dict=dataset_dict,
-                                                    model_folder=self.model_folder,
-                                                    test_interval=self.args.save_interval,
-                                                    patience=self.args.patience,
-                                                    test_collate_fn=self.get_collate_fn())
-        def end_of_epoch_hook(trainer):
-            torch.cuda.empty_cache()
-            self.eval_assertions(dataset_dict)
-            return helper_hook(trainer)
-
-        return end_of_epoch_hook
-
-    def set_trainer(self):
-        self.trainer = self.factories["trainer"].create(self.args.trainer)
-
-    def set_dataparallel(self):
-        for k, v in self.models.items():
-            self.models[k] = torch.nn.DataParallel(v)
-
-    def set_devices(self):
-        for obj_dict in [self.models, self.loss_funcs, self.mining_funcs]:
-            for v in obj_dict.values():
-                v.to(self.device)
-        for v in self.optimizers.values():
-            c_f.move_optimizer_to_gpu(v, self.device)
 
     def should_train(self, num_epochs, split_scheme_name):
         best_epoch, _ = pml_cf.latest_version(self.model_folder, best=True)
@@ -454,7 +387,7 @@ class BaseAPIParser:
         meta_model_getter = getattr(self, self.get_curr_meta_testing_method())
         self.models = {}
         self.record_keeper = self.meta_record_keeper
-        self.hooks = self.get_hook_container(self.args.hook_container, record_group_name_prefix=meta_model_getter.__name__)
+        self.hooks = self.factories["hook"].create_hook_container(self.args.hook_container, record_group_name_prefix=meta_model_getter.__name__)
         self.set_tester()
 
         models_to_eval = []
@@ -481,7 +414,7 @@ class BaseAPIParser:
 
     def get_eval_record_name_dict(self, eval_type=const.NON_META, return_all=False, return_base_record_group_name=False):
         if not getattr(self, "hooks", None):
-            self.hooks = self.get_hook_container(self.args.hook_container, record_keeper=None)
+            self.hooks = self.factories["hook"].create_hook_container(self.args.hook_container, record_keeper=None)
         if not getattr(self, "tester", None):
             if not getattr(self, "split_manager", None):
                 self.split_manager = self.get_split_manager()

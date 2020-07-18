@@ -12,10 +12,25 @@ factories:
     SamplerFactory: {}
 
   optimizer:
-    OptimizerFactory: {}
+    OptimizerFactory:
+      param_sources:
+        - models
+        - loss_funcs
 
   tester:
     TesterFactory: {}
 
   trainer:
     TrainerFactory: {}
+
+  transform:
+    TransformFactory: {}
+
+  split_manager:
+    SplitManagerFactory: {}
+
+  record_keeper:
+    RecordKeeperFactory: {}
+
+  hook:
+    HookFactory: {}

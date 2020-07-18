@@ -114,6 +114,9 @@ class BaseSplitManager:
     def curr_split_scheme_name(self):
         return self.split_scheme_holder.curr_split_scheme_name
 
+    @property
+    def collate_fn(self):
+        return None
 
     def get_test_set_name(self):
         raise NotImplementedError
