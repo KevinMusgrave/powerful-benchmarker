@@ -1,0 +1,21 @@
+factories:
+  model:
+    ModelFactory: {}
+
+  loss: 
+    LossFactory: {}
+                          
+  miner: 
+    MinerFactory: {}
+
+  sampler:
+    SamplerFactory: {}
+
+  optimizer:
+    OptimizerFactory: {}
+
+  tester:
+    TesterFactory: {}
+
+  trainer:
+    TrainerFactory: {}

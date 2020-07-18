@@ -15,7 +15,7 @@ import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
-from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory, OptimizerFactory, TesterFactory, TrainerFactory
+from ..factories import FactoryFactory
 
 
 class BaseAPIParser:
@@ -38,16 +38,7 @@ class BaseAPIParser:
         }
 
         self.trainer, self.tester = None, None
-        self.factories = {"model": ModelFactory,
-                        "loss": LossFactory,
-                        "miner": MinerFactory,
-                        "sampler": SamplerFactory,
-                        "optimizer": OptimizerFactory,
-                        "tester": TesterFactory,
-                        "trainer": TrainerFactory}
-        for k,v in self.factories.items():
-            self.factories[k] = v(api_parser=self, getter=self.pytorch_getter)
-                
+        self.factories = FactoryFactory(api_parser=self, getter=self.pytorch_getter).create(named_specs=self.args.factories)
 
     def run(self):
         if self.beginning_of_training():
