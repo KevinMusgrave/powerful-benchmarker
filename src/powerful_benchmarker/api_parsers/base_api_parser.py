@@ -15,7 +15,7 @@ import numpy as np
 from scipy import stats as scipy_stats
 from collections import defaultdict
 from .. import architectures
-from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory, OptimizerFactory, TesterFactory
+from ..factories import ModelFactory, LossFactory, MinerFactory, SamplerFactory, OptimizerFactory, TesterFactory, TrainerFactory
 
 
 class BaseAPIParser:
@@ -43,9 +43,10 @@ class BaseAPIParser:
                         "miner": MinerFactory,
                         "sampler": SamplerFactory,
                         "optimizer": OptimizerFactory,
-                        "tester": TesterFactory}
+                        "tester": TesterFactory,
+                        "trainer": TrainerFactory}
         for k,v in self.factories.items():
-            self.factories[k] = v(getter=self.pytorch_getter)
+            self.factories[k] = v(api_parser=self, getter=self.pytorch_getter)
                 
 
     def run(self):
@@ -215,14 +216,10 @@ class BaseAPIParser:
 
 
     def set_sampler(self):
-        additional_kwargs = {"labels": self.split_manager.get_labels("train", "train"),
-                            "dataset_length": len(self.split_manager.get_dataset("train", "train"))}
-        self.sampler = self.factories["sampler"].create(self.args.sampler, additional_kwargs=additional_kwargs)
+        self.sampler = self.factories["sampler"].create(self.args.sampler)
                
     def set_loss_function(self):
-        num_classes = self.split_manager.get_num_labels("train", "train")
-        additional_kwargs = {k:{"num_classes":num_classes} for k in self.args.loss_funcs.keys()}
-        self.loss_funcs = self.factories["loss"].create(named_specs=self.args.loss_funcs, additional_kwargs=additional_kwargs)
+        self.loss_funcs = self.factories["loss"].create(named_specs=self.args.loss_funcs)
 
     def set_mining_function(self):
         self.mining_funcs = self.factories["miner"].create(named_specs=self.args.mining_funcs)
@@ -358,7 +355,7 @@ class BaseAPIParser:
         self.set_record_keeper()
         self.hooks = self.get_hook_container(self.args.hook_container)
         self.set_tester()
-        self.trainer = self.get_trainer(self.args.trainer)
+        self.set_trainer()
         if self.is_training():
             self.epoch = self.maybe_load_latest_saved_models()
         self.set_dataparallel()
@@ -376,10 +373,7 @@ class BaseAPIParser:
         return c_f.first_val_of_dict(self.args.tester)
 
     def set_tester(self):
-        additional_kwargs = {"device": self.device,
-                            "data_and_label_getter": self.split_manager.data_and_label_getter,
-                            "end_of_testing_hook": self.hooks.end_of_testing_hook}
-        self.tester = self.factories["tester"].create(self.args.tester, additional_kwargs=additional_kwargs)
+        self.tester = self.factories["tester"].create(self.args.tester)
 
     def get_end_of_epoch_hook(self):
         logging.info("Creating end_of_epoch_hook kwargs")
@@ -397,26 +391,8 @@ class BaseAPIParser:
 
         return end_of_epoch_hook
 
-    def get_trainer(self, trainer_type):
-        trainer, trainer_params = self.pytorch_getter.get("trainer", yaml_dict=trainer_type, return_uninitialized=True)
-        other_args = {
-            "models": self.models,
-            "optimizers": self.optimizers,
-            "sampler": self.sampler,
-            "collate_fn": self.get_collate_fn(),
-            "loss_funcs": self.loss_funcs,
-            "mining_funcs": self.mining_funcs,
-            "dataset": self.split_manager.get_dataset("train", "train", log_split_details=True),
-            "data_device": self.device,
-            "lr_schedulers": self.lr_schedulers,
-            "gradient_clippers": self.gradient_clippers,
-            "data_and_label_getter": self.split_manager.data_and_label_getter,
-            "dataset_labels": list(self.split_manager.get_label_set("train", "train")),
-            "end_of_iteration_hook": self.hooks.end_of_iteration_hook,
-            "end_of_epoch_hook": self.get_end_of_epoch_hook()
-        }
-        trainer_params = emag_utils.merge_two_dicts(trainer_params, other_args)
-        return trainer(**trainer_params)
+    def set_trainer(self):
+        self.trainer = self.factories["trainer"].create(self.args.trainer)
 
     def set_dataparallel(self):
         for k, v in self.models.items():

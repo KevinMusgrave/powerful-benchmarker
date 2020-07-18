@@ -1,7 +1,8 @@
 from easy_module_attribute_getter import utils as emag_utils
 
 class BaseFactory:
-    def __init__(self, getter):
+    def __init__(self, api_parser, getter):
+        self.api_parser = api_parser
         self.getter = getter
         
     def create(self, specs=None, named_specs=None, subset=None, additional_kwargs=None):
