@@ -11,3 +11,5 @@ from .transform_factory import TransformFactory
 from .split_manager_factory import SplitManagerFactory
 from .record_keeper_factory import RecordKeeperFactory
 from .hook_factory import HookFactory
+from .aggregator_factory import AggregatorFactory
+from .ensemble_factory import EnsembleFactory

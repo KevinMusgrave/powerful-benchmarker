@@ -34,3 +34,9 @@ factories:
 
   hook:
     HookFactory: {}
+
+  aggregator:
+    AggregatorFactory: {}
+
+  ensemble:
+    EnsembleFactory: {}

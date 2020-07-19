@@ -11,6 +11,15 @@ tester:
     label_hierarchy_level: 0
 
 
+aggregator:
+  MeanAggregator:
+
+ensemble:
+  MetaConcatenateEmbeddings:
+    normalize_embeddings: True
+    use_trunk_output: False
+
+
 hook_container:
   HookContainer:
     primary_metric: mean_average_precision_at_r

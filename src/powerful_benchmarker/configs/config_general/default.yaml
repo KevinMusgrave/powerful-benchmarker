@@ -8,10 +8,6 @@ trainer:
     loss_weights: null
     set_min_label_to_zero: True
 
-meta_testing_method: 
-  - meta_SeparateEmbeddings
-  - meta_ConcatenateEmbeddings
-
 num_epochs_train: 1000
 save_interval: 2
 patience: 9

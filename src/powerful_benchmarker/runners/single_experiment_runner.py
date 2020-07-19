@@ -13,9 +13,9 @@ class SingleExperimentRunner(BaseRunner):
     def run(self):
         self.set_YR()
         if self.YR.args.reproduce_results:
-            self.reproduce_results(self.YR)
+            return self.reproduce_results(self.YR)
         else:
-            self.run_new_experiment_or_resume(self.YR)
+            return self.run_new_experiment_or_resume(self.YR)
 
     def start_experiment(self, args):
         api_parser = self.get_api_parser(args)

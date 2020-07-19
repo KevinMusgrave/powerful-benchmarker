@@ -37,9 +37,10 @@ class BaseRunner:
 
     def init_pytorch_getter(self):
         from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers, utils
-        from .. import architectures, datasets, factories, api_parsers, split_managers
+        from .. import architectures, datasets, factories, api_parsers, split_managers, aggregators, ensembles
         self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
         self.pytorch_getter.register('model', architectures.misc_models)
+        self.pytorch_getter.register('model', utils.common_functions.Identity)
         self.pytorch_getter.register('loss', losses)
         self.pytorch_getter.register('miner', miners)
         self.pytorch_getter.register('regularizer', regularizers)
@@ -52,6 +53,8 @@ class BaseRunner:
         self.pytorch_getter.register('split_manager', split_managers)
         self.pytorch_getter.register('hook_container', utils.logging_presets.HookContainer)
         self.pytorch_getter.register('factory', factories)
+        self.pytorch_getter.register('aggregator', aggregators)
+        self.pytorch_getter.register('ensembles', ensembles)
 
 
     def set_YR(self):
@@ -71,6 +74,7 @@ class BaseRunner:
         parser.add_argument("--experiment_name", type=str, required=True)
         parser.add_argument("--resume_training", type=str, default=None, choices=["latest", "best"])
         parser.add_argument("--evaluate", action="store_true")
+        parser.add_argument("--evaluate_ensemble", action="store_true")
         parser.add_argument("--reproduce_results", type=str, default=None)
         return parser
 
