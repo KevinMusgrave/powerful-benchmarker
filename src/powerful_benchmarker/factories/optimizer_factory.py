@@ -4,14 +4,11 @@ import logging
 import copy
 
 class OptimizerFactory(BaseFactory):
-    def __init__(self, param_sources, **kwargs):
-        super().__init__(**kwargs)
-        self.param_sources = param_sources
 
-    def _create_general(self, optimizer_type, k):
+    def _create_general(self, optimizer_type, k, param_sources):
         basename = k.replace("_optimizer", '')
         param_source = None
-        for possible_params in [getattr(self.api_parser, x) for x in self.param_sources]:
+        for possible_params in param_sources:
             if basename in possible_params:
                 param_source = possible_params[basename]
                 break

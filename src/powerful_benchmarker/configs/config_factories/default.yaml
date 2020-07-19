@@ -12,10 +12,7 @@ factories:
     SamplerFactory: {}
 
   optimizer:
-    OptimizerFactory:
-      param_sources:
-        - models
-        - loss_funcs
+    OptimizerFactory: {}
 
   tester:
     TesterFactory: {}

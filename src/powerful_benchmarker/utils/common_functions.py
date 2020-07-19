@@ -21,14 +21,14 @@ import tarfile, zipfile
 from . import constants as const
 
 
-def load_model_for_eval(model_factory, model_args, model_name, model_folder=None, device=None):
+def load_model_for_eval(model_factory, model_args, model_name, factory_kwargs, model_folder=None, device=None):
     untrained_trunk = model_name in const.UNTRAINED_TRUNK_ALIASES
     untrained_trunk_and_embedder = model_name in const.UNTRAINED_TRUNK_AND_EMBEDDER_ALIASES
-    trunk_model = model_factory.create(named_specs=model_args, subset="trunk")
+    trunk_model = model_factory.create(named_specs=model_args, subset="trunk", **factory_kwargs)
     if untrained_trunk:
         embedder_model = pml_cf.Identity()
     else:
-        embedder_model = model_factory.create(named_specs=model_args, subset="embedder")
+        embedder_model = model_factory.create(named_specs=model_args, subset="embedder", **factory_kwargs)
         if not untrained_trunk_and_embedder: 
             if model_name in const.TRAINED_ALIASES:
                 _, model_name = pml_cf.latest_version(model_folder, best=True)

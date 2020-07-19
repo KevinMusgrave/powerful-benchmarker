@@ -4,3 +4,5 @@ from .api_cascaded_embeddings import APICascadedEmbeddings
 from .api_deep_adversarial_metric_learning import APIDeepAdversarialMetricLearning
 from .api_train_with_classifier import APITrainWithClassifier
 from .api_unsupervised_embeddings_using_augmentations import APIUnsupervisedEmbeddingsUsingAugmentations
+from .getter_and_setter import GetterAndSetter
+from .folder_creator import FolderCreator
