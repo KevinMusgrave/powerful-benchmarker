@@ -54,7 +54,7 @@ class BaseRunner:
         self.pytorch_getter.register('hook_container', utils.logging_presets.HookContainer)
         self.pytorch_getter.register('factory', factories)
         self.pytorch_getter.register('aggregator', aggregators)
-        self.pytorch_getter.register('ensembles', ensembles)
+        self.pytorch_getter.register('ensemble', ensembles)
 
 
     def set_YR(self):

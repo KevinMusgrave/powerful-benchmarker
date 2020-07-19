@@ -46,15 +46,15 @@ class BaseAPIParser:
         self.save_config_files()
         self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
-        self.set_meta_record_keeper()
-        self.set_aggregator()
         self.run_train_or_eval()
 
 
     def run_train_or_eval(self):
         if self.args.evaluate_ensemble:
-            self.meta_eval()
+            self.eval_ensemble()
         else:
+            self.set_meta_record_keeper()
+            self.set_aggregator()
             try:
                 self.run_for_each_split_scheme()
             except ValueError as value_exception:
@@ -220,18 +220,18 @@ class BaseAPIParser:
             assert d_u.get_underlying_dataset(v).transform is self.transforms["eval"]
 
 
-    def eval_model(self, epoch, model_name, load_model=False, skip_eval_if_already_done=True):
+    def eval_model(self, epoch, model_name, hooks, tester, models=None, load_model=False, skip_eval_if_already_done=True):
         logging.info("Launching evaluation for model %s"%model_name)
         if load_model:
             logging.info("Initializing/loading models for evaluation")
             trunk_model, embedder_model = c_f.load_model_for_eval(self.factories["model"], self.args.models, model_name, model_folder=self.model_folder, device=self.device)
         else:
-            logging.info("Using self.models for evaluation")
-            trunk_model, embedder_model = self.models["trunk"], self.models["embedder"]
+            logging.info("Using input models for evaluation")
+            trunk_model, embedder_model = models["trunk"], models["embedder"]
         trunk_model, embedder_model = trunk_model.to(self.device), embedder_model.to(self.device)
         dataset_dict = self.split_manager.get_dataset_dict("eval", inclusion_list=self.args.splits_to_eval)
         self.eval_assertions(dataset_dict)
-        return self.hooks.run_tester_separately(self.tester, dataset_dict, epoch, trunk_model, embedder_model, 
+        return hooks.run_tester_separately(tester, dataset_dict, epoch, trunk_model, embedder_model, 
                                         splits_to_eval=self.args.splits_to_eval, collate_fn=self.split_manager.collate_fn, skip_eval_if_already_done=skip_eval_if_already_done)
 
 
@@ -274,7 +274,7 @@ class BaseAPIParser:
         if self.args.check_untrained_accuracy:
             eval_dict = self.get_eval_dict(False, True, True, randomize_embedder = self.epoch!=1)
             for name, (epoch, load_model) in eval_dict.items():
-                self.eval_model(epoch, name, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
+                self.eval_model(epoch, name, self.hooks, self.tester, models=self.models, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
                 self.record_keeper.save_records()
         self.training_assertions(self.trainer)        
         self.trainer.train(self.epoch, num_epochs)
@@ -283,16 +283,15 @@ class BaseAPIParser:
         untrained = self.args.check_untrained_accuracy
         eval_dict = self.get_eval_dict(True, untrained, untrained, randomize_embedder=True)
         for name, (epoch, load_model) in eval_dict.items():
-            self.eval_model(epoch, name, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
+            self.eval_model(epoch, name, self.hooks, self.tester, models=self.models, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
             self.record_keeper.save_records()
 
-    def meta_eval(self):
-        meta_model_args = {self.curr_meta_testing_method: self.args.meta_models[self.curr_meta_testing_method]}
-        meta_model_getter = self.factories["meta_model"].create(meta_model_args)
-        self.models = {}
-        self.record_keeper = self.meta_record_keeper
-        self.hooks = self.factories["hook"].create_hook_container(self.args.hook_container, record_group_name_prefix=meta_model_getter.__class__.__name__)
-        self.set_tester()
+    def eval_ensemble(self):
+        ensemble = self.factories["ensemble"].create(self.args.ensemble)
+        models = {}
+        self.record_keeper = self.factories["record_keeper"].create_meta_record_keeper()
+        self.hooks = self.factories["hook"].create_hook_container(self.args.hook_container, record_group_name_prefix=ensemble.__class__.__name__)
+        tester = self.factories["tester"].create(self.args.tester)
 
         models_to_eval = []
         if self.args.check_untrained_accuracy: 
@@ -300,19 +299,19 @@ class BaseAPIParser:
             models_to_eval.append(const.UNTRAINED_TRUNK_AND_EMBEDDER)
         models_to_eval.append(const.TRAINED)
 
-        group_names = [self.get_eval_record_name_dict(self.curr_meta_testing_method)[split_name] for split_name in self.args.splits_to_eval]
+        group_names = ensemble.get_eval_record_name_dict(self.hooks, tester, self.args.splits_to_eval)
 
         for name in models_to_eval:
-            split_folders = [x["model"] for x in self.get_sub_experiment_dir_paths()[y.curr_split_scheme_name] for y in self.split_manager.split_scheme_names]
-            self.models["trunk"], self.models["embedder"] = meta_model_getter.get_trunk_and_embedder(self.factories["model"], 
-                                                                                                    self.args.models, 
-                                                                                                    name, 
-                                                                                                    split_folders, 
-                                                                                                    self.device)
-            did_not_skip = self.eval_model(name, name, load_model=False, skip_eval_if_already_done=self.args.skip_meta_eval_if_already_done)
+            split_folders = [x["models"] for x in [self.get_sub_experiment_dir_paths()[y] for y in self.split_manager.split_scheme_names]]
+            models["trunk"], models["embedder"] = ensemble.get_trunk_and_embedder(self.factories["model"], 
+                                                                                    self.args.models, 
+                                                                                    name, 
+                                                                                    split_folders, 
+                                                                                    self.device)
+            did_not_skip = self.eval_model(name, name, self.hooks, tester, models=models, skip_eval_if_already_done=self.args.skip_ensemble_eval_if_already_done)
             if did_not_skip:
                 for group_name in group_names:
-                    len_of_existing_records = c_f.try_getting_db_count(self.meta_record_keeper, group_name) + 1
+                    len_of_existing_records = c_f.try_getting_db_count(self.record_keeper, group_name) + 1
                     self.record_keeper.update_records({const.TRAINED_STATUS_COL_NAME: name}, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
                     self.record_keeper.update_records({"timestamp": c_f.get_datetime()}, global_iteration=len_of_existing_records, input_group_name_for_non_objects=group_name)
 

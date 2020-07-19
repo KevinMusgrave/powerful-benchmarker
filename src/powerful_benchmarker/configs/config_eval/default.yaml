@@ -15,7 +15,7 @@ aggregator:
   MeanAggregator:
 
 ensemble:
-  MetaConcatenateEmbeddings:
+  ConcatenateEmbeddings:
     normalize_embeddings: True
     use_trunk_output: False
 
