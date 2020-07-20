@@ -33,10 +33,13 @@ class SingleExperimentRunner(BaseRunner):
 
     def reproduce_results(self, YR, starting_fresh_hook=None):
         configs_folder = os.path.join(YR.args.reproduce_results, 'configs')
-        all_config_paths = self.get_root_config_paths(YR.args)
-        experiment_config_paths = self.get_saved_config_paths(YR.args, config_folder=configs_folder)
+        all_config_paths = self.get_root_config_paths(YR.args) # default configs
+        experiment_config_paths = self.get_saved_config_paths(YR.args, config_folder=configs_folder) # reproduction configs
         for k, v in experiment_config_paths.items():
-            all_config_paths[k].extend(v)
+            if any(not os.path.isfile(filename) for filename in v):
+                logging.warning("{} does not exist. Will use default config for {}".format(v,k))
+            else:
+                all_config_paths[k].extend(v)
         args, _, args.dict_of_yamls = YR.load_yamls(config_paths=all_config_paths, 
                                                     max_merge_depth=0, 
                                                     merge_argparse=self.merge_argparse_when_resuming)

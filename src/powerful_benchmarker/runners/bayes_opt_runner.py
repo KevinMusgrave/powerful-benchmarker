@@ -228,11 +228,11 @@ class BayesOptRunner(BaseRunner):
                                                                     "95%_confidence_interval": (float(cf_low), float(cf_high)),
                                                                     "95%_confidence_interval_width": float(cf_width)}
 
-        eval_name = c_f.first_val_of_dict(dummy_api_parser.get_eval_record_name_dict())
-        detailed_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "detailed_report_{}.yaml".format(eval_name))
-        report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "report_{}.yaml".format(eval_name))
-        c_f.write_yaml(detailed_report_filename, results, open_as="w")
-        c_f.write_yaml(report_filename, json.loads(json.dumps(summary)), open_as="w")
+            eval_type_without_split = c_f.first_val_of_dict(dummy_api_parser.get_eval_record_name_dict(for_inner_obj=eval_category))
+            detailed_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "detailed_report_{}.yaml".format(eval_type_without_split))
+            report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "report_{}.yaml".format(eval_type_without_split))
+            c_f.write_yaml(detailed_report_filename, results[eval_type], open_as="w")
+            c_f.write_yaml(report_filename, json.loads(json.dumps(summary[eval_type])), open_as="w")
 
 
     def update_bayes_opt_search_space(self, ax_client):
