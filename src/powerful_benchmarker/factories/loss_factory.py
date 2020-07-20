@@ -2,6 +2,7 @@ from pytorch_metric_learning import losses
 import copy
 from .base_factory import BaseFactory
 from ..utils import common_functions as c_f
+import logging
 
 class LossFactory(BaseFactory):
     def __init__(self, **kwargs):

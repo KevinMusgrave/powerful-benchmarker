@@ -57,21 +57,20 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
 
 
     def train(self, num_epochs):
-        if self.args.check_untrained_accuracy:
-            eval_dict = self.get_eval_dict(False, True, True, randomize_embedder = self.epoch!=1)
-            for name, (epoch, load_model) in eval_dict.items():
-                self.eval_model(epoch, name, self.hooks, self.tester, models=self.models, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
-                self.record_keeper.save_records()
+        # first evaluate untrained model
+        self.setup_eval_and_run(load_best_model=False, use_input_embedder=self.epoch==1)
         self.training_assertions(self.trainer)        
         self.trainer.train(self.epoch, num_epochs)
 
-
     def eval(self):
+        self.setup_eval_and_run(load_best_model=True, use_input_embedder=False)
+
+    def setup_eval_and_run(self, load_best_model, use_input_embedder):
         untrained = self.args.check_untrained_accuracy
-        eval_dict = self.get_eval_dict(True, untrained, untrained, randomize_embedder=True)
+        eval_dict = self.get_eval_dict(load_best_model, untrained, untrained, use_input_embedder=use_input_embedder)
         for name, (epoch, load_model) in eval_dict.items():
             self.eval_model(epoch, name, self.hooks, self.tester, models=self.models, load_model=load_model, skip_eval_if_already_done=self.args.skip_eval_if_already_done)
-            self.record_keeper.save_records()
+            self.record_keeper.save_records()        
 
 
     def eval_model(self, epoch, model_name, hooks, tester, models=None, load_model=False, skip_eval_if_already_done=True):
@@ -114,7 +113,7 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
                                                                             split_folders=split_folders, 
                                                                             device=self.device)
             models["trunk"], models["embedder"] = ensemble.create_ensemble_model(list_of_trunks, list_of_embedders)
-            did_not_skip = self.eval_model(name, name, hooks, tester, models=models, skip_eval_if_already_done=self.args.skip_ensemble_eval_if_already_done)
+            did_not_skip = self.eval_model(name, name, hooks, tester, models=models, load_model=False, skip_eval_if_already_done=self.args.skip_ensemble_eval_if_already_done)
             if did_not_skip:
                 for group_name in group_names:
                     len_of_existing_records = c_f.try_getting_db_count(record_keeper, group_name) + 1
@@ -139,12 +138,12 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
             assert v is self.split_manager.get_dataset("eval", k)
             assert d_u.get_underlying_dataset(v).transform is self.transforms["eval"]
 
-    def get_eval_dict(self, best, untrained_trunk, untrained_trunk_and_embedder, randomize_embedder):
+    def get_eval_dict(self, best, untrained_trunk, untrained_trunk_and_embedder, use_input_embedder):
         eval_dict = {}
         if untrained_trunk:
             eval_dict[const.UNTRAINED_TRUNK] = (const.UNTRAINED_TRUNK_INT, True)
         if untrained_trunk_and_embedder:
-            eval_dict[const.UNTRAINED_TRUNK_AND_EMBEDDER] = (const.UNTRAINED_TRUNK_AND_EMBEDDER_INT, randomize_embedder)
+            eval_dict[const.UNTRAINED_TRUNK_AND_EMBEDDER] = (const.UNTRAINED_TRUNK_AND_EMBEDDER_INT, not use_input_embedder)
         if best:
             best_epoch, _ = pml_cf.latest_version(self.model_folder, best=True)
             eval_dict["best"] = (best_epoch, True)
