@@ -104,7 +104,7 @@ class BaseRunner:
 
 
     def determine_where_to_get_yamls(self, args):
-        if args.resume_training or args.evaluate:
+        if args.resume_training or args.evaluate or args.evaluate_ensemble:
             config_paths = self.get_saved_config_paths(args)
         else:
             config_paths = self.get_root_config_paths(args)

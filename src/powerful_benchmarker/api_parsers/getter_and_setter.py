@@ -26,7 +26,6 @@ class GetterAndSetter:
             "tensorboard": _tensorboard_folder
         }
 
-        self.trainer, self.tester = None, None
         self.factories = FactoryFactory(getter=self.pytorch_getter).create(named_specs=self.args.factories)
 
     def set_models_optimizers_losses(self):
@@ -163,7 +162,7 @@ class GetterAndSetter:
     def get_hooks(self, **kwargs):
         return self.factories["hook"].create(named_specs={"hook_container": self.args.hook_container}, subset="hook_container", **self.all_kwargs("hooks", kwargs))
 
-    def get_dummy_hook_and_tester(self, **kwargs):
+    def get_dummy_hook_and_tester(self):
         hooks = self.get_hooks(record_keeper=lambda: None)
         tester = self.get_tester(**self.nullify_kwargs(self.default_kwargs_tester()))
         return hooks, tester
@@ -203,18 +202,21 @@ class GetterAndSetter:
     def _kwargs(self, object_type, kwargs, prefix="default_kwargs"):
         default_kwargs_getter = getattr(self, "{}_{}".format(prefix, object_type), None)
         if default_kwargs_getter is None:
-            return None
-        final_kwargs = emag_utils.merge_two_dicts(default_kwargs_getter(), kwargs, only_existing_keys=True)
-        for k,v in final_kwargs.items():
-            final_kwargs[k] = v()
-        return final_kwargs
+            if len(kwargs) == 0:
+                return None
+            final_kwargs = emag_utils.merge_two_dicts({}, kwargs)
+        else:
+            final_kwargs = emag_utils.merge_two_dicts(default_kwargs_getter(), kwargs)
+        return {k: v() for k,v in final_kwargs.items()}
 
     def _per_name_kwargs(self, object_type, kwargs):
         return self._kwargs(object_type, kwargs, prefix="default_per_name_kwargs")
 
-    def all_kwargs(self, object_type, kwargs):
+    def all_kwargs(self, object_type, kwargs=None, per_name_kwargs=None):
+        kwargs = {} if kwargs is None else kwargs
+        per_name_kwargs = {} if per_name_kwargs is None else per_name_kwargs
         return {"kwargs": self._kwargs(object_type, kwargs), 
-                "per_name_kwargs": self._per_name_kwargs(object_type, kwargs)}
+                "per_name_kwargs": self._per_name_kwargs(object_type, per_name_kwargs)}
 
     def nullify_kwargs(self, kwargs):
         return {k: lambda: None for k in kwargs.keys()}

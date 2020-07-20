@@ -14,7 +14,7 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
         self.save_config_files()
         self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
-        self.run_train_or_eval()
+        return self.run_train_or_eval()
 
 
     def run_train_or_eval(self):
@@ -103,6 +103,7 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
         models_to_eval.append(const.TRAINED)
 
         group_names = ensemble.get_eval_record_name_dict(hooks, tester, self.args.splits_to_eval)
+        group_names = [group_names[x] for x in self.args.splits_to_eval]
         models = {}
         for name in models_to_eval:
             split_folders = [x["models"] for x in [self.get_sub_experiment_dir_paths()[y] for y in self.split_manager.split_scheme_names]]
@@ -110,7 +111,7 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
                                                                             self.args.models, 
                                                                             name,
                                                                             factory_kwargs=self.all_kwargs("model"),
-                                                                            model_folder=split_folders, 
+                                                                            split_folders=split_folders, 
                                                                             device=self.device)
             models["trunk"], models["embedder"] = ensemble.create_ensemble_model(list_of_trunks, list_of_embedders)
             did_not_skip = self.eval_model(name, name, hooks, tester, models=models, skip_eval_if_already_done=self.args.skip_ensemble_eval_if_already_done)
@@ -149,13 +150,16 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
             eval_dict["best"] = (best_epoch, True)
         return eval_dict
 
-    def get_eval_record_name_dict(self, meta_names=(), return_with_split_names=True):
+    def get_eval_record_name_dict(self, split_names=None, for_inner_obj=None, return_inner_obj=False):
         hooks, tester = self.get_dummy_hook_and_tester()
-        split_names = self.split_manager.split_names if return_with_split_names else None
-        output = c_f.get_eval_record_name_dict(hooks, tester, split_names=split_names)
-        for mn in meta_names:
-            output[mn] = {k:"{}_{}".format(mn, v) for k,v in output.items()}
-        return output
+        if for_inner_obj:
+            obj = getattr(self, "get_{}".format(for_inner_obj))()
+            record_names = obj.get_eval_record_name_dict(hooks, tester, split_names)
+            if return_inner_obj:
+                return record_names, obj
+            return record_names
+        else:
+            return c_f.get_eval_record_name_dict(hooks, tester, split_names)
 
     def is_training(self):
         return (not self.args.evaluate) and (not self.args.evaluate_ensemble)
