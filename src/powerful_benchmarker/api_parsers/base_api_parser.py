@@ -36,7 +36,8 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
                     raise ValueError
         self.delete_old_objects()
         if self.is_training():
-            return self.aggregator.get_accuracy_and_standard_error(self.hooks, self.tester, self.meta_record_keeper, self.split_manager.num_split_schemes, "val")
+            hooks, tester = self.get_dummy_hook_and_tester()
+            return self.aggregator.get_accuracy_and_standard_error(hooks, tester, self.meta_record_keeper, self.split_manager.num_split_schemes, "val")
 
 
     def run_for_each_split_scheme(self):
@@ -91,10 +92,9 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
     def eval_ensemble(self):
         ensemble = self.get_ensemble()
         record_keeper = self.get_meta_record_keeper()
-        hooks = self.factories["hook"].create(named_specs={"hook_container": self.args.hook_container},
-                                                subset="hook_container", 
-                                                kwargs={"record_keeper": record_keeper, "record_group_name_prefix": ensemble.__class__.__name__})
-        tester = self.get_tester()
+        hooks = self.get_hooks(record_keeper = lambda: record_keeper, 
+                            record_group_name_prefix = lambda: ensemble.__class__.__name__)
+        tester = self.get_tester(end_of_testing_hook = lambda: hooks.end_of_testing_hook)
 
         models_to_eval = []
         if self.args.check_untrained_accuracy: 

@@ -20,8 +20,6 @@ class SingleExperimentRunner(BaseRunner):
     def start_experiment(self, args):
         api_parser = self.get_api_parser(args)
         run_output = api_parser.run()
-        del api_parser.tester
-        del api_parser.trainer
         del api_parser
         return run_output
 
