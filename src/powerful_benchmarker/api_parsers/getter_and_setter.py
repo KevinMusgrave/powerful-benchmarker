@@ -26,6 +26,9 @@ class GetterAndSetter:
             "tensorboard": _tensorboard_folder
         }
 
+        self.set_factories()
+
+
     def set_factories(self):
         self.factories = FactoryFactory(getter=self.pytorch_getter).create(named_specs=self.args.factories)
         if not self.args.override_required_compatible_factories:

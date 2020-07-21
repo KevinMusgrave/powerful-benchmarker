@@ -276,7 +276,8 @@ class BayesOptRunner(BaseRunner):
         config_paths = self.get_saved_config_paths(YR.args) if bayes_opt_config_exists else self.get_root_config_paths(YR.args)
         merge_argparse = (self.merge_argparse_when_resuming or merge_argparse) if bayes_opt_config_exists else True
         YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths = config_paths, 
-                                                        max_merge_depth = float('inf'), 
+                                                        max_merge_depth = float('inf'),
+                                                        max_argparse_merge_depth = float('inf'), 
                                                         merge_argparse = merge_argparse)
 
         if not bayes_opt_config_exists:                                         
@@ -318,7 +319,10 @@ class BayesOptRunner(BaseRunner):
         try:
             SER = self.get_single_experiment_runner()
             starting_fresh_hook = self.starting_fresh(YR.args.experiment_name)
-            output = SER.reproduce_results(YR, starting_fresh_hook=starting_fresh_hook) if reproduction else SER.run_new_experiment_or_resume(YR)
+            if reproduction:
+                output = SER.reproduce_results(YR, starting_fresh_hook=starting_fresh_hook, max_merge_depth=0, max_argparse_merge_depth=0)
+            else:
+                output = SER.run_new_experiment_or_resume(YR)
         except Exception as e:
             YR.args.resume_training = None
             logging.error(repr(e))
@@ -392,7 +396,7 @@ class BayesOptRunner(BaseRunner):
             if output == const.RESUME_FAILURE:
                 SER = self.get_single_experiment_runner()
                 starting_fresh_hook = self.starting_fresh(local_YR.args.experiment_name)
-                SER.reproduce_results(local_YR, starting_fresh_hook=starting_fresh_hook)
+                SER.reproduce_results(local_YR, starting_fresh_hook=starting_fresh_hook, max_merge_depth=0, max_argparse_merge_depth=0)
             self.test_model(local_YR.args.experiment_name)
 
 
