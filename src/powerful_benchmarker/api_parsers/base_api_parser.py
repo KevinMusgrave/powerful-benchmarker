@@ -7,6 +7,7 @@ from .folder_creator import FolderCreator
 
 class BaseAPIParser(GetterAndSetter, FolderCreator):
     def run(self):
+        self.set_factories()
         if self.beginning_of_training():
             self.make_dir()
         self.transforms = self.get_transforms()

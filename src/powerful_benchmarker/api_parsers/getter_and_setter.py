@@ -26,7 +26,19 @@ class GetterAndSetter:
             "tensorboard": _tensorboard_folder
         }
 
+    def set_factories(self):
         self.factories = FactoryFactory(getter=self.pytorch_getter).create(named_specs=self.args.factories)
+        if not self.args.override_required_compatible_factories:
+            for k,v in self.required_compatible_factories().items():
+                if not isinstance(self.factories[k], type(v)):
+                    warning_string = """You specified {0} for the {1} factory, but {2} is required, and will be used instead of {0}. 
+                                    If you want to override this, set override_required_compatible_factories to True""".format(self.factories[k].__class__.__name__, k, v.__class__.__name__)
+                    warning_string = " ".join(warning_string.split())
+                    logging.warning(warning_string)
+                    self.factories[k] = v
+
+    def required_compatible_factories(self):
+        return {}
 
     def set_models_optimizers_losses(self):
         self.models = self.get_model()
@@ -47,7 +59,7 @@ class GetterAndSetter:
         return {"param_sources": lambda: [self.models, self.loss_funcs]}
 
     def default_kwargs_transforms(self):
-        return {"trunk_model": lambda: self.get_model()["trunk"]}
+        return {"trunk_model": lambda: self.get_trunk()}
 
     def default_kwargs_split_manager(self):
         dataset, dataset_params = self.pytorch_getter.get("dataset", yaml_dict=self.args.dataset, return_uninitialized=True)
@@ -139,7 +151,16 @@ class GetterAndSetter:
         return self.factories["miner"].create(named_specs=self.args.mining_funcs, **self.all_kwargs("mining_funcs", kwargs))
 
     def get_model(self, **kwargs):
-        return self.factories["model"].create(named_specs=self.args.models, **self.all_kwargs("model", kwargs))
+        models = {}
+        for k in self.factories["model"].creation_order(self.args.models):
+            models[k] = getattr(self, "get_{}".format(k))(**kwargs)
+        return models
+
+    def get_trunk(self, **kwargs):
+        return self.factories["model"].create(named_specs=self.args.models, subset="trunk", **self.all_kwargs("trunk", kwargs))
+
+    def get_embedder(self, **kwargs):
+        return self.factories["model"].create(named_specs=self.args.models, subset="embedder", **self.all_kwargs("embedder", kwargs))
 
     def get_tester(self, **kwargs):     
         return self.factories["tester"].create(self.args.tester, **self.all_kwargs("tester", kwargs))

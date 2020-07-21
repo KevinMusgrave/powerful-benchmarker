@@ -1,35 +1,23 @@
 #! /usr/bin/env python3
 
 from .base_api_parser import BaseAPIParser
-from ..utils import common_functions as c_f
-import logging
+from ..factories import ClassifierModelFactory
 
 class APITrainWithClassifier(BaseAPIParser):
+    def required_compatible_factories(self):
+        return {"model": ClassifierModelFactory(getter=self.pytorch_getter)}
 
-    def get_classifier_model(self, model_type, output_size):
-        input_size = c_f.get_last_linear(self.models["embedder"]).out_features
-        return super().get_embedder_model(model_type, input_size, output_size)
+    def get_model(self, **kwargs):
+        models = {}
+        for k in self.factories["model"].creation_order(self.args.models):
+            attr_key = "classifier" if k.startswith("classifier") else k
+            models[k] = getattr(self, "get_{}".format(attr_key))(**kwargs)
+        return models
 
-    def model_getter_dict(self):
-        getter_dict = super().model_getter_dict()
-        classifer_model_names = [x for x in list(self.args.models.keys()) if x.startswith("classifier")]
-        for k in classifer_model_names:
-            getter_dict[k] = lambda model_type: self.get_classifier_model(
-                model_type,
-                self.split_manager.get_num_labels("train", "train"),
-            )
-        return getter_dict
+    def get_classifier(self, **kwargs):
+        return self.factories["model"].create(named_specs=self.args.models, subset="classifier", **self.all_kwargs("classifier", kwargs))
 
+    def default_kwargs_classifier(self):
+        return {"output_size": lambda: self.split_manager.get_num_labels("train", "train")}
 
-
-class APIMaybeExtendTrainWithClassifier(APITrainWithClassifier):
-    def __init__(self, args, *positional_args, **kwargs):
-        super().__init__(args, *positional_args, **kwargs)
-        model_names = list(self.args.models.keys())
-        if model_names and any(x.startswith("classifier") for x in model_names):
-            self.inheriter = super()
-        else:
-            self.inheriter = super(APITrainWithClassifier, self)
-
-    def model_getter_dict(self):
-        return self.inheriter.model_getter_dict()
+    

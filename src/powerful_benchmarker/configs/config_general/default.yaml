@@ -17,3 +17,4 @@ skip_eval_if_already_done: True
 skip_ensemble_eval_if_already_done: True
 save_figures_on_tensorboard: False
 save_lists_in_db: False
+override_required_compatible_factories: False
