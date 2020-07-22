@@ -182,17 +182,18 @@ class BayesOptRunner(BaseRunner):
     def create_accuracy_report(self, best_sub_experiment_name):
         dummy_YR = self.read_yaml_and_find_bayes(find_bayes_params=False, merge_argparse=True)
         dummy_api_parser = self.get_api_parser(dummy_YR.args)
-        eval_record_group_dicts = dummy_api_parser.get_eval_record_name_dict(return_all=True)
         global_record_keeper, _, _ = logging_presets.get_record_keeper(self.csv_folder, self.tensorboard_folder, self.global_db_path, "", False)
         exp_names = glob.glob(os.path.join(self.bayes_opt_root_experiment_folder, "%s*"%best_sub_experiment_name))
 
         exp_names = [os.path.basename(e) for e in exp_names]
         results, summary = {}, {}
 
-        for eval_type in c_f.if_str_convert_to_singleton_list(dummy_YR.args.meta_testing_method):
+        for eval_category in self.get_eval_types():
+            table_name, eval_obj = dummy_api_parser.get_eval_record_name_dict(split_names=["test"], for_inner_obj=eval_category, return_inner_obj=True)
+            table_name = table_name["test"]
+            eval_type = eval_obj.__class__.__name__
             results[eval_type] = {}
             summary[eval_type] = collections.defaultdict(lambda: collections.defaultdict(list))
-            table_name = eval_record_group_dicts[eval_type]["test"]
             
             for exp in exp_names:
                 results[eval_type][exp] = {}
@@ -227,11 +228,11 @@ class BayesOptRunner(BaseRunner):
                                                                     "95%_confidence_interval": (float(cf_low), float(cf_high)),
                                                                     "95%_confidence_interval_width": float(cf_width)}
 
-        eval_name = c_f.first_val_of_dict(dummy_api_parser.get_eval_record_name_dict(eval_type=const.NON_META, return_base_record_group_name=True))
-        detailed_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "detailed_report_{}.yaml".format(eval_name))
-        report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "report_{}.yaml".format(eval_name))
-        c_f.write_yaml(detailed_report_filename, results, open_as="w")
-        c_f.write_yaml(report_filename, json.loads(json.dumps(summary)), open_as="w")
+            eval_type_without_split = c_f.first_val_of_dict(dummy_api_parser.get_eval_record_name_dict(for_inner_obj=eval_category))
+            detailed_report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "detailed_report_{}.yaml".format(eval_type_without_split))
+            report_filename = os.path.join(self.bayes_opt_root_experiment_folder, "report_{}.yaml".format(eval_type_without_split))
+            c_f.write_yaml(detailed_report_filename, results[eval_type], open_as="w")
+            c_f.write_yaml(report_filename, json.loads(json.dumps(summary[eval_type])), open_as="w")
 
 
     def update_bayes_opt_search_space(self, ax_client):
@@ -275,7 +276,8 @@ class BayesOptRunner(BaseRunner):
         config_paths = self.get_saved_config_paths(YR.args) if bayes_opt_config_exists else self.get_root_config_paths(YR.args)
         merge_argparse = (self.merge_argparse_when_resuming or merge_argparse) if bayes_opt_config_exists else True
         YR.args, _, YR.args.dict_of_yamls = YR.load_yamls(config_paths = config_paths, 
-                                                        max_merge_depth = float('inf'), 
+                                                        max_merge_depth = float('inf'),
+                                                        max_argparse_merge_depth = float('inf'), 
                                                         merge_argparse = merge_argparse)
 
         if not bayes_opt_config_exists:                                         
@@ -317,7 +319,10 @@ class BayesOptRunner(BaseRunner):
         try:
             SER = self.get_single_experiment_runner()
             starting_fresh_hook = self.starting_fresh(YR.args.experiment_name)
-            output = SER.reproduce_results(YR, starting_fresh_hook=starting_fresh_hook) if reproduction else SER.run_new_experiment_or_resume(YR)
+            if reproduction:
+                output = SER.reproduce_results(YR, starting_fresh_hook=starting_fresh_hook, max_merge_depth=0, max_argparse_merge_depth=0)
+            else:
+                output = SER.run_new_experiment_or_resume(YR)
         except Exception as e:
             YR.args.resume_training = None
             logging.error(repr(e))
@@ -361,12 +366,18 @@ class BayesOptRunner(BaseRunner):
 
 
     def test_model(self, sub_experiment_name):
-        local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
-        local_YR.args.evaluate = True
-        local_YR.args.resume_training = None
-        local_YR.args.splits_to_eval = ["test"]
-        SER = self.get_single_experiment_runner()
-        SER.run_new_experiment_or_resume(local_YR)
+        for eval_type in self.get_eval_types():
+            local_YR = self.get_simplified_yaml_reader(sub_experiment_name)
+            if eval_type == "ensemble":
+                logging.info("Getting ensemble accuracy") 
+                local_YR.args.evaluate_ensemble = True
+            elif eval_type == "aggregator":
+                logging.info("Getting aggregate accuracy")
+                local_YR.args.evaluate = True
+            local_YR.args.resume_training = None
+            local_YR.args.splits_to_eval = ["test"]
+            SER = self.get_single_experiment_runner()
+            SER.run_new_experiment_or_resume(local_YR)
 
 
     def reproduce_results(self, sub_experiment_name):
@@ -385,7 +396,7 @@ class BayesOptRunner(BaseRunner):
             if output == const.RESUME_FAILURE:
                 SER = self.get_single_experiment_runner()
                 starting_fresh_hook = self.starting_fresh(local_YR.args.experiment_name)
-                SER.reproduce_results(local_YR, starting_fresh_hook=starting_fresh_hook)
+                SER.reproduce_results(local_YR, starting_fresh_hook=starting_fresh_hook, max_merge_depth=0, max_argparse_merge_depth=0)
             self.test_model(local_YR.args.experiment_name)
 
 
@@ -403,3 +414,7 @@ class BayesOptRunner(BaseRunner):
         
         SER.pytorch_getter = self.pytorch_getter
         return SER
+
+
+    def get_eval_types(self):
+        return ["aggregator", "ensemble"]

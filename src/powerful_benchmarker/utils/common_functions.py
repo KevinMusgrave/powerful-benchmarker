@@ -18,8 +18,29 @@ import datetime
 import sqlite3
 import tqdm
 import tarfile, zipfile
+from . import constants as const
 
-CONFIG_DIFF_BASE_FOLDER_NAME = "resume_training_config_diffs_"
+
+def load_model_for_eval(model_factory, model_args, model_name, factory_kwargs, model_folder=None, device=None):
+    untrained_trunk = model_name in const.UNTRAINED_TRUNK_ALIASES
+    untrained_trunk_and_embedder = model_name in const.UNTRAINED_TRUNK_AND_EMBEDDER_ALIASES
+    trunk_model = model_factory.create(named_specs=model_args, subset="trunk", **factory_kwargs)
+    if untrained_trunk:
+        embedder_model = pml_cf.Identity()
+    else:
+        embedder_model = model_factory.create(named_specs=model_args, subset="embedder", **factory_kwargs)
+        if not untrained_trunk_and_embedder: 
+            if model_name in const.TRAINED_ALIASES:
+                _, model_name = pml_cf.latest_version(model_folder, best=True)
+            pml_cf.load_dict_of_models(
+                {"trunk": trunk_model, "embedder": embedder_model},
+                model_name,
+                model_folder,
+                device,
+                log_if_successful = True,
+                assert_success = True
+            )
+    return torch.nn.DataParallel(trunk_model), torch.nn.DataParallel(embedder_model)
 
 
 def move_optimizer_to_gpu(optimizer, device):
@@ -57,7 +78,7 @@ def latest_sub_experiment_epochs(sub_experiment_dir_dict):
 
 
 def get_sorted_config_diff_folders(config_folder):
-    full_base_path = os.path.join(config_folder, CONFIG_DIFF_BASE_FOLDER_NAME)
+    full_base_path = os.path.join(config_folder, const.CONFIG_DIFF_BASE_FOLDER_NAME)
     config_diff_folder_names = glob.glob("%s*"%full_base_path) 
     latest_epochs = []
     if len(config_diff_folder_names) > 0:
@@ -101,7 +122,7 @@ def save_config_files(config_folder, dict_of_yamls, resume_training, latest_epoc
                     yaml_diff[k] = v
 
             if yaml_diff != {}:
-                new_dir = os.path.join(config_folder, CONFIG_DIFF_BASE_FOLDER_NAME + '_'.join([str(epoch) for epoch in latest_epochs]))
+                new_dir = os.path.join(config_folder, const.CONFIG_DIFF_BASE_FOLDER_NAME + '_'.join([str(epoch) for epoch in latest_epochs]))
                 makedir_if_not_there(new_dir)
                 fname = os.path.join(new_dir, '%s.yaml' %config_name)
                 write_yaml(fname, yaml_diff, 'a')
@@ -171,3 +192,14 @@ def get_attr_and_try_as_function(input_object, input_attr):
         return attr()
     except TypeError:
         return attr
+
+
+def get_eval_record_name_dict(hooks, tester, split_names=None):
+    prefix = hooks.record_group_name_prefix 
+    hooks.record_group_name_prefix = "" #temporary
+    if split_names is None:
+        non_meta = {"base_record_group_name": hooks.base_record_group_name(tester)}
+    else:
+        non_meta = {k:hooks.record_group_name(tester, k) for k in split_names}
+    hooks.record_group_name_prefix = prefix
+    return non_meta

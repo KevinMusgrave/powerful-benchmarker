@@ -24,7 +24,8 @@ transforms:
       size: 227
 ```
 
-Command line:
+Example command line modification:
 ```bash
---transforms {train: {Resize: {size: 256}, RandomResizedCrop: {scale: [0.16, 1], ratio: [0.75, 1.33], size: 227}, RandomHorizontalFlip: {p: 0.5}}, eval: {Resize: {size: 256}, CenterCrop: {size: 227}}}
+# Use RandomVerticalFlip instead of RandomHorizontalFlip
+--transforms {train~SWAP~1: {RandomHorizontalFlip: RandomVerticalFlip}}
 ```

@@ -1,8 +1,6 @@
 dataset:
   CUB200:
 
-multi_dataset: null
-
 splits_to_eval:
   - val
 

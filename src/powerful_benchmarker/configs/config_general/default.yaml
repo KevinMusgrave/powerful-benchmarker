@@ -1,4 +1,4 @@
-trainer: 
+trainer:
   MetricLossOnly:
     iterations_per_epoch: 100
     dataloader_num_workers: 2
@@ -8,16 +8,13 @@ trainer:
     loss_weights: null
     set_min_label_to_zero: True
 
-meta_testing_method: 
-  - meta_SeparateEmbeddings
-  - meta_ConcatenateEmbeddings
-
 num_epochs_train: 1000
 save_interval: 2
 patience: 9
 
 check_untrained_accuracy: True
 skip_eval_if_already_done: True
-skip_meta_eval_if_already_done: True
+skip_ensemble_eval_if_already_done: True
 save_figures_on_tensorboard: False
 save_lists_in_db: False
+override_required_compatible_factories: False

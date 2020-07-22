@@ -1,7 +1,7 @@
 # config_loss_and_miners
 
 ## loss_funcs
-An object mapping from strings to loss classes. The strings should match the loss names used by your trainer.
+The loss functions are given embeddings and labels, and output a value on which back propagation can be performed. This config option is a mapping from strings to loss classes. The strings should match the loss names used by your trainer. 
 
 Default yaml:
 ```yaml
@@ -10,13 +10,14 @@ loss_funcs:
     ContrastiveLoss:
 ```
 
-Command line:
+Example command line modification:
 ```bash
---loss_funcs {metric_loss: {ContrastiveLoss: {}}}
+# Use a different loss function
+--loss_funcs {metric_loss~OVERRIDE~: {MultiSimilarityLoss: {alpha: 0.1, beta: 40, base: 0.5}}}
 ```
 
 ## sampler
-The sampler class, or ```null``` if you want random sampling.
+The sampler is passed to the PyTorch dataloader, and determines how batches are formed. Use ```{}``` if you want random sampling.
 
 Default yaml:
 ```yaml
@@ -25,28 +26,22 @@ sampler:
     m: 4
 ```
 
-Command line:
+Example command line modification:
 ```bash
---sampler {MPerClassSampler: {m: 4}}
+# Use random sampling
+--sampler~OVERRIDE~ {}
 ```
 
 ## mining_funcs
-An object mapping from strings to mining classes. The strings should match the mining names used by your trainer.
+Mining functions determine the best tuples to train on, within an arbitrarily formed batch. This config option is a mapping from strings to miner classes. The strings should match the miner names used by your trainer.
 
 Default yaml:
 ```yaml
 mining_funcs: {}
 ```
 
-A non-empty yaml example:
-```yaml
-mining_funcs:
-  tuple_miner:
-    MultiSimilarityMiner:
-       epsilon: 0.1
-```
-
-Command line:
+Example command line modification:
 ```bash
+# Use a miner
 --mining_funcs {tuple_miner: {MultiSimilarityMiner: {epsilon: 0.1}}}
 ```

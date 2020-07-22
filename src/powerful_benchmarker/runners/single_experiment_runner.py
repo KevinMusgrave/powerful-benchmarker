@@ -13,15 +13,13 @@ class SingleExperimentRunner(BaseRunner):
     def run(self):
         self.set_YR()
         if self.YR.args.reproduce_results:
-            self.reproduce_results(self.YR)
+            return self.reproduce_results(self.YR)
         else:
-            self.run_new_experiment_or_resume(self.YR)
+            return self.run_new_experiment_or_resume(self.YR)
 
     def start_experiment(self, args):
         api_parser = self.get_api_parser(args)
         run_output = api_parser.run()
-        del api_parser.tester
-        del api_parser.trainer
         del api_parser
         return run_output
 
@@ -29,18 +27,22 @@ class SingleExperimentRunner(BaseRunner):
         # merge_argparse at the beginning of training, or when evaluating
         merge_argparse = self.merge_argparse_when_resuming if YR.args.resume_training else True
         args, _, args.dict_of_yamls = YR.load_yamls(self.determine_where_to_get_yamls(YR.args), 
-                                                    max_merge_depth=float('inf'), 
+                                                    max_merge_depth=float('inf'),
+                                                    max_argparse_merge_depth=float('inf'), 
                                                     merge_argparse=merge_argparse)
         return self.start_experiment(args)
 
-    def reproduce_results(self, YR, starting_fresh_hook=None):
+    def reproduce_results(self, YR, starting_fresh_hook=None, max_merge_depth=float('inf'), max_argparse_merge_depth=float('inf')):
         configs_folder = os.path.join(YR.args.reproduce_results, 'configs')
-        all_config_paths = self.get_root_config_paths(YR.args)
-        experiment_config_paths = self.get_saved_config_paths(YR.args, config_folder=configs_folder)
+        default_configs = self.get_root_config_paths(YR.args) # default configs
+        experiment_config_paths = self.get_saved_config_paths(YR.args, config_folder=configs_folder) # reproduction configs
         for k, v in experiment_config_paths.items():
-            all_config_paths[k].extend(v)
-        args, _, args.dict_of_yamls = YR.load_yamls(config_paths=all_config_paths, 
-                                                    max_merge_depth=0, 
+            if any(not os.path.isfile(filename) for filename in v):
+                logging.warning("{} does not exist. Will use default config for {}".format(v,k))
+                experiment_config_paths[k] = default_configs[k]
+        args, _, args.dict_of_yamls = YR.load_yamls(config_paths=experiment_config_paths, 
+                                                    max_merge_depth=max_merge_depth,
+                                                    max_argparse_merge_depth=max_argparse_merge_depth, 
                                                     merge_argparse=self.merge_argparse_when_resuming)
 
         # check if there were config diffs if training was resumed
@@ -55,12 +57,13 @@ class SingleExperimentRunner(BaseRunner):
                 # Start fresh
                 YR = self.setup_yaml_reader()
                 if starting_fresh_hook: starting_fresh_hook(YR)
-                # load the default configs, the experiment specific configs, plus the config diffs 
+                # load the experiment configs, plus the config diffs 
                 for k in glob.glob(os.path.join(sub_folder, "*")):
                     config_name = os.path.splitext(os.path.basename(k))[0]
-                    all_config_paths[config_name].append(k)
-                args, _, args.dict_of_yamls = YR.load_yamls(config_paths=all_config_paths, 
+                    experiment_config_paths[config_name].append(k)
+                args, _, args.dict_of_yamls = YR.load_yamls(config_paths=experiment_config_paths, 
                                                             max_merge_depth=0, 
+                                                            max_argparse_merge_depth=max_argparse_merge_depth,
                                                             merge_argparse=self.merge_argparse_when_resuming)
                 args.resume_training = "latest"
         return self.start_experiment(args)
