@@ -1,5 +1,5 @@
 <h1 align="center">
- <a href="https://arxiv.org/abs/2003.08505">A Metric Learning Reality Check</a>
+ Powerful Benchmarker
 </h2>
 <p align="center">
 	
@@ -12,6 +12,9 @@
 
 ## Documentation
 [**View the documentation here**](https://kevinmusgrave.github.io/powerful-benchmarker/)
+
+## A Metric Learning Reality Check
+This library was used for [A Metric Learning Reality Check](https://arxiv.org/abs/2003.08505). See [the documentation](https://kevinmusgrave.github.io/powerful-benchmarker/papers/mlrc) for supplementary material.
 
 ## Benchmark results: 
 - [4-fold cross validation, test on 2nd-half of classes](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing)
