@@ -1,1 +1,2 @@
-dataloader_num_workers: 32
+trainer~APPLY~2:
+  dataloader_num_workers: 32

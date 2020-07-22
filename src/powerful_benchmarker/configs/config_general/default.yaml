@@ -1,4 +1,4 @@
-trainer: 
+trainer:
   MetricLossOnly:
     iterations_per_epoch: 100
     dataloader_num_workers: 2

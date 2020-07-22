@@ -1,0 +1,2 @@
+trainer~SWAP~1: 
+  UnsupervisedEmbeddingsUsingAugmentations:
