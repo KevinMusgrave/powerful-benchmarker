@@ -1,5 +1,27 @@
 # config_general
 
+## trainer
+The trainer trains your model.
+
+Default yaml:
+```yaml
+trainer:
+  MetricLossOnly:
+    iterations_per_epoch: 100
+    dataloader_num_workers: 2
+    batch_size: 32
+    freeze_trunk_batchnorm: True
+    label_hierarchy_level: 0
+    loss_weights: null
+    set_min_label_to_zero: True
+```
+Example command line modification:
+```bash
+# Swap in a different trainer, but keep the input parameters the same
+--trainer~SWAP~1 {CascadedEmbeddings: null}
+```
+
+
 ## num_epochs_train
 The maximum number of epochs to train for.
 
@@ -8,29 +30,9 @@ Default yaml:
 num_epochs_train: 1000
 ```
 
-Command line:
+Example command line modification:
 ```bash
---num_epochs_train 1000
-```
-
-## iterations_per_epoch
-If ```null```:
-
-* 1 epoch = 1 pass through the dataloader iterator. If ```sampler=None```, then 1 pass through the iterator is 1 pass through the dataset. 
-* If you use a sampler, then 1 pass through the iterator is 1 pass through the iterable returned by the sampler.
-
-If an integer, then an epoch consists of this many iterations.
-
-* Why have this option? For samplers like ```MPerClassSampler``` or some offline mining method, the iterable returned might be very long or very short etc, and might not be related to the length of the dataset. The length of the epoch might vary each time the sampler creates a new iterable. In these cases, it can be useful to specify ```iterations_per_epoch``` so that each "epoch" is just a fixed number of iterations. The definition of epoch matters because there's various things like LR schedulers and hooks that depend on an epoch ending.
-
-Default yaml:
-```yaml
-iterations_per_epoch: 100
-```
-
-Command line:
-```bash
---iterations_per_epoch 100
+--num_epochs_train 100
 ```
 
 ## save_interval
@@ -41,10 +43,25 @@ Default yaml:
 save_interval: 2
 ```
 
-Command line:
+Example command line modification:
 ```bash
---save_interval 2
+--save_interval 10
 ```
+
+## patience
+Training will end if the validation accuracy stops improving after ```patience+1``` epochs.
+
+Default yaml:
+```yaml
+save_interval: 2
+```
+
+Example command line modification:
+```bash
+# Don't use patience at all
+--patience null
+```
+
 
 ## check_untrained_accuracy
 If ```True```, then the tester will compute accuracy for the initial trunk (epoch -1) and initial trunk + embedder (epoch 0). Otherwise, these will be skipped.
@@ -54,9 +71,9 @@ Default yaml:
 check_untrained_accuracy: True
 ```
 
-Command line:
+Example command line modification:
 ```bash
---check_untrained_accuracy True
+--check_untrained_accuracy False
 ```
 
 ## skip_eval_if_already_done
@@ -67,20 +84,59 @@ Default yaml:
 skip_eval_if_already_done: True
 ```
 
-Command line:
+Example command line modification:
 ```bash
---skip_eval_if_already_done True
+--skip_eval_if_already_done False
 ```
 
-## skip_meta_eval_if_already_done
-The same as ```skip_eval_if_already_done```, but for meta evaluation.
+## skip_ensemble_eval_if_already_done
+The same as ```skip_eval_if_already_done```, but for ensembles.
 
 Default yaml:
 ```yaml
-skip_meta_eval_if_already_done: True
+skip_ensemble_eval_if_already_done: True
 ```
 
-Command line:
+Example command line modification:
 ```bash
---skip_meta_eval_if_already_done True
+--skip_ensemble_eval_if_already_done False
+```
+
+## save_figures_on_tensorboard
+Use matplotlib to plot things on tensorboard. (Most data doesn't require matplotlib.)
+
+Default yaml:
+```yaml
+save_figures_on_tensorboard: False
+```
+
+Example command line modification:
+```bash
+--save_figures_on_tensorboard True
+```
+
+## save_lists_in_db
+In record-keeper, non-scalar values are saved in the database as json-lists. This setting is False by default, because these lists can sometimes be quite large, causing the database file size to grow quickly.
+
+Default yaml:
+```yaml
+save_lists_in_db: False
+```
+
+Example command line modification:
+```bash
+--save_lists_in_db True
+```
+
+## override_required_compatible_factories
+Each APIParser comes with predefined compatible factories, which are used by default, regardless of what is specified in the ```factories``` config option. This allows you to specify a trainer without having to specify all the required factories. However, if you have your own custom factory that you know is compatible, and want to use that instead, you should set this flag to True.
+
+Default yaml:
+```yaml
+override_required_compatible_factories: False
+```
+
+Example command line modification:
+```bash
+--override_required_compatible_factories True
 ```

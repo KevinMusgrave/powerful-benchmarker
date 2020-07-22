@@ -1,17 +1,21 @@
 site_name: Powerful Benchmarker
 nav:
     - Home: index.md
+    - Aggregators: aggregators.md
     - API Parsers: api_parsers.md
     - Architectures: architectures.md
     - Configs: 
       - Config Dataset: configs/config_dataset.md
       - Config Eval: configs/config_eval.md
+      - Config Factories: configs/config_factories.md
       - Config General: configs/config_general.md
       - Config Loss and Miners: configs/config_loss_and_miners.md
       - Config Models: configs/config_models.md
       - Config Optimizers: configs/config_optimizers.md
       - Config Transforms: configs/config_transforms.md
     - Datasets: datasets.md
+    - Ensembles: ensembles.md
+    - Factories: factories.md
     - Runners: runners.md
     - Split Managers: split_managers.md
     - Utils: utils.md
