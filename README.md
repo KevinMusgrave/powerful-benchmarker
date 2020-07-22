@@ -27,7 +27,7 @@ This library was used for [A Metric Learning Reality Check](https://arxiv.org/ab
 3. Easy hyperparameter optimization
     - Simply append \~BAYESIAN\~ to the hyperparameters you want to optimize.
 4. Customizable
-    - Register your own losses, miners, datasets etc. with a simple function call.
+    - Benchmark your own losses, miners, datasets etc. with a simple function call.
 
 ## Installation
 ```
