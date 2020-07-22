@@ -23,7 +23,8 @@ class ModelFactory(BaseFactory):
     def create_embedder(self, model_type, input_size=None, output_size=None):
         model, model_args = self.getter.get("model", yaml_dict=model_type, return_uninitialized=True)
         if model == arch.misc_models.MLP:
-            model = self.modify_mlp(model, model_args, input_size, output_size)
+            model_args = self.modify_mlp_args(model, model_args, input_size, output_size)
+        model = model(**model_args)
         logging.info("EMBEDDER MODEL %s"%model)
         return model
 
@@ -41,13 +42,13 @@ class ModelFactory(BaseFactory):
             return {"input_size": self.base_model_output_size}
         return {}
 
-    def modify_mlp(self, model, model_args, input_size, output_size):
+    def modify_mlp_args(self, model, model_args, input_size, output_size):
         model_args = copy.deepcopy(model_args)
         if input_size:
             model_args["layer_sizes"].insert(0, input_size)
         if output_size:
             model_args["layer_sizes"].append(output_size)
-        return model(**model_args)
+        return model_args
 
     def _creation_order(self):
         return ["trunk", "embedder"]
@@ -74,7 +75,8 @@ class ClassifierModelFactory(ModelFactory):
 
     def create_classifier(self, model_type, output_size):
         model, model_args = self.getter.get("model", yaml_dict=model_type, return_uninitialized=True)
-        model = self.modify_mlp(model, model_args, self.embedder_output_size, output_size)
+        model_args = self.modify_mlp_args(model, model_args, self.embedder_output_size, output_size)
+        model = model(**model_args)
         logging.info("CLASSIFIER MODEL %s"%model)
         return model
 
