@@ -1,31 +1,35 @@
 site_name: Powerful Benchmarker
 nav:
     - Home: index.md
-    - Aggregators: aggregators.md
-    - API Parsers: api_parsers.md
-    - Architectures: architectures.md
-    - Configs: 
-      - Config Dataset: configs/config_dataset.md
-      - Config Eval: configs/config_eval.md
-      - Config Factories: configs/config_factories.md
-      - Config General: configs/config_general.md
-      - Config Loss and Miners: configs/config_loss_and_miners.md
-      - Config Models: configs/config_models.md
-      - Config Optimizers: configs/config_optimizers.md
-      - Config Transforms: configs/config_transforms.md
-    - Datasets: datasets.md
-    - Ensembles: ensembles.md
-    - Factories: factories.md
-    - Runners: runners.md
-    - Split Managers: split_managers.md
-    - Utils: utils.md
+    - Command Line Syntax: syntax.md
+    - Hyperparameter Optimization: hyperparams.md
+    - Adding Custom Modules: custom.md
+    - Config File Guide: 
+      - config_dataset: configs/config_dataset.md
+      - config_eval: configs/config_eval.md
+      - config_factories: configs/config_factories.md
+      - config_general: configs/config_general.md
+      - config_loss_and_miners: configs/config_loss_and_miners.md
+      - config_models: configs/config_models.md
+      - config_optimizers: configs/config_optimizers.md
+      - config_transforms: configs/config_transforms.md
+    - Code Documentation:
+      - Aggregators: code/aggregators.md
+      - API Parsers: code/api_parsers.md
+      - Architectures: code/architectures.md
+      - Datasets: code/datasets.md
+      - Ensembles: code/ensembles.md
+      - Factories: code/factories.md
+      - Runners: code/runners.md
+      - Split Managers: code/split_managers.md
+      - Utils: code/utils.md
     - Papers:
       - A Metric Learning Reality Check: papers/mlrc.md
 theme:
   name: 'material'
   palette:
     primary: 'black'
-    accent: 'black'
+    accent: 'blue'
 markdown_extensions:
   - codehilite
   - toc:
