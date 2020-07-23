@@ -624,13 +624,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-werent-more-hard-mining-methods-evaluated" class="md-nav__link">
-    Why weren't more hard-mining methods evaluated?
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" class="md-nav__link">
     Why was the batch size set to 32 for most of the results?
   </a>
@@ -638,8 +631,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#what-is-the-difference-between-mapr-and-map" class="md-nav__link">
-    What is the difference between MAP@R and MAP?
+  <a href="#why-werent-more-hard-mining-methods-evaluated" class="md-nav__link">
+    Why weren't more hard-mining methods evaluated?
   </a>
   
 </li>
@@ -742,13 +735,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#why-werent-more-hard-mining-methods-evaluated" class="md-nav__link">
-    Why weren't more hard-mining methods evaluated?
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" class="md-nav__link">
     Why was the batch size set to 32 for most of the results?
   </a>
@@ -756,8 +742,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#what-is-the-difference-between-mapr-and-map" class="md-nav__link">
-    What is the difference between MAP@R and MAP?
+  <a href="#why-werent-more-hard-mining-methods-evaluated" class="md-nav__link">
+    Why weren't more hard-mining methods evaluated?
   </a>
   
 </li>
@@ -806,12 +792,12 @@
 <h3 id="download-the-experiment-folder">Download the experiment folder<a class="headerlink" href="#download-the-experiment-folder" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Go to the <a href="https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/">benchmark spreadsheet</a></li>
-<li>Find the experiment you want to reproduce, click on the link in the "Config files" column.</li>
+<li>Find the experiment you want to reproduce, and click on the link in the "Config files" column.</li>
 <li>You'll see 3 folders: one for CUB, one for Cars, and one for SOP. Open the folder for the dataset you want to train on.</li>
-<li>Now you'll see several files and folders, one of which ends in "reproduction0". Download this folder. (This folder will include saved models. If you don't want to download the saved models, go into the folder and download just the "configs" folder.)</li>
+<li>Now you'll see several files and folders, one of which ends in "reproduction0". Download this folder. (It will include saved models. If you don't want to download the saved models, go into the folder and download just the "configs" folder.)</li>
 </ol>
 <h3 id="command-line-scripts">Command line scripts<a class="headerlink" href="#command-line-scripts" title="Permanent link">&para;</a></h3>
-<p>Normally reproducing results is as easy as downloading an experiment folder, and <a href="../..#reproduce-an-experiment">using the <code>reproduce_results</code> flag</a>. However, there have been significant changes to the API since these experiments were run, so there are a couple of extra steps required, and they depend on the dataset:</p>
+<p>Normally reproducing results is as easy as downloading an experiment folder, and <a href="../..#reproduce-an-experiment">using the <code>reproduce_results</code> flag</a>. However, there have been significant changes to the API since these experiments were run, so there are a couple of extra steps required, and they depend on the dataset. In the following code, <code>&lt;experiment_to_reproduce&gt;</code> refers to the folder that <strong>contains</strong> the <code>configs</code> folder.</p>
 <ul>
 <li>CUB200:</li>
 </ul>
@@ -868,13 +854,21 @@
 
 <h2 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h2>
 <h4 id="isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size">Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?<a class="headerlink" href="#isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size" title="Permanent link">&para;</a></h4>
-<h4 id="why-werent-more-hard-mining-methods-evaluated">Why weren't more hard-mining methods evaluated?<a class="headerlink" href="#why-werent-more-hard-mining-methods-evaluated" title="Permanent link">&para;</a></h4>
+<p>Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.</p>
 <h4 id="why-was-the-batch-size-set-to-32-for-most-of-the-results">Why was the batch size set to 32 for most of the results?<a class="headerlink" href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" title="Permanent link">&para;</a></h4>
-<h4 id="what-is-the-difference-between-mapr-and-map">What is the difference between MAP@R and MAP?<a class="headerlink" href="#what-is-the-difference-between-mapr-and-map" title="Permanent link">&para;</a></h4>
-<h4 id="for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value">For the contrastive loss, why is the optimal positive margin a negative value?<a class="headerlink" href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" title="Permanent link">&para;</a></h4>
+<p>This was done for the sake of computational efficiency. Note that there are: </p>
 <ul>
-<li>A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary.</li>
+<li>3 datasets </li>
+<li>14 algorithms </li>
+<li>50 steps of bayesian optmization </li>
+<li>4 fold cross validation </li>
 </ul>
+<p>This comes to 8400 models to train, which can take a considerable amount of time. Thus, a batch size of 32 made sense. It's also important to remember that there are real-world cases where a large batch size cannot be used. For example, if you want to train on large images, rather than the contrived case of 227x227, then training with a batch size of 32 suddenly makes a lot more sense because you are constrained by GPU memory. So it's reasonable to check the performance of these losses on a batch size of 32. </p>
+<p>That said, there is a good theoretical reason for a larger batch size benefiting embedding losses more than classification losses. Specifically, embedding losses can benefit from the increased number of pairs/triplets in larger batches. To address this, we benchmarked the 14 methods on CUB200, using a batch size of 256. The results can be found in the supplementary section (the final page) of the paper.</p>
+<h4 id="why-werent-more-hard-mining-methods-evaluated">Why weren't more hard-mining methods evaluated?<a class="headerlink" href="#why-werent-more-hard-mining-methods-evaluated" title="Permanent link">&para;</a></h4>
+<p>We did test one loss+miner combination (Multi-similarity loss + their mining method). But we mainly wanted to do a thorough evaluation of loss functions, because that is the subject of most recent metric learning papers.   </p>
+<h4 id="for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value">For the contrastive loss, why is the optimal positive margin a negative value?<a class="headerlink" href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" title="Permanent link">&para;</a></h4>
+<p>A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.</p>
 <h2 id="optimization-plots">Optimization plots<a class="headerlink" href="#optimization-plots" title="Permanent link">&para;</a></h2>
                 
                   
