@@ -987,16 +987,23 @@
 <p>This folder contains all differences between the originally saved config files and the parameters that you've specified at the command line. In this particular case, there should just be a single file <code>config_general.yaml</code> with a single line: <code>num_epochs_train: 150</code>. </p>
 <p>The underscore delimited numbers in the folder name indicate which models were loaded for each <a href="#creating-splits-for-cross-validation">split scheme</a>. For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named <code>resume_training_config_diffs_50_30_0</code>.</p>
 <h3 id="reproduce-an-experiment">Reproduce an experiment<a class="headerlink" href="#reproduce-an-experiment" title="Permanent link">&para;</a></h3>
-<p>To reproduce an experiment, use the <code>--reproduce_results</code> flag. For example, here's how to reproduce the experiments in the <a href="https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing">benchmark spreadsheets</a>:</p>
-<ol>
-<li>In the spreadsheet, find the experiment you want to reproduce, click on its google drive link under the "config files" column, and download the folder.</li>
-<li>Run:</li>
-</ol>
-<div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;the_downloaded_folder&gt; <span class="se">\</span>
---experiment_name &lt;experiment_name&gt;
+<p>To reproduce an experiment, use the <code>--reproduce_results</code> flag, and pass in the path to the experiment folder you want to reproduce:</p>
+<div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
+--experiment_name &lt;your_experiment_name&gt;
 </pre></div>
 
 
+<p>This will run an experiment based on the config files in <code>experiment_to_reproduce</code>. You can make modifications to the configuration at the command line, as long as you provide the <code>--merge_argparse_when_resuming</code> flag, so that the code knows you intend on making changes:</p>
+<div class="codehilite"><pre><span></span><span class="c1"># reproduce the experiment but use a different number of dataloaders</span>
+python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
+--experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--trainer~APPLY~2: <span class="o">{</span>dataloader_num_workers: <span class="m">16</span><span class="o">}</span> <span class="se">\</span>
+--tester~APPLY~2: <span class="o">{</span>dataloader_num_workers: <span class="m">16</span><span class="o">}</span> <span class="se">\</span>
+--merge_argparse_when_resuming
+</pre></div>
+
+
+<p>For a guide on how to reproduce the results of <a href="https://arxiv.org/abs/2003.08505">A Metric Learning Reality Check</a>, see the <a href="../papers/mlrc">supplementary material</a></p>
 <h3 id="evaluating-on-specific-splits">Evaluating on specific splits<a class="headerlink" href="#evaluating-on-specific-splits" title="Permanent link">&para;</a></h3>
 <p>By default, your model will be saved and evaluated on the validation set every <code>save_interval</code> epochs. To get accuracy for specific splits, use the <code>--splits_to_eval</code> flag and pass in a python-style list of split names: <code>--splits_to_eval [train, test]</code>. </p>
 <p>To run evaluation only, use the <code>--evaluate</code> or <code>--evaluate_ensemble</code> flag.</p>

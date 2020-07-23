@@ -582,6 +582,33 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#reproducing-results" class="md-nav__link">
+    Reproducing results
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-the-experiment-folder" class="md-nav__link">
+    Download the experiment folder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-scripts" class="md-nav__link">
+    Command line scripts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#frequently-asked-questions" class="md-nav__link">
     Frequently Asked Questions
   </a>
@@ -673,6 +700,33 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#reproducing-results" class="md-nav__link">
+    Reproducing results
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-the-experiment-folder" class="md-nav__link">
+    Download the experiment folder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-scripts" class="md-nav__link">
+    Command line scripts
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#frequently-asked-questions" class="md-nav__link">
     Frequently Asked Questions
   </a>
@@ -748,6 +802,70 @@
                 
                 <h1 id="a-metric-learning-reality-check">A Metric Learning Reality Check<a class="headerlink" href="#a-metric-learning-reality-check" title="Permanent link">&para;</a></h1>
 <p>This page contains additional information for the <a href="https://arxiv.org/abs/2003.08505">ECCV 2020 paper</a> by Musgrave et al.</p>
+<h2 id="reproducing-results">Reproducing results<a class="headerlink" href="#reproducing-results" title="Permanent link">&para;</a></h2>
+<h3 id="download-the-experiment-folder">Download the experiment folder<a class="headerlink" href="#download-the-experiment-folder" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to the <a href="https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/">benchmark spreadsheet</a></li>
+<li>Find the experiment you want to reproduce, click on the link in the "Config files" column.</li>
+<li>You'll see 3 folders: one for CUB, one for Cars, and one for SOP. Open the folder for the dataset you want to train on.</li>
+<li>Now you'll see several files and folders, one of which ends in "reproduction0". Download this folder. (This folder will include saved models. If you don't want to download the saved models, go into the folder and download just the "configs" folder.)</li>
+</ol>
+<h3 id="command-line-scripts">Command line scripts<a class="headerlink" href="#command-line-scripts" title="Permanent link">&para;</a></h3>
+<p>Normally reproducing results is as easy as downloading an experiment folder, and <a href="../..#reproduce-an-experiment">using the <code>reproduce_results</code> flag</a>. However, there have been significant changes to the API since these experiments were run, so there are a couple of extra steps required, and they depend on the dataset:</p>
+<ul>
+<li>CUB200:</li>
+</ul>
+<div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
+--experiment_name &lt;your_experiment_name&gt;
+</pre></div>
+
+
+<ul>
+<li>Cars196:</li>
+</ul>
+<div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
+--experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--config_dataset <span class="o">[</span>default, with_cars196<span class="o">]</span> <span class="se">\</span>
+--config_general <span class="o">[</span>default, with_cars196<span class="o">]</span> <span class="se">\</span>
+--merge_argparse_when_resuming
+</pre></div>
+
+
+<ul>
+<li>Stanford Online Products</li>
+</ul>
+<div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
+--experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--config_dataset <span class="o">[</span>default, with_sop<span class="o">]</span> <span class="se">\</span>
+--config_general <span class="o">[</span>default, with_sop<span class="o">]</span> <span class="se">\</span>
+--merge_argparse_when_resuming
+</pre></div>
+
+
+<ul>
+<li>CUB200 with batch size 256:</li>
+</ul>
+<div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
+--experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--trainer~APPLY~2: <span class="o">{</span>batch_size: <span class="m">256</span><span class="o">}</span>
+</pre></div>
+
+
+<p>If you don't have the datasets and would like to download them into your <code>dataset_root</code> folder, you can add this flag to the CUB commands:</p>
+<div class="codehilite"><pre><span></span>--dataset~OVERRIDE~ <span class="o">{</span>CUB200: <span class="o">{</span>download: True<span class="o">}}</span>
+</pre></div>
+
+
+<p>Likewise, for the Cars196 and Stanford Online Products commands, replace the <code>--config_dataset</code> flag with:</p>
+<div class="codehilite"><pre><span></span>--dataset~OVERRIDE~ <span class="o">{</span>Cars196: <span class="o">{</span>download: True<span class="o">}}</span>
+</pre></div>
+
+
+<p>or </p>
+<div class="codehilite"><pre><span></span>--dataset~OVERRIDE~ <span class="o">{</span>StanfordOnlineProducts: <span class="o">{</span>download: True<span class="o">}}</span>
+</pre></div>
+
+
 <h2 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h2>
 <h4 id="isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size">Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?<a class="headerlink" href="#isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size" title="Permanent link">&para;</a></h4>
 <h4 id="why-werent-more-hard-mining-methods-evaluated">Why weren't more hard-mining methods evaluated?<a class="headerlink" href="#why-werent-more-hard-mining-methods-evaluated" title="Permanent link">&para;</a></h4>
