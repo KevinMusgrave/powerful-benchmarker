@@ -1,6 +1,20 @@
 # Command Line Syntax
 
-This library comes with a powerful command line syntax that makes it easy to change complex configuration options in a granular fashion.
+This library comes with a powerful command line syntax that makes it easy to change complex configuration options in a precise fashion.
+
+## Lists and dictionaries
+Lists and dictionaries are written at the command line in python form:
+
+Example list:
+```bash
+--splits_to_eval [train, val, test]
+```
+
+Example nested dictionary
+```bash
+--mining_funcs {tuple_miner: {MultiSimilarityMiner: {epsilon: 0.1}}}
+```
+
 
 ## Merge
 Consider the following optimizer configuration.

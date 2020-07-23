@@ -1,4 +1,4 @@
-# Tuning Hyperparameters
+# Hyperparameter optimization
 
 ## Bayesian optimization
 
