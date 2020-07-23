@@ -650,23 +650,16 @@
                 
                 <h1 id="adding-custom-modules">Adding Custom Modules<a class="headerlink" href="#adding-custom-modules" title="Permanent link">&para;</a></h1>
 <h3 id="register-your-own-classes-and-modules">Register your own classes and modules<a class="headerlink" href="#register-your-own-classes-and-modules" title="Permanent link">&para;</a></h3>
-<p>By default, the API gives you access to losses/miners/datasets/optimizers/schedulers/trainers etc that are available in powerful-benchmarker, PyTorch, and pytorch-metric-learning.</p>
-<p>Let's say you make your own loss and mining functions, and you'd like to have access to them via the API. You can accomplish this by replacing the last two lines of the <a href="https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py">example script</a> with this:</p>
-<div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">losses</span><span class="p">,</span> <span class="n">miners</span>
-
-<span class="c1"># your custom loss function</span>
-<span class="k">class</span> <span class="nc">YourLossFunction</span><span class="p">(</span><span class="n">losses</span><span class="o">.</span><span class="n">BaseMetricLossFunction</span><span class="p">):</span>
-   <span class="o">...</span>
-
-<span class="c1"># your custom mining function</span>
-<span class="k">class</span> <span class="nc">YourMiningFunction</span><span class="p">(</span><span class="n">miners</span><span class="o">.</span><span class="n">BaseTupleMiner</span><span class="p">):</span>
-   <span class="o">...</span>
+<p>By default, this library gives you access to <a href="..#modules-that-can-be-benchmarked">various classes in pytorch-metric-learning, torch, torchvision, and pretrainedmodels</a>.</p>
+<p>Let's say you want to use your own loss function as well as a custom optimizer that isn't available in torch.optim. You can accomplish this by replacing the last two lines of the <a href="https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py">example script</a> with this:</p>
+<div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">your_own_loss</span> <span class="kn">import</span> <span class="n">YourLossFunction</span>
+<span class="kn">from</span> <span class="nn">custom_optimizer</span> <span class="kn">import</span> <span class="n">CoolOptimizer</span>
 
 <span class="n">r</span> <span class="o">=</span> <span class="n">runner</span><span class="p">(</span><span class="o">**</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">))</span>
 
 <span class="c1"># make the runner aware of them</span>
 <span class="n">r</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="n">YourLossFunction</span><span class="p">)</span>
-<span class="n">r</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;miner&quot;</span><span class="p">,</span> <span class="n">YourMiningFunction</span><span class="p">)</span>
+<span class="n">r</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;optimizer&quot;</span><span class="p">,</span> <span class="n">CoolOptimizer</span><span class="p">)</span>
 <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
 
@@ -676,9 +669,10 @@
   <span class="nt">metric_loss</span><span class="p">:</span> 
     <span class="nt">YourLossFunction</span><span class="p">:</span>
 
-<span class="nt">mining_funcs</span><span class="p">:</span>
-  <span class="nt">tuple_miner</span><span class="p">:</span>
-    <span class="nt">YourMiningFunction</span><span class="p">:</span>
+<span class="nt">optimizers</span><span class="p">:</span>
+  <span class="nt">trunk_optimizer</span><span class="p">:</span>
+    <span class="nt">CoolOptimizer</span><span class="p">:</span>
+      <span class="nt">lr</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.01</span>
 </pre></div>
 
 
@@ -688,32 +682,29 @@
 </pre></div>
 
 
-<p>Registering your own trainer is a bit more involved, because you need to also create an associated API parser. The name of the api parser should be <code>APIParser&lt;name of your training method&gt;</code>. </p>
-<p>Here's an example where I make a trainer that extends <code>trainers.MetricLossOnly</code>, and takes in an additional argument <code>foo</code>. In order to pass this in, the API parser needs to add <code>foo</code> to the trainer kwargs, and this is done in the <code>get_trainer_kwargs</code> method.</p>
+<p>Registering your own trainer is a bit more involved, because you need to also create an associated API parser. The name of the api parser should be <code>APIParser&lt;name of your training method&gt;</code>.</p>
+<p>Here's an example where I make a trainer that extends <code>trainers.MetricLossOnly</code>, and takes in an additional argument <code>foo</code>. If <code>foo</code> is a simple parameter that can be specified directly in a config file, then <code>APIYourTrainer</code> doesn't need to do anything other than exist:</p>
 <div class="codehilite"><pre><span></span><span class="kn">from</span> <span class="nn">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">trainers</span>
 <span class="kn">from</span> <span class="nn">powerful_benchmarker</span> <span class="kn">import</span> <span class="n">api_parsers</span>
 
 <span class="k">class</span> <span class="nc">YourTrainer</span><span class="p">(</span><span class="n">trainers</span><span class="o">.</span><span class="n">MetricLossOnly</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">foo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">foo</span> <span class="o">=</span> <span class="n">foo</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;foo = &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">foo</span><span class="p">)</span>
-
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">foo</span> <span class="o">=</span> <span class="n">foo</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;foo = &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">foo</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">APIYourTrainer</span><span class="p">(</span><span class="n">api_parsers</span><span class="o">.</span><span class="n">BaseAPIParser</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">get_foo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;hello&quot;</span>
-
-    <span class="k">def</span> <span class="nf">get_trainer_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">trainer_kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_trainer_kwargs</span><span class="p">()</span>
-        <span class="n">trainer_kwargs</span><span class="p">[</span><span class="s2">&quot;foo&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_foo</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">trainer_kwargs</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <span class="n">r</span> <span class="o">=</span> <span class="n">runner</span><span class="p">(</span><span class="o">**</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">))</span>
 <span class="n">r</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;trainer&quot;</span><span class="p">,</span> <span class="n">YourTrainer</span><span class="p">)</span>
 <span class="n">r</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;api_parser&quot;</span><span class="p">,</span> <span class="n">APIYourTrainer</span><span class="p">)</span>
 <span class="n">r</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 </pre></div>
+
+
+<p>However, if <code>foo</code> is more complex, e.g. it is an object that requires some logic to be created, then you'll want <code>APIYourTrainer</code> to handle that logic, and then add <code>foo</code> to the <code>default_kwargs_trainer</code> dictionary. Check out the <a href="../code/api_parsers">code documentation</a> for details on this.</p>
                 
                   
                 

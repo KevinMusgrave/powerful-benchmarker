@@ -261,6 +261,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#lists-and-dictionaries" class="md-nav__link">
+    Lists and dictionaries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#merge" class="md-nav__link">
     Merge
   </a>
@@ -651,6 +658,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#lists-and-dictionaries" class="md-nav__link">
+    Lists and dictionaries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#merge" class="md-nav__link">
     Merge
   </a>
@@ -705,7 +719,19 @@
                 
                 
                 <h1 id="command-line-syntax">Command Line Syntax<a class="headerlink" href="#command-line-syntax" title="Permanent link">&para;</a></h1>
-<p>This library comes with a powerful command line syntax that makes it easy to change complex configuration options in a granular fashion.</p>
+<p>This library comes with a powerful command line syntax that makes it easy to change complex configuration options in a precise fashion.</p>
+<h2 id="lists-and-dictionaries">Lists and dictionaries<a class="headerlink" href="#lists-and-dictionaries" title="Permanent link">&para;</a></h2>
+<p>Lists and dictionaries are written at the command line in python form:</p>
+<p>Example list:</p>
+<div class="codehilite"><pre><span></span>--splits_to_eval <span class="o">[</span>train, val, test<span class="o">]</span>
+</pre></div>
+
+
+<p>Example nested dictionary</p>
+<div class="codehilite"><pre><span></span>--mining_funcs <span class="o">{</span>tuple_miner: <span class="o">{</span>MultiSimilarityMiner: <span class="o">{</span>epsilon: <span class="m">0</span>.1<span class="o">}}}</span>
+</pre></div>
+
+
 <h2 id="merge">Merge<a class="headerlink" href="#merge" title="Permanent link">&para;</a></h2>
 <p>Consider the following optimizer configuration.</p>
 <div class="codehilite"><pre><span></span><span class="nt">optimizers</span><span class="p">:</span>
