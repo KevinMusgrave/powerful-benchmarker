@@ -12,7 +12,7 @@ optimizers:
       lr: 0.000001
 ```
 
-At the command line, the following will change ```lr``` to 0.01, and add ```alpha = 0.95``` to the ```RMSprop``` parameters:
+At the command line, we can change ```lr``` to 0.01, and add ```alpha = 0.95``` to the ```RMSprop``` parameters:
 ```bash
 --optimizers {trunk_optimizer: {RMSprop: {lr: 0.01, alpha: 0.95}}}
 ```

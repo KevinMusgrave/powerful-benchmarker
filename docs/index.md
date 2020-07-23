@@ -129,7 +129,7 @@ This particular configuration will set aside the second 50% of classes for the t
 ## Advanced usage
 Here are some other important features of this library:
 
-- The powerful [config syntax](syntax.md) that allows you to easily override, modify, merge, and delete config options at the command line, and within yaml files.
+- The powerful [command line syntax](cl_syntax.md) that allows you to easily override, modify, merge, and delete config options at the command line, and within yaml files.
 - Easy and flexible [hyperparameter optimization](hyperparams.md)
 - The ability to [add custom modules](custom.md), without having to delve into the benchmarking code.
 
