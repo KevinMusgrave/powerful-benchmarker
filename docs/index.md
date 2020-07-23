@@ -115,14 +115,23 @@ This folder contains all differences between the originally saved config files a
 The underscore delimited numbers in the folder name indicate which models were loaded for each [split scheme](#creating-splits-for-cross-validation). For example, let's say you are doing cross validation with 3 folds. The training process has finished 50, 30, and 0 epochs of folds 0, 1, and 2, respectively. You decide to stop training, and resume training with a different batch size. Now the config diff folder will be named ```resume_training_config_diffs_50_30_0```.
 
 ### Reproduce an experiment
-To reproduce an experiment, use the ```--reproduce_results``` flag. For example, here's how to reproduce the experiments in the [benchmark spreadsheets](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing):
-
-1. In the spreadsheet, find the experiment you want to reproduce, click on its google drive link under the "config files" column, and download the folder.
-2. Run:
+To reproduce an experiment, use the ```--reproduce_results``` flag, and pass in the path to the experiment folder you want to reproduce:
 ```bash
-python run.py --reproduce_results <the_downloaded_folder> \
---experiment_name <experiment_name>
+python run.py --reproduce_results <experiment_to_reproduce> \
+--experiment_name <your_experiment_name>
 ```
+This will run an experiment based on the config files in ```experiment_to_reproduce```. You can make modifications to the configuration at the command line, as long as you provide the ```--merge_argparse_when_resuming``` flag, so that the code knows you intend on making changes:
+
+```bash
+# reproduce the experiment but use a different number of dataloaders
+python run.py --reproduce_results <experiment_to_reproduce> \
+--experiment_name <your_experiment_name> \
+--trainer~APPLY~2: {dataloader_num_workers: 16} \
+--tester~APPLY~2: {dataloader_num_workers: 16} \
+--merge_argparse_when_resuming
+```
+
+For a guide on how to reproduce the results of [A Metric Learning Reality Check](https://arxiv.org/abs/2003.08505), see the [supplementary material](../papers/mlrc)
 
 ### Evaluating on specific splits
 By default, your model will be saved and evaluated on the validation set every ```save_interval``` epochs. To get accuracy for specific splits, use the ```--splits_to_eval``` flag and pass in a python-style list of split names: ```--splits_to_eval [train, test]```. 
