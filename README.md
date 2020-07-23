@@ -21,18 +21,18 @@ This library was used for [A Metric Learning Reality Check](https://arxiv.org/ab
 
 ## Benefits of this library
 1. Highly configurable: 
- - [Yaml files](https://kevinmusgrave.github.io/powerful-benchmarker/yaml_syntax/) for organized configuration
- - A [powerful command line syntax](https://kevinmusgrave.github.io/powerful-benchmarker/cl_syntax/) that allows you to merge, override, swap, apply, and delete config options.
+   - [Yaml files](https://kevinmusgrave.github.io/powerful-benchmarker/yaml_syntax/) for organized configuration
+   - A [powerful command line syntax](https://kevinmusgrave.github.io/powerful-benchmarker/cl_syntax/) that allows you to merge, override, swap, apply, and delete config options.
 2. Customizable: 
- - Benchmark your own losses, miners, datasets etc. [with a simple function call](https://kevinmusgrave.github.io/powerful-benchmarker/custom/).
+   - Benchmark your own losses, miners, datasets etc. [with a simple function call](https://kevinmusgrave.github.io/powerful-benchmarker/custom/).
 3. Easy hyperparameter optimization:
- - Simply [append the \~BAYESIAN\~ flag](https://kevinmusgrave.github.io/powerful-benchmarker/hyperparams/) to the names of hyperparameters you want to optimize.
-3. Extensive logging:
- - View experiment data in [tensorboard, CSV and SQLite format](https://kevinmusgrave.github.io/powerful-benchmarker/#view-experiment-data).
+   - Simply [append the \~BAYESIAN\~ flag](https://kevinmusgrave.github.io/powerful-benchmarker/hyperparams/) to the names of hyperparameters you want to optimize.
+4. Extensive logging:
+   - View experiment data in [tensorboard, CSV and SQLite format](https://kevinmusgrave.github.io/powerful-benchmarker/#view-experiment-data).
 5. Reproducible:
- - Config files are saved with each experiment and are [easily reproduced](https://kevinmusgrave.github.io/powerful-benchmarker/#reproduce-an-experiment).
+   - Config files are saved with each experiment and are [easily reproduced](https://kevinmusgrave.github.io/powerful-benchmarker/#reproduce-an-experiment).
 6. Trackable changes:
- - [Keep track of changes](https://kevinmusgrave.github.io/powerful-benchmarker/#keep-track-of-changes) to an experiment's configuration.
+   - [Keep track of changes](https://kevinmusgrave.github.io/powerful-benchmarker/#keep-track-of-changes) to an experiment's configuration.
 
 ## Installation
 ```
