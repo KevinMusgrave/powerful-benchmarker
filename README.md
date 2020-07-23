@@ -26,7 +26,7 @@ This library was used for [A Metric Learning Reality Check](https://arxiv.org/ab
 2. Customizable: 
    - Benchmark your own losses, miners, datasets etc. [with a simple function call](https://kevinmusgrave.github.io/powerful-benchmarker/custom/).
 3. Easy hyperparameter optimization:
-   - Simply [append the \~BAYESIAN\~ flag](https://kevinmusgrave.github.io/powerful-benchmarker/hyperparams/) to the names of hyperparameters you want to optimize.
+   - [Append the \~BAYESIAN\~ flag](https://kevinmusgrave.github.io/powerful-benchmarker/hyperparams/) to the names of hyperparameters you want to optimize.
 4. Extensive logging:
    - View experiment data in [tensorboard, CSV and SQLite format](https://kevinmusgrave.github.io/powerful-benchmarker/#view-experiment-data).
 5. Reproducible:
