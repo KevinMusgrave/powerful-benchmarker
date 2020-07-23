@@ -604,15 +604,84 @@
                 
                 
                 <h1 id="yaml-syntax">Yaml Syntax<a class="headerlink" href="#yaml-syntax" title="Permanent link">&para;</a></h1>
-<!-- ## Combine
-The following merges the ```with_cars196``` config file into the ```default``` config file, in the ```config_general``` category.
+<p>Config files in this library are yaml files, so they follow standard yaml syntax. But you can also use all of the <a href="../cl_syntax/">command line syntax</a> within your config files. For example, here are two config files in the <code>config_general</code> category: </p>
+<p>default.yaml</p>
+<div class="codehilite"><pre><span></span><span class="nt">trainer</span><span class="p">:</span>
+  <span class="nt">MetricLossOnly</span><span class="p">:</span>
+    <span class="nt">iterations_per_epoch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+    <span class="nt">dataloader_num_workers</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+    <span class="nt">batch_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32</span>
+    <span class="nt">freeze_trunk_batchnorm</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+    <span class="nt">label_hierarchy_level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">loss_weights</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">null</span>
+    <span class="nt">set_min_label_to_zero</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
 
-<div class="codehilite"><pre><span></span><span class="err">python run.py --experiment_name test1 --config_general [default, with_cars196]</span>
+<span class="nt">num_epochs_train</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="nt">save_interval</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">patience</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">9</span>
+
+<span class="nt">check_untrained_accuracy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">skip_eval_if_already_done</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">skip_ensemble_eval_if_already_done</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">save_figures_on_tensorboard</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">save_lists_in_db</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">override_required_compatible_factories</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
 </pre></div>
 
 
-This is convenient when you want to change a few settings (specified in ```with_cars196```), and keep all the other options unchanged (specified in ```default```). You can specify any number of config files to merge, and they get loaded and merged in the order that you specify.
- -->
+<p>with_daml.yaml</p>
+<div class="codehilite"><pre><span></span><span class="nt">trainer~SWAP~1</span><span class="p">:</span>
+  <span class="nt">DeepAdversarialMetricLearning</span><span class="p">:</span>
+
+
+<span class="nt">trainer~APPLY~2</span><span class="p">:</span>
+  <span class="nt">g_alone_epochs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+  <span class="nt">metric_alone_epochs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+  <span class="nt">g_triplets_per_anchor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+  <span class="nt">loss_weights</span><span class="p">:</span>
+    <span class="nt">metric_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+    <span class="nt">synth_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+    <span class="nt">g_adv_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+    <span class="nt">g_hard_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+    <span class="nt">g_reg_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+</pre></div>
+
+
+<p>The <code>with_daml</code> config file contains the special flags <code>~SWAP~</code> and <code>~APPLY~</code>. This particular config file won't work by itself. However, it can be loaded in conjunction with <code>default</code> at the command line:</p>
+<div class="codehilite"><pre><span></span>--config_general <span class="o">[</span>default, with_daml<span class="o">]</span>
+</pre></div>
+
+
+<p>This loads <code>default.yaml</code>, followed by <code>with_daml.yaml</code>. Now the special <code>~SWAP~</code> and <code>~APPLY~</code> flags will have an effect. Specifically, <code>MetricLossOnly</code> will get swapped out for <code>DeepAdversarialMetricLearning</code>, and then the parameters for <code>DeepAdversarialMetricLearning</code> will be applied to the <code>trainer</code> dictionary. The final config file ends up looking like this:</p>
+<div class="codehilite"><pre><span></span><span class="nt">trainer</span><span class="p">:</span>
+  <span class="nt">DeepAdversarialMetricLearning</span><span class="p">:</span>
+    <span class="nt">iterations_per_epoch</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+    <span class="nt">dataloader_num_workers</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+    <span class="nt">batch_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">32</span>
+    <span class="nt">freeze_trunk_batchnorm</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+    <span class="nt">label_hierarchy_level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">loss_weights</span><span class="p">:</span>
+      <span class="nt">metric_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+      <span class="nt">synth_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+      <span class="nt">g_adv_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+      <span class="nt">g_hard_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+      <span class="nt">g_reg_loss</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.1</span>
+    <span class="nt">set_min_label_to_zero</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+    <span class="nt">g_alone_epochs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">metric_alone_epochs</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">g_triplets_per_anchor</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+
+<span class="nt">num_epochs_train</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="nt">save_interval</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">patience</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">9</span>
+
+<span class="nt">check_untrained_accuracy</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">skip_eval_if_already_done</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">skip_ensemble_eval_if_already_done</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="nt">save_figures_on_tensorboard</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">save_lists_in_db</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="nt">override_required_compatible_factories</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
+</pre></div>
                 
                   
                 
