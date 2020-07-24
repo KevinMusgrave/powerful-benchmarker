@@ -1,0 +1,601 @@
+<!--
+    Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+-->
+<!--
+    Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+-->
+<html lang="en">
+<head>
+    <title>sop_ntxent</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <style>/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+body {
+  background-color: #e9ebf4;
+  font-family: SF Optimized, system-ui, -apple-system, BlinkMacSystemFont,
+    '.SFNSText-Regular', sans-serif;
+  font-size: 14px;
+  font-weight: 200;
+  margin: 20px 0px;
+  padding: 0;
+}
+
+.left {
+  float: left;
+  margin: 0;
+  padding: 0;
+}
+
+.middle {
+  display: inline-block;
+}
+
+.right {
+  float: right;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+}
+
+.report,
+.nb_report {
+  background-color: var(--fig-white);
+  margin: 0px auto;
+  width: 1100px;
+}
+
+.nb_report {
+  width: 800px;
+}
+
+.report_title_section {
+  background-color: #3b5998;
+  color: white;
+  margin: 50px 0px 0px;
+  overflow: hidden;
+  padding: 15px 25px;
+}
+
+.report_footer {
+  margin-bottom: 50px;
+}
+
+.report_title {
+  font-size: 26px;
+  font-weight: 200;
+  margin: 0px 0px 10px 0px;
+}
+
+.report_subtitle {
+  font-size: 14px;
+  font-weight: 200;
+  margin: 0px;
+}
+
+.report_content {
+  background-color: white;
+  padding: 25px;
+}
+
+/* CELL FORMATTING */
+
+.cell_header {
+  background-color: #ced0d4;
+  color: #4b4f56;
+  cursor: pointer;
+  margin: 25px 0px 0px;
+  padding: 5px 25px;
+}
+
+.cell_header:after {
+  color: #4b4f56;
+  content: '+';
+  font-weight: bold;
+  float: right;
+  margin: -20px 0px 0px 5px;
+}
+
+.cell_header.show:after {
+  content: '-';
+}
+
+.cell_header h2 {
+  font-weight: 200;
+  margin: 0;
+}
+
+.cell_body {
+  border: 1px solid #ced0d4;
+  overflow-x: auto;
+  padding: 0px 25px;
+}
+
+.cell_body.hidden {
+  display: none;
+}
+
+.message {
+  padding: 10px 25px;
+  margin-bottom: 10px;
+}
+
+.message.error {
+  background-color: #fde1e9;
+  border: #9a0a33 1px solid;
+  text-align: inherit;
+  margin: inherit;
+  margin-bottom: 10px;
+}
+
+.message.error p {
+  font-size: inherit;
+}
+
+.message.warning {
+  background-color: #fef9da;
+  border: #dec74a 1px solid;
+}
+
+.message.info {
+  background-color: #d3e0fc;
+  border: #5186f7 1px solid;
+}
+
+.tldr-warning img {
+  display: inline;
+}
+
+pre {
+  background-color: #eee;
+  padding: 10px;
+}
+
+/* TABLE */
+table {
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 10px auto;
+}
+
+table,
+th,
+td {
+  border: 1px solid #4b4f56;
+}
+
+th {
+  padding: 5px;
+  text-align: center;
+}
+
+td {
+  padding: 5px;
+  text-align: left;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}
+
+/* TOOLTIP */
+.report-tooltip {
+  border-bottom: 1px dotted #4b4f56;
+  display: inline-block;
+  position: relative;
+}
+
+.report-tooltip .report-tooltiptext {
+  background-color: #555555;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 200;
+  min-width: 120px;
+  padding: 10px;
+  position: absolute;
+  text-align: center;
+  visibility: hidden;
+  z-index: 1;
+}
+
+.report-tooltip .report-tooltiptext.top-tooltip {
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+  min-width: 120px;
+}
+
+.report-tooltip:hover .report-tooltiptext {
+  visibility: visible;
+}
+
+table.tooltip-arm {
+  border: 0px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.tooltip-arm th,
+.tooltip-arm td {
+  border: 0px;
+}
+
+.tooltip-arm tr:hover {
+  background-color: #4b4f56;
+}
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+.hovertext {
+  opacity: 0.85;
+}
+
+.plot-menu div {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.plot-menu select {
+  height: 30px;
+  padding: 6px 10px;
+  background-color: #fff;
+  border: 1px solid #D1D1D1;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box;
+  margin-left: 15px;
+  margin-bottom: 0px;
+}
+
+.plot-menu select:focus {
+  border: 1px solid #33C3F0;
+  outline: 0;
+}
+
+.plot-menu button {
+  display: inline-block;
+  height: 30px;
+  padding: 0 10px;
+  color: #555;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  cursor: pointer;
+  box-sizing: border-box;
+  background-color: #fff;
+  margin-left: 15px;
+}
+</style>
+    <script type='text/javascript'>/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+requirejs.config({
+  paths: {
+    plotly: ['https://cdn.plot.ly/plotly-latest.min'],
+  },
+});
+if (!window.Plotly) {
+  require(['plotly'], function(plotly) {
+    window.Plotly = plotly;
+  });
+}
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+// helper functions used across multiple plots
+function rgb(rgb_array) {
+  return 'rgb(' + rgb_array.join() + ')';
+}
+
+function copy_and_reverse(arr) {
+  const copy = arr.slice();
+  copy.reverse();
+  return copy;
+}
+
+function axis_range(grid, is_log) {
+  return is_log
+    ? [Math.log10(Math.min(...grid)), Math.log10(Math.max(...grid))]
+    : [Math.min(...grid), Math.max(...grid)];
+}
+
+function relativize_data(f, sd, rel, arm_data, metric) {
+  // if relative, extract status quo & compute ratio
+  const f_final = rel === true ? [] : f;
+  const sd_final = rel === true ? [] : sd;
+
+  if (rel === true) {
+    const f_sq =
+      arm_data['in_sample'][arm_data['status_quo_name']]['y'][metric];
+    const sd_sq =
+      arm_data['in_sample'][arm_data['status_quo_name']]['se'][metric];
+
+    for (let i = 0; i < f.length; i++) {
+      res = relativize(f[i], sd[i], f_sq, sd_sq);
+      f_final.push(100 * res[0]);
+      sd_final.push(100 * res[1]);
+    }
+  }
+
+  return [f_final, sd_final];
+}
+
+function relativize(m_t, sem_t, m_c, sem_c) {
+  r_hat =
+    (m_t - m_c) / Math.abs(m_c) -
+    (Math.pow(sem_c, 2) * m_t) / Math.pow(Math.abs(m_c), 3);
+  variance =
+    (Math.pow(sem_t, 2) + Math.pow((m_t / m_c) * sem_c, 2)) / Math.pow(m_c, 2);
+  return [r_hat, Math.sqrt(variance)];
+}
+
+function slice_config_to_trace(
+  arm_data,
+  arm_name_to_parameters,
+  f,
+  fit_data,
+  grid,
+  metric,
+  param,
+  rel,
+  setx,
+  sd,
+  is_log,
+  visible,
+) {
+  // format data
+  const res = relativize_data(f, sd, rel, arm_data, metric);
+  const f_final = res[0];
+  const sd_final = res[1];
+
+  // get data for standard deviation fill plot
+  const sd_upper = [];
+  const sd_lower = [];
+  for (let i = 0; i < sd.length; i++) {
+    sd_upper.push(f_final[i] + 2 * sd_final[i]);
+    sd_lower.push(f_final[i] - 2 * sd_final[i]);
+  }
+  const grid_rev = copy_and_reverse(grid);
+  const sd_lower_rev = copy_and_reverse(sd_lower);
+  const sd_x = grid.concat(grid_rev);
+  const sd_y = sd_upper.concat(sd_lower_rev);
+
+  // get data for observed arms and error bars
+  const arm_x = [];
+  const arm_y = [];
+  const arm_sem = [];
+  fit_data.forEach(row => {
+    parameters = arm_name_to_parameters[row['arm_name']];
+    plot = true;
+    Object.keys(setx).forEach(p => {
+      if (p !== param && parameters[p] !== setx[p]) {
+        plot = false;
+      }
+    });
+    if (plot === true) {
+      arm_x.push(parameters[param]);
+      arm_y.push(row['mean']);
+      arm_sem.push(row['sem']);
+    }
+  });
+
+  const arm_res = relativize_data(arm_y, arm_sem, rel, arm_data, metric);
+  const arm_y_final = arm_res[0];
+  const arm_sem_final = arm_res[1].map(x => x * 2);
+
+  // create traces
+  const f_trace = {
+    x: grid,
+    y: f_final,
+    showlegend: false,
+    hoverinfo: 'x+y',
+    line: {
+      color: 'rgba(128, 177, 211, 1)',
+    },
+    visible: visible,
+  };
+
+  const arms_trace = {
+    x: arm_x,
+    y: arm_y_final,
+    mode: 'markers',
+    error_y: {
+      type: 'data',
+      array: arm_sem_final,
+      visible: true,
+      color: 'black',
+    },
+    line: {
+      color: 'black',
+    },
+    showlegend: false,
+    hoverinfo: 'x+y',
+    visible: visible,
+  };
+
+  const sd_trace = {
+    x: sd_x,
+    y: sd_y,
+    fill: 'toself',
+    fillcolor: 'rgba(128, 177, 211, 0.2)',
+    line: {
+      color: 'transparent',
+    },
+    showlegend: false,
+    hoverinfo: 'none',
+    visible: visible,
+  };
+
+  traces = [sd_trace, f_trace, arms_trace];
+
+  // iterate over out-of-sample arms
+  let i = 1;
+  Object.keys(arm_data['out_of_sample']).forEach(generator_run_name => {
+    const ax = [];
+    const ay = [];
+    const asem = [];
+    const atext = [];
+
+    Object.keys(arm_data['out_of_sample'][generator_run_name]).forEach(
+      arm_name => {
+        const parameters =
+          arm_data['out_of_sample'][generator_run_name][arm_name]['parameters'];
+        plot = true;
+        Object.keys(setx).forEach(p => {
+          if (p !== param && parameters[p] !== setx[p]) {
+            plot = false;
+          }
+        });
+        if (plot === true) {
+          ax.push(parameters[param]);
+          ay.push(
+            arm_data['out_of_sample'][generator_run_name][arm_name]['y_hat'][
+              metric
+            ],
+          );
+          asem.push(
+            arm_data['out_of_sample'][generator_run_name][arm_name]['se_hat'][
+              metric
+            ],
+          );
+          atext.push('<em>Candidate ' + arm_name + '</em>');
+        }
+      },
+    );
+
+    const out_of_sample_arm_res = relativize_data(
+      ay,
+      asem,
+      rel,
+      arm_data,
+      metric,
+    );
+    const ay_final = out_of_sample_arm_res[0];
+    const asem_final = out_of_sample_arm_res[1].map(x => x * 2);
+
+    traces.push({
+      hoverinfo: 'text',
+      legendgroup: generator_run_name,
+      marker: {color: 'black', symbol: i, opacity: 0.5},
+      mode: 'markers',
+      error_y: {
+        type: 'data',
+        array: asem_final,
+        visible: true,
+        color: 'black',
+      },
+      name: generator_run_name,
+      text: atext,
+      type: 'scatter',
+      xaxis: 'x',
+      x: ax,
+      yaxis: 'y',
+      y: ay_final,
+      visible: visible,
+    });
+
+    i += 1;
+  });
+  return traces;
+}
+</script>
+</head>
+<body>
+    <base target="_parent">
+    <div class= "report" >
+        
+        <div class="report_title_section">
+          <h1 class="report_title">
+            
+            Report for  # of
+            <code>sop_ntxent</code>
+            
+          </h1>
+          <h2 class="report_subtitle">Powered by Ax</h2>
+        </div>
+        
+        <div class="report_content">
+          
+
+<div id="b6228ca62fe947cf8a2fb679e6a03d2e" style="width: 100%;" class="plotly-graph-div"></div><script type='text/javascript'>/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+require(['plotly'], function(Plotly) {
+  window.PLOTLYENV = window.PLOTLYENV || {};
+  window.PLOTLYENV.BASE_URL = 'https://plot.ly';
+  /**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+Plotly.newPlot(
+  "b6228ca62fe947cf8a2fb679e6a03d2e",
+  [{"hoverinfo": "none", "legendgroup": "", "line": {"width": 0}, "mode": "lines", "showlegend": false, "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50], "y": [0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.39794550830000003, 0.39794550830000003, 0.39794550830000003, 0.4011269371, 0.4011269371, 0.4011269371, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495], "type": "scatter"}, {"fill": "tonexty", "fillcolor": "rgba(128,177,211,0.3)", "legendgroup": "mean", "line": {"color": "rgba(128,177,211,1)"}, "mode": "lines", "name": "mean", "text": ["<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.04382810766944399", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.30571785690656494", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 55.41362749801909", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 24.053518743860973", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.4369711278029462", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.01", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0212704108313256", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.015388197997316229", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.029113782827975814", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.012487957936550978", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.025422487384975056", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.01792296973623381", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.03423560208549365", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.023033991702334836", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.001000000000000002", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0035397548982779095", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 1e-05", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.000334562385488573", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0019124027057729168", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.006010055319828069", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00061708564392072", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0001850997165142645", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0004725248096407724", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00024011856920638322", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00010707383298933286", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0013918857694264603", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00014278732428021318", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00028319208752582896", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0003878161468910852", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.008026475630397437", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0007517097632572199", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0026961774402697483", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00021275680877068674", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0005239441444153069", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.005222281858216869", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0001621439057601159", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 6.233497100739495e-05", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0004272760812678741", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0008845958870736623", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0003084592514315865", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.004403369992422929", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.002281845616030594", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00035889988439782085", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0011859013250784078", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0005722928582786387", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0006869684848349598", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.000262818917211905", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.0017254920413043986", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.00690276466382977", "<br><em>Parameterization:</em><br>loss_funcs/metric_loss/NTXentLoss/temperature: 0.014075048377809084"], "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50], "y": [0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.39794550830000003, 0.39794550830000003, 0.39794550830000003, 0.4011269371, 0.4011269371, 0.4011269371, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495], "type": "scatter"}, {"fill": "tonexty", "fillcolor": "rgba(128,177,211,0.3)", "hoverinfo": "none", "legendgroup": "", "line": {"width": 0}, "mode": "lines", "showlegend": false, "x": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50], "y": [0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.3937613696, 0.39794550830000003, 0.39794550830000003, 0.39794550830000003, 0.4011269371, 0.4011269371, 0.4011269371, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4043675208, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495, 0.4062469495], "type": "scatter"}],
+  {"showlegend": true, "title": {"text": "Model performance vs. # of iterations"}, "xaxis": {"title": {"text": "Iteration"}}, "yaxis": {"title": {"text": "Mean_average_precision_at_r"}}, "template": {"data": {"histogram2dcontour": [{"type": "histogram2dcontour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "choropleth": [{"type": "choropleth", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "histogram2d": [{"type": "histogram2d", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmap": [{"type": "heatmap", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmapgl": [{"type": "heatmapgl", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "contourcarpet": [{"type": "contourcarpet", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "contour": [{"type": "contour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "surface": [{"type": "surface", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "mesh3d": [{"type": "mesh3d", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "scatter": [{"type": "scatter", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "parcoords": [{"type": "parcoords", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolargl": [{"type": "scatterpolargl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "bar": [{"error_x": {"color": "#2a3f5f"}, "error_y": {"color": "#2a3f5f"}, "marker": {"line": {"color": "#E5ECF6", "width": 0.5}}, "type": "bar"}], "scattergeo": [{"type": "scattergeo", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolar": [{"type": "scatterpolar", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "histogram": [{"type": "histogram", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattergl": [{"type": "scattergl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatter3d": [{"type": "scatter3d", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattermapbox": [{"type": "scattermapbox", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterternary": [{"type": "scatterternary", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattercarpet": [{"type": "scattercarpet", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "carpet": [{"aaxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "baxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "type": "carpet"}], "table": [{"cells": {"fill": {"color": "#EBF0F8"}, "line": {"color": "white"}}, "header": {"fill": {"color": "#C8D4E3"}, "line": {"color": "white"}}, "type": "table"}], "barpolar": [{"marker": {"line": {"color": "#E5ECF6", "width": 0.5}}, "type": "barpolar"}], "pie": [{"automargin": true, "type": "pie"}]}, "layout": {"colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#2a3f5f"}, "hovermode": "closest", "hoverlabel": {"align": "left"}, "paper_bgcolor": "white", "plot_bgcolor": "#E5ECF6", "polar": {"bgcolor": "#E5ECF6", "angularaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "radialaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "ternary": {"bgcolor": "#E5ECF6", "aaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "baxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "caxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]]}, "xaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "yaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "scene": {"xaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "yaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "zaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}}, "shapedefaults": {"line": {"color": "#2a3f5f"}}, "annotationdefaults": {"arrowcolor": "#2a3f5f", "arrowhead": 0, "arrowwidth": 1}, "geo": {"bgcolor": "white", "landcolor": "#E5ECF6", "subunitcolor": "white", "showland": true, "showlakes": true, "lakecolor": "white"}, "title": {"x": 0.05}, "mapbox": {"style": "light"}}}},
+  {"showLink": false}
+);
+});</script>
+
+<div id="bb1da456b6274be4be64bb5ce2b9ecf7" style="width: 100%;" class="plotly-graph-div"></div><script type='text/javascript'>/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+require(['plotly'], function(Plotly) {
+  window.PLOTLYENV = window.PLOTLYENV || {};
+  window.PLOTLYENV.BASE_URL = 'https://plot.ly';
+  /**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+Plotly.newPlot(
+  "bb1da456b6274be4be64bb5ce2b9ecf7",
+  [{"fill": "toself", "fillcolor": "rgba(128, 177, 211, 0.2)", "hoverinfo": "none", "line": {"color": "rgba(128, 177, 211, 0.0)"}, "showlegend": false, "visible": true, "x": [1e-05, 1.3894954943731388e-05, 1.9306977288832496e-05, 2.6826957952797274e-05, 3.727593720314938e-05, 5.1794746792312125e-05, 7.196856730011514e-05, 0.0001, 0.00013894954943731373, 0.00019306977288832496, 0.00026826957952797245, 0.0003727593720314938, 0.0005179474679231213, 0.0007196856730011514, 0.001, 0.0013894954943731374, 0.0019306977288832496, 0.0026826957952797246, 0.003727593720314938, 0.005179474679231208, 0.007196856730011514, 0.01, 0.013894954943731374, 0.019306977288832496, 0.026826957952797246, 0.03727593720314938, 0.05179474679231207, 0.07196856730011514, 0.1, 0.1389495494373136, 0.19306977288832497, 0.2682695795279722, 0.3727593720314938, 0.5179474679231213, 0.7196856730011514, 1.0, 1.389495494373136, 1.9306977288832496, 2.682695795279722, 3.727593720314938, 5.179474679231202, 7.196856730011514, 10.0, 13.89495494373136, 19.306977288832496, 26.82695795279722, 37.27593720314938, 51.79474679231202, 71.96856730011514, 100.0, 100.0, 71.96856730011514, 51.79474679231202, 37.27593720314938, 26.82695795279722, 19.306977288832496, 13.89495494373136, 10.0, 7.196856730011514, 5.179474679231202, 3.727593720314938, 2.682695795279722, 1.9306977288832496, 1.389495494373136, 1.0, 0.7196856730011514, 0.5179474679231213, 0.3727593720314938, 0.2682695795279722, 0.19306977288832497, 0.1389495494373136, 0.1, 0.07196856730011514, 0.05179474679231207, 0.03727593720314938, 0.026826957952797246, 0.019306977288832496, 0.013894954943731374, 0.01, 0.007196856730011514, 0.005179474679231208, 0.003727593720314938, 0.0026826957952797246, 0.0019306977288832496, 0.0013894954943731374, 0.001, 0.0007196856730011514, 0.0005179474679231213, 0.0003727593720314938, 0.00026826957952797245, 0.00019306977288832496, 0.00013894954943731373, 0.0001, 7.196856730011514e-05, 5.1794746792312125e-05, 3.727593720314938e-05, 2.6826957952797274e-05, 1.9306977288832496e-05, 1.3894954943731388e-05, 1e-05], "y": [0.31403626446937916, 0.3179640599015422, 0.32541198042539377, 0.3352471301121434, 0.34666970596331786, 0.3593141495417407, 0.37282147273672006, 0.3861969662250554, 0.39785227025880143, 0.40648427357335165, 0.41166634841248495, 0.41382872507041646, 0.4138653728200982, 0.41273280446107513, 0.4111879079365241, 0.40969691739785363, 0.4085240875479364, 0.4077742101829099, 0.40740526306026875, 0.4073017118766557, 0.40730877481763306, 0.4071707006733917, 0.4066077663043312, 0.4054910902972515, 0.40364130904767187, 0.400315893321158, 0.3942561742480992, 0.3843198665394934, 0.3699069726032862, 0.35111356247118475, 0.3288362704050226, 0.30500057052503227, 0.2827142050454224, 0.26471743089748756, 0.25083159176233016, 0.23931950032650237, 0.228787730341921, 0.21834404841761856, 0.20744303957372884, 0.19581653003072524, 0.1834581092926369, 0.1706286116621654, 0.15786863681517735, 0.1460073837172548, 0.13612484916867215, 0.1292744291628051, 0.1258876654720371, 0.12676049170031006, 0.13344103118647402, 0.14520900729710529, 0.09149257340555128, 0.09950964171880247, 0.10446422723888411, 0.10576609977809937, 0.10501870822878698, 0.10305165314012822, 0.10036463855230186, 0.09813489660019865, 0.09761738336996242, 0.09985701289675392, 0.1056359028003817, 0.11546142066513398, 0.12955041438485948, 0.14779673577429162, 0.16970537267361416, 0.19425655683206916, 0.21966476775366464, 0.24342391698608104, 0.26410495910521037, 0.28285436705866907, 0.30111745453457184, 0.3192312592838582, 0.3367002987322017, 0.3525687470564306, 0.36570345207745525, 0.3751485233200575, 0.3805879508543695, 0.3827218454661984, 0.38293159019173983, 0.38242535702555924, 0.38190346230844946, 0.381761994784197, 0.3822812158908236, 0.38362205413767275, 0.3857852086832174, 0.38856557148594845, 0.39143490409857423, 0.3934890791207519, 0.39355397120495683, 0.3904125708375127, 0.38312108672831274, 0.37132308418122284, 0.35545391919490776, 0.3367545623039965, 0.3169696059595273, 0.2978388673738562, 0.28057752379720285, 0.2654873864889581, 0.2518252204662199, 0.2381524713922845], "type": "scatter"}, {"hoverinfo": "x+y", "line": {"color": "rgba(128, 177, 211, 1)"}, "showlegend": false, "visible": true, "x": [1e-05, 1.3894954943731388e-05, 1.9306977288832496e-05, 2.6826957952797274e-05, 3.727593720314938e-05, 5.1794746792312125e-05, 7.196856730011514e-05, 0.0001, 0.00013894954943731373, 0.00019306977288832496, 0.00026826957952797245, 0.0003727593720314938, 0.0005179474679231213, 0.0007196856730011514, 0.001, 0.0013894954943731374, 0.0019306977288832496, 0.0026826957952797246, 0.003727593720314938, 0.005179474679231208, 0.007196856730011514, 0.01, 0.013894954943731374, 0.019306977288832496, 0.026826957952797246, 0.03727593720314938, 0.05179474679231207, 0.07196856730011514, 0.1, 0.1389495494373136, 0.19306977288832497, 0.2682695795279722, 0.3727593720314938, 0.5179474679231213, 0.7196856730011514, 1.0, 1.389495494373136, 1.9306977288832496, 2.682695795279722, 3.727593720314938, 5.179474679231202, 7.196856730011514, 10.0, 13.89495494373136, 19.306977288832496, 26.82695795279722, 37.27593720314938, 51.79474679231202, 71.96856730011514, 100.0], "y": [0.2760943679308318, 0.28489464018388105, 0.2954496834571759, 0.30791232695467313, 0.322254286668587, 0.338141877750634, 0.35478801752035827, 0.3708254427099816, 0.38458767722001214, 0.3948026801508322, 0.4010394596249988, 0.40369134813768665, 0.40367722597042505, 0.4020838542798247, 0.3998767397112363, 0.3977410630405355, 0.3960730708428046, 0.39502771303686673, 0.39458362892223287, 0.3946025870925526, 0.39486706592159615, 0.39505114543256575, 0.3946648058852648, 0.3930395205758105, 0.3893949161838647, 0.38300967269930664, 0.3734124606522649, 0.36051008263584755, 0.3445691159435722, 0.3261155085028783, 0.30584531873184584, 0.2845527648151213, 0.2630690610157517, 0.24219109932557611, 0.22254407429719966, 0.20451243650005826, 0.1882922330581063, 0.17394723140123902, 0.1614522301194314, 0.15072621641555348, 0.1416575610946954, 0.1341229975160639, 0.128001766707688, 0.12318601113477834, 0.1195882511544002, 0.11714656869579604, 0.11582688262506824, 0.11561235946959708, 0.11647533645263825, 0.11835079035132828], "type": "scatter"}, {"error_y": {"array": [0.0440722322, 0.041426607000000004, 0.0430704202, 0.0449503146, 0.045790939600000004, 0.0385745508, 0.0408945904, 0.0415980154, 0.0459088018, 0.0438311178, 0.0421447248, 0.0324169226, 0.0377406436, 0.046582077400000005, 0.04147213, 0.0415256306, 0.041345928000000004, 0.0374848374, 0.04001401, 0.0447031752, 0.0367127862, 0.0357424494, 0.0123215328, 0.0419247446, 0.0403730136, 0.041363604400000004, 0.0444181728, 0.0408820826, 0.0358516564, 0.0268564602, 0.0446656838, 0.0415118632, 0.0412294188, 0.0140445126, 0.0400704278, 0.0388819108, 0.0403193, 0.044863737, 0.0407126648, 0.034366919, 0.0386167762, 0.042244471400000004, 0.042994927, 0.040784522600000005, 0.0257695924, 0.0438664004, 0.0404579692, 0.040289830000000006, 0.041290632, 0.0359489338], "color": "black", "type": "data", "visible": true}, "hoverinfo": "x+y", "line": {"color": "black"}, "mode": "markers", "showlegend": false, "visible": true, "x": [0.04382810766944399, 0.025422487384975056, 0.01792296973623381, 0.03423560208549365, 0.023033991702334836, 0.001000000000000002, 0.0035397548982779095, 1e-05, 0.000334562385488573, 0.0019124027057729168, 0.006010055319828069, 0.30571785690656494, 0.00061708564392072, 0.0001850997165142645, 0.0004725248096407724, 0.00024011856920638322, 0.00010707383298933286, 0.0013918857694264603, 0.00014278732428021318, 0.00028319208752582896, 0.0003878161468910852, 0.008026475630397437, 55.41362749801909, 0.0007517097632572199, 0.0026961774402697483, 0.00021275680877068674, 0.0005239441444153069, 0.005222281858216869, 0.0001621439057601159, 6.233497100739495e-05, 0.0004272760812678741, 0.0008845958870736623, 0.0003084592514315865, 24.053518743860973, 0.004403369992422929, 0.002281845616030594, 0.00035889988439782085, 0.0011859013250784078, 0.0005722928582786387, 0.0006869684848349598, 0.000262818917211905, 0.0017254920413043986, 0.00690276466382977, 0.014075048377809084, 0.4369711278029462, 0.01, 0.0212704108313256, 0.015388197997316229, 0.029113782827975814, 0.012487957936550978], "y": [0.3937613696, 0.3893767316, 0.39794550830000003, 0.3951285156, 0.3950250449, 0.4011269371, 0.3975522999, 0.28226956000000003, 0.4043675208, 0.3949177075, 0.39428009270000003, 0.2826868721, 0.4028138332, 0.403001368, 0.4038436063, 0.4062469495, 0.4050534344, 0.39355372990000004, 0.4047927549, 0.40497165360000004, 0.3996266492, 0.3909559247, 0.1153609128, 0.3970849952, 0.3944685452, 0.3973363596, 0.40179626360000004, 0.3914647761, 0.4043199559, 0.31992333900000003, 0.39900550220000003, 0.3980812294, 0.4008617634, 0.1180433012, 0.4008752359, 0.39528832950000004, 0.4058359929, 0.39872986860000004, 0.4020496012, 0.3952029278, 0.4003353703, 0.399699218, 0.39602530220000004, 0.3919159578, 0.24486489600000003, 0.39329667490000003, 0.39125826680000003, 0.3874358807, 0.3893289419, 0.3917396079], "type": "scatter"}],
+  {"annotations": [{"showarrow": false, "text": "Choose metric:", "x": 0.225, "xanchor": "center", "xref": "paper", "y": 1.005, "yanchor": "bottom", "yref": "paper"}], "hovermode": "closest", "title": {"text": "Predictions for a 1-d slice of the parameter space"}, "updatemenus": [{"buttons": [{"args": [{"visible": [true, true, true]}, {"yaxis.title": "mean_average_precision_at_r"}], "label": "mean_average_precision_at_r", "method": "update"}], "x": 0.5, "y": 1.1, "yanchor": "top"}], "xaxis": {"anchor": "y", "autorange": false, "exponentformat": "e", "range": [-5.0, 2.0], "tickfont": {"size": 11}, "tickmode": "auto", "title": {"text": "loss_funcs/metric_loss/NTXentLoss/temperature"}, "type": "log"}, "yaxis": {"anchor": "x", "autorange": true, "tickfont": {"size": 11}, "tickmode": "auto", "title": {"text": "mean_average_precision_at_r"}}, "template": {"data": {"histogram2dcontour": [{"type": "histogram2dcontour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "choropleth": [{"type": "choropleth", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "histogram2d": [{"type": "histogram2d", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmap": [{"type": "heatmap", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "heatmapgl": [{"type": "heatmapgl", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "contourcarpet": [{"type": "contourcarpet", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "contour": [{"type": "contour", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "surface": [{"type": "surface", "colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}], "mesh3d": [{"type": "mesh3d", "colorbar": {"outlinewidth": 0, "ticks": ""}}], "scatter": [{"type": "scatter", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "parcoords": [{"type": "parcoords", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolargl": [{"type": "scatterpolargl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "bar": [{"error_x": {"color": "#2a3f5f"}, "error_y": {"color": "#2a3f5f"}, "marker": {"line": {"color": "#E5ECF6", "width": 0.5}}, "type": "bar"}], "scattergeo": [{"type": "scattergeo", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterpolar": [{"type": "scatterpolar", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "histogram": [{"type": "histogram", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattergl": [{"type": "scattergl", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatter3d": [{"type": "scatter3d", "line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattermapbox": [{"type": "scattermapbox", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scatterternary": [{"type": "scatterternary", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "scattercarpet": [{"type": "scattercarpet", "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}}], "carpet": [{"aaxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "baxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "type": "carpet"}], "table": [{"cells": {"fill": {"color": "#EBF0F8"}, "line": {"color": "white"}}, "header": {"fill": {"color": "#C8D4E3"}, "line": {"color": "white"}}, "type": "table"}], "barpolar": [{"marker": {"line": {"color": "#E5ECF6", "width": 0.5}}, "type": "barpolar"}], "pie": [{"automargin": true, "type": "pie"}]}, "layout": {"colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#2a3f5f"}, "hovermode": "closest", "hoverlabel": {"align": "left"}, "paper_bgcolor": "white", "plot_bgcolor": "#E5ECF6", "polar": {"bgcolor": "#E5ECF6", "angularaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "radialaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "ternary": {"bgcolor": "#E5ECF6", "aaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "baxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "caxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]]}, "xaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "yaxis": {"gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "automargin": true, "zerolinewidth": 2}, "scene": {"xaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "yaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}, "zaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white", "gridwidth": 2}}, "shapedefaults": {"line": {"color": "#2a3f5f"}}, "annotationdefaults": {"arrowcolor": "#2a3f5f", "arrowhead": 0, "arrowwidth": 1}, "geo": {"bgcolor": "white", "landcolor": "#E5ECF6", "subunitcolor": "white", "showland": true, "showlakes": true, "lakecolor": "white"}, "title": {"x": 0.05}, "mapbox": {"style": "light"}}}},
+  {"showLink": false}
+);
+});</script>
+
+
+        </div>
+        
+        <div class="report_footer"></div>
+        
+    </div>
+</body>
+</html>

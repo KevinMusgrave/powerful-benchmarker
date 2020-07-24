@@ -67,7 +67,7 @@ optimizers:
       lr: 0.01
 ```
 
-How can we get around this? By using the [Override](syntax.md#override) syntax.
+How can we get around this? By using the [Override](cl_syntax.md#override) syntax.
 
 ## Override
 
