@@ -216,7 +216,7 @@ transforms:
 ```
 If we want to swap ```RandomHorizontalFlip``` out for ```RandomVerticalFlip```, we need to explicitly indicate the mapping, because there are 2 other keys that could be swapped out (```Resize``` and ```RandomResizedCrop```):
 ```bash
---trainer~SWAP~2 {RandomHorizontalFlip: RandomVerticalFlip}
+--transforms~SWAP~2 {RandomHorizontalFlip: RandomVerticalFlip}
 ```
 The new config file contains ```RandomVerticalFlip``` in place of ```RandomHorizontalFlip```:
 ```yaml

@@ -46,7 +46,9 @@ In the following code, ```<experiment_to_reproduce>``` refers to the folder that
 
 ```bash
 python run.py --reproduce_results <experiment_to_reproduce> \
---experiment_name <your_experiment_name>
+--experiment_name <your_experiment_name> \
+--split_manager~SWAP~1 {MLRCSplitManager: {}} \
+--merge_argparse_when_resuming
 ```
 
   - Cars196:
@@ -56,6 +58,7 @@ python run.py --reproduce_results <experiment_to_reproduce> \
 --experiment_name <your_experiment_name> \
 --config_dataset [default, with_cars196] \
 --config_general [default, with_cars196] \
+--split_manager~SWAP~1 {MLRCSplitManager: {}} \
 --merge_argparse_when_resuming
 ```
 
@@ -66,6 +69,7 @@ python run.py --reproduce_results <experiment_to_reproduce> \
 --experiment_name <your_experiment_name> \
 --config_dataset [default, with_sop] \
 --config_general [default, with_sop] \
+--split_manager~SWAP~1 {MLRCSplitManager: {}} \
 --merge_argparse_when_resuming
 ```
 
@@ -73,7 +77,9 @@ python run.py --reproduce_results <experiment_to_reproduce> \
 ```bash
 python run.py --reproduce_results <experiment_to_reproduce> \
 --experiment_name <your_experiment_name> \
---trainer~APPLY~2: {batch_size: 256}
+--config_general [default, with_256_batch] \
+--split_manager~SWAP~1 {MLRCSplitManager: {}} \
+--merge_argparse_when_resuming
 ```
 
 
@@ -90,6 +96,20 @@ or
 ```bash
 --dataset~OVERRIDE~ {StanfordOnlineProducts: {download: True}}
 ```
+
+### Run evaluation on the test set
+After training is done, you can get the "separate 128-dim" test set performance:
+```bash
+python run.py --experiment_name <your_experiment_name> \
+--evaluate --splits_to_eval [test]
+```
+and the "concatenated 512-dim" test set performance:
+```bash
+python run.py --experiment_name <your_experiment_name> \
+--evaluate_ensemble --splits_to_eval [test]
+```
+
+Once evaluation is done, you can go to the ```meta_logs``` folder and view the results.
 
 
 ## Frequently Asked Questions
