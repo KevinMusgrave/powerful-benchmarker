@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="powerful-benchmarker",
-    version="0.9.29",
+    version="0.9.30",
     author="Kevin Musgrave",
     author_email="tkm45@cornell.edu",
     description="A highly-configurable tool that enables thorough evaluation of deep metric learning algorithms. ",
@@ -28,7 +28,7 @@ setuptools.setup(
           'scikit-learn',
           'torch',
           'torchvision',
-          'easy-module-attribute-getter == 0.9.39',
+          'easy-module-attribute-getter == 0.9.40',
           'record-keeper == 0.9.27',
           'tensorboard',
           'matplotlib',
