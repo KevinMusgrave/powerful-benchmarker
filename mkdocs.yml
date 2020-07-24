@@ -35,5 +35,6 @@ markdown_extensions:
   - codehilite
   - toc:
       permalink: true
+  - attr_list
 repo_name: 'KevinMusgrave/powerful-benchmarker'
 repo_url: 'https://github.com/KevinMusgrave/powerful-benchmarker'

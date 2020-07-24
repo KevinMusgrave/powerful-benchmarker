@@ -34,7 +34,13 @@ Click on the links below to view the bayesian optimization plots
 4. Now you'll see several files and folders, one of which ends in "reproduction0". Download this folder. (It will include saved models. If you don't want to download the saved models, go into the folder and download just the "configs" folder.)
 
 ### Command line scripts
-Normally reproducing results is as easy as downloading an experiment folder, and [using the ```reproduce_results``` flag](../index.md#reproduce-an-experiment). However, there have been significant changes to the API since these experiments were run, so there are a couple of extra steps required, and they depend on the dataset. In the following code, ```<experiment_to_reproduce>``` refers to the folder that **contains** the ```configs``` folder.
+Normally reproducing results is as easy as downloading an experiment folder, and [using the ```reproduce_results``` flag](../index.md#reproduce-an-experiment). However, there have been significant changes to the API since these experiments were run, so there are a couple of extra steps required, and they depend on the dataset. 
+
+Additionally, if you are reproducing an experiment for the **Contrastive, Triplet, or SNR Contrastive losses**, you have to delete the key/value pair called ```avg_non_zero_only``` in the ```config_loss_and_miners.yaml``` file. And for the **Contrastive loss**, you should delete the ```use_similarity``` key/value pair in ```config_loss_and_miners.yaml```. 
+
+
+
+In the following code, ```<experiment_to_reproduce>``` refers to the folder that **contains** the ```configs``` folder.
 
   - CUB200:
 
@@ -69,6 +75,7 @@ python run.py --reproduce_results <experiment_to_reproduce> \
 --experiment_name <your_experiment_name> \
 --trainer~APPLY~2: {batch_size: 256}
 ```
+
 
 If you don't have the datasets and would like to download them into your ```dataset_root``` folder, you can add this flag to the CUB commands:
 ```bash
