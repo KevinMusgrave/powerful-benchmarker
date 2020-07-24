@@ -2,6 +2,29 @@
 
 This page contains additional information for the [ECCV 2020 paper](https://arxiv.org/abs/2003.08505) by Musgrave et al.
 
+## Optimization plots
+
+Click on the links below to view the bayesian optimization plots
+
+| CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
+|-|-|-|-|
+| [Contrastive](mlrc_plots/cub_contrastive.html){target=_blank} | [Contrastive](mlrc_plots/cars_contrastive.html){target=_blank} | [Contrastive](mlrc_plots/sop_contrastive.html){target=_blank} | [Contrastive](mlrc_plots/cub_contrastive_large_batch.html){target=_blank} |
+| [Triplet](mlrc_plots/cub_triplet.html){target=_blank} | [Triplet](mlrc_plots/cars_triplet.html){target=_blank} | [Triplet](mlrc_plots/sop_triplet.html){target=_blank} | [Triplet](mlrc_plots/cub_triplet_large_batch.html){target=_blank} |
+| [NTXent](mlrc_plots/cub_ntxent.html){target=_blank} | [NTXent](mlrc_plots/cars_ntxent.html){target=_blank} | [NTXent](mlrc_plots/sop_ntxent.html){target=_blank} | [NTXent](mlrc_plots/cub_ntxent_large_batch.html){target=_blank} |
+| [ProxyNCA](mlrc_plots/cub_proxy_nca.html){target=_blank} | [ProxyNCA](mlrc_plots/cars_proxy_nca.html){target=_blank} | [ProxyNCA](mlrc_plots/sop_proxy_nca.html){target=_blank} | [ProxyNCA](mlrc_plots/cub_proxy_nca_large_batch.html){target=_blank} |
+| [Margin](mlrc_plots/cub_margin_no_weight_decay.html){target=_blank} | [Margin](mlrc_plots/cars_margin_no_weight_decay.html){target=_blank} | [Margin](mlrc_plots/sop_margin_no_weight_decay.html){target=_blank} | [Margin](mlrc_plots/cub_margin_large_batch_no_weight_decay.html){target=_blank} |
+| [Margin / class](mlrc_plots/cub_margin_param_per_class_no_weight_decay.html){target=_blank} | [Margin / class](mlrc_plots/cars_margin_param_per_class_no_weight_decay.html){target=_blank} | [Margin / class](mlrc_plots/sop_margin_param_per_class_no_weight_decay.html){target=_blank} | [Margin / class](mlrc_plots/cub_margin_param_per_class_large_batch_no_weight_decay.html){target=_blank} |
+| [Normalized Softmax](mlrc_plots/cub_normalized_softmax.html){target=_blank} | [Normalized Softmax](mlrc_plots/cars_normalized_softmax.html){target=_blank} | [Normalized Softmax](mlrc_plots/sop_normalized_softmax.html){target=_blank} | [Normalized Softmax](mlrc_plots/cub_normalized_softmax_large_batch.html){target=_blank} |
+| [CosFace](mlrc_plots/cub_cosface.html){target=_blank} | [CosFace](mlrc_plots/cars_cosface.html){target=_blank} | [CosFace](mlrc_plots/sop_cosface.html){target=_blank} | [CosFace](mlrc_plots/cub_cosface_large_batch.html){target=_blank} |
+| [ArcFace](mlrc_plots/cub_arcface.html){target=_blank} | [ArcFace](mlrc_plots/cars_arcface.html){target=_blank} | [ArcFace](mlrc_plots/sop_arcface.html){target=_blank} | [ArcFace](mlrc_plots/cub_arcface_large_batch.html){target=_blank} |
+| [FastAP](mlrc_plots/cub_fast_ap.png){target=_blank} | [FastAP](mlrc_plots/cars_fast_ap.png){target=_blank} | [FastAP](mlrc_plots/sop_fast_ap.png){target=_blank} | [FastAP](mlrc_plots/cub_fastap_large_batch.html){target=_blank} |
+| [SNR Contrastive](mlrc_plots/cub_snr_contrastive.html){target=_blank} | [SNR Contrastive](mlrc_plots/cars_snr_contrastive.html){target=_blank} | [SNR Contrastive](mlrc_plots/sop_snr_contrastive.html){target=_blank} | [SNR Contrastive](mlrc_plots/cub_snr_contrastive_large_batch.html){target=_blank} |
+| [Multi Similarity](mlrc_plots/cub_multi_similarity.html){target=_blank} | [Multi Similarity](mlrc_plots/cars_multi_similarity.html){target=_blank} | [Multi Similarity](mlrc_plots/sop_multi_similarity.html){target=_blank} | [Multi Similarity](mlrc_plots/cub_multi_similarity_large_batch.html){target=_blank} |
+| [Multi Similarity + Miner](mlrc_plots/cub_multi_similarity_with_ms_miner.html){target=_blank} | [Multi Similarity + Miner](mlrc_plots/cars_multi_similarity_with_ms_miner.html){target=_blank} | [Multi Similarity + Miner](mlrc_plots/sop_multi_similarity_with_ms_miner.html){target=_blank} | [Multi Similarity + Miner](mlrc_plots/cub_multi_similarity_with_ms_miner_large_batch_wider_range.html){target=_blank} |
+| [SoftTriple](mlrc_plots/cub_soft_triple.html){target=_blank} | [SoftTriple](mlrc_plots/cars_soft_triple.html){target=_blank} | [SoftTriple](mlrc_plots/sop_soft_triple.html){target=_blank} | [SoftTriple](mlrc_plots/cub_soft_triple_large_batch_wider_range.html){target=_blank} |
+
+
+
 ## Reproducing results
 ### Download the experiment folder
 
@@ -87,26 +110,3 @@ We did test one loss+miner combination (Multi-similarity loss + their mining met
 #### For the contrastive loss, why is the optimal positive margin a negative value?
 
 A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.
-
-
-## Optimization plots
-
-Click on the links below to view the bayesian optimization plots
-
-| CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
-|-|-|-|-|
-| [Contrastive](mlrc_plots/cub_contrastive.html){target=_blank} | [Contrastive](mlrc_plots/cars_contrastive.html){target=_blank} | [Contrastive](mlrc_plots/sop_contrastive.html){target=_blank} | [Contrastive](mlrc_plots/cub_contrastive_large_batch.html){target=_blank} |
-| [Triplet](mlrc_plots/cub_triplet.html){target=_blank} | [Triplet](mlrc_plots/cars_triplet.html){target=_blank} | [Triplet](mlrc_plots/sop_triplet.html){target=_blank} | [Triplet](mlrc_plots/cub_triplet_large_batch.html){target=_blank} |
-| [NTXent](mlrc_plots/cub_ntxent.html){target=_blank} | [NTXent](mlrc_plots/cars_ntxent.html){target=_blank} | [NTXent](mlrc_plots/sop_ntxent.html){target=_blank} | [NTXent](mlrc_plots/cub_ntxent_large_batch.html){target=_blank} |
-| [ProxyNCA](mlrc_plots/cub_proxy_nca.html){target=_blank} | [ProxyNCA](mlrc_plots/cars_proxy_nca.html){target=_blank} | [ProxyNCA](mlrc_plots/sop_proxy_nca.html){target=_blank} | [ProxyNCA](mlrc_plots/cub_proxy_nca_large_batch.html){target=_blank} |
-| [Margin](mlrc_plots/cub_margin_no_weight_decay.html){target=_blank} | [Margin](mlrc_plots/cars_margin_no_weight_decay.html){target=_blank} | [Margin](mlrc_plots/sop_margin_no_weight_decay.html){target=_blank} | [Margin](mlrc_plots/cub_margin_large_batch_no_weight_decay.html){target=_blank} |
-| [Margin / class](mlrc_plots/cub_margin_param_per_class_no_weight_decay.html){target=_blank} | [Margin / class](mlrc_plots/cars_margin_param_per_class_no_weight_decay.html){target=_blank} | [Margin / class](mlrc_plots/sop_margin_param_per_class_no_weight_decay.html){target=_blank} | [Margin / class](mlrc_plots/cub_margin_param_per_class_large_batch_no_weight_decay.html){target=_blank} |
-| [Normalized Softmax](mlrc_plots/cub_normalized_softmax.html){target=_blank} | [Normalized Softmax](mlrc_plots/cars_normalized_softmax.html){target=_blank} | [Normalized Softmax](mlrc_plots/sop_normalized_softmax.html){target=_blank} | [Normalized Softmax](mlrc_plots/cub_normalized_softmax_large_batch.html){target=_blank} |
-| [CosFace](mlrc_plots/cub_cosface.html){target=_blank} | [CosFace](mlrc_plots/cars_cosface.html){target=_blank} | [CosFace](mlrc_plots/sop_cosface.html){target=_blank} | [CosFace](mlrc_plots/cub_cosface_large_batch.html){target=_blank} |
-| [ArcFace](mlrc_plots/cub_arcface.html){target=_blank} | [ArcFace](mlrc_plots/cars_arcface.html){target=_blank} | [ArcFace](mlrc_plots/sop_arcface.html){target=_blank} | [ArcFace](mlrc_plots/cub_arcface_large_batch.html){target=_blank} |
-| [FastAP](mlrc_plots/cub_fast_ap.png){target=_blank} | [FastAP](mlrc_plots/cars_fast_ap.png){target=_blank} | [FastAP](mlrc_plots/sop_fast_ap.png){target=_blank} | [FastAP](mlrc_plots/cub_fastap_large_batch.html){target=_blank} |
-| [SNR Contrastive](mlrc_plots/cub_snr_contrastive.html){target=_blank} | [SNR Contrastive](mlrc_plots/cars_snr_contrastive.html){target=_blank} | [SNR Contrastive](mlrc_plots/sop_snr_contrastive.html){target=_blank} | [SNR Contrastive](mlrc_plots/cub_snr_contrastive_large_batch.html){target=_blank} |
-| [Multi Similarity](mlrc_plots/cub_multi_similarity.html){target=_blank} | [Multi Similarity](mlrc_plots/cars_multi_similarity.html){target=_blank} | [Multi Similarity](mlrc_plots/sop_multi_similarity.html){target=_blank} | [Multi Similarity](mlrc_plots/cub_multi_similarity_large_batch.html){target=_blank} |
-| [Multi Similarity + Miner](mlrc_plots/cub_multi_similarity_with_ms_miner.html){target=_blank} | [Multi Similarity + Miner](mlrc_plots/cars_multi_similarity_with_ms_miner.html){target=_blank} | [Multi Similarity + Miner](mlrc_plots/sop_multi_similarity_with_ms_miner.html){target=_blank} | [Multi Similarity + Miner](mlrc_plots/cub_multi_similarity_with_ms_miner_large_batch_wider_range.html){target=_blank} |
-| [SoftTriple](mlrc_plots/cub_soft_triple.html){target=_blank} | [SoftTriple](mlrc_plots/cars_soft_triple.html){target=_blank} | [SoftTriple](mlrc_plots/sop_soft_triple.html){target=_blank} | [SoftTriple](mlrc_plots/cub_soft_triple_large_batch_wider_range.html){target=_blank} |
-
