@@ -610,6 +610,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
+    Run evaluation on the test set
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -717,6 +724,13 @@
           <li class="md-nav__item">
   <a href="#command-line-scripts" class="md-nav__link">
     Command line scripts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
+    Run evaluation on the test set
   </a>
   
 </li>
@@ -902,7 +916,9 @@
 <li>CUB200:</li>
 </ul>
 <div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
---experiment_name &lt;your_experiment_name&gt;
+--experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--split_manager~SWAP~1 <span class="o">{</span>MLRCSplitManager: <span class="o">{}}</span> <span class="se">\</span>
+--merge_argparse_when_resuming
 </pre></div>
 
 
@@ -913,6 +929,7 @@
 --experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
 --config_dataset <span class="o">[</span>default, with_cars196<span class="o">]</span> <span class="se">\</span>
 --config_general <span class="o">[</span>default, with_cars196<span class="o">]</span> <span class="se">\</span>
+--split_manager~SWAP~1 <span class="o">{</span>MLRCSplitManager: <span class="o">{}}</span> <span class="se">\</span>
 --merge_argparse_when_resuming
 </pre></div>
 
@@ -924,6 +941,7 @@
 --experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
 --config_dataset <span class="o">[</span>default, with_sop<span class="o">]</span> <span class="se">\</span>
 --config_general <span class="o">[</span>default, with_sop<span class="o">]</span> <span class="se">\</span>
+--split_manager~SWAP~1 <span class="o">{</span>MLRCSplitManager: <span class="o">{}}</span> <span class="se">\</span>
 --merge_argparse_when_resuming
 </pre></div>
 
@@ -933,7 +951,9 @@
 </ul>
 <div class="codehilite"><pre><span></span>python run.py --reproduce_results &lt;experiment_to_reproduce&gt; <span class="se">\</span>
 --experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
---trainer~APPLY~2: <span class="o">{</span>batch_size: <span class="m">256</span><span class="o">}</span>
+--config_general <span class="o">[</span>default, with_256_batch<span class="o">]</span> <span class="se">\</span>
+--split_manager~SWAP~1 <span class="o">{</span>MLRCSplitManager: <span class="o">{}}</span> <span class="se">\</span>
+--merge_argparse_when_resuming
 </pre></div>
 
 
@@ -952,6 +972,20 @@
 </pre></div>
 
 
+<h3 id="run-evaluation-on-the-test-set">Run evaluation on the test set<a class="headerlink" href="#run-evaluation-on-the-test-set" title="Permanent link">&para;</a></h3>
+<p>After training is done, you can get the "separate 128-dim" test set performance:</p>
+<div class="codehilite"><pre><span></span>python run.py --experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--evaluate --splits_to_eval <span class="o">[</span>test<span class="o">]</span>
+</pre></div>
+
+
+<p>and the "concatenated 512-dim" test set performance:</p>
+<div class="codehilite"><pre><span></span>python run.py --experiment_name &lt;your_experiment_name&gt; <span class="se">\</span>
+--evaluate_ensemble --splits_to_eval <span class="o">[</span>test<span class="o">]</span>
+</pre></div>
+
+
+<p>Once evaluation is done, you can go to the <code>meta_logs</code> folder and view the results.</p>
 <h2 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h2>
 <h4 id="isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size">Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?<a class="headerlink" href="#isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size" title="Permanent link">&para;</a></h4>
 <p>Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.</p>
