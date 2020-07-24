@@ -870,6 +870,103 @@
 <h4 id="for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value">For the contrastive loss, why is the optimal positive margin a negative value?<a class="headerlink" href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" title="Permanent link">&para;</a></h4>
 <p>A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.</p>
 <h2 id="optimization-plots">Optimization plots<a class="headerlink" href="#optimization-plots" title="Permanent link">&para;</a></h2>
+<p>Click on the links below to view the bayesian optimization plots</p>
+<table>
+<thead>
+<tr>
+<th>CUB200</th>
+<th>Cars196</th>
+<th>SOP</th>
+<th>CUB200 with Batch 256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../mlrc_plots/cub_contrastive.html" target="_blank">Contrastive</a></td>
+<td><a href="../mlrc_plots/cars_contrastive.html" target="_blank">Contrastive</a></td>
+<td><a href="../mlrc_plots/sop_contrastive.html" target="_blank">Contrastive</a></td>
+<td><a href="../mlrc_plots/cub_contrastive_large_batch.html" target="_blank">Contrastive</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_triplet.html" target="_blank">Triplet</a></td>
+<td><a href="../mlrc_plots/cars_triplet.html" target="_blank">Triplet</a></td>
+<td><a href="../mlrc_plots/sop_triplet.html" target="_blank">Triplet</a></td>
+<td><a href="../mlrc_plots/cub_triplet_large_batch.html" target="_blank">Triplet</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_ntxent.html" target="_blank">NTXent</a></td>
+<td><a href="../mlrc_plots/cars_ntxent.html" target="_blank">NTXent</a></td>
+<td><a href="../mlrc_plots/sop_ntxent.html" target="_blank">NTXent</a></td>
+<td><a href="../mlrc_plots/cub_ntxent_large_batch.html" target="_blank">NTXent</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_proxy_nca.html" target="_blank">ProxyNCA</a></td>
+<td><a href="../mlrc_plots/cars_proxy_nca.html" target="_blank">ProxyNCA</a></td>
+<td><a href="../mlrc_plots/sop_proxy_nca.html" target="_blank">ProxyNCA</a></td>
+<td><a href="../mlrc_plots/cub_proxy_nca_large_batch.html" target="_blank">ProxyNCA</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_margin_no_weight_decay.html" target="_blank">Margin</a></td>
+<td><a href="../mlrc_plots/cars_margin_no_weight_decay.html" target="_blank">Margin</a></td>
+<td><a href="../mlrc_plots/sop_margin_no_weight_decay.html" target="_blank">Margin</a></td>
+<td><a href="../mlrc_plots/cub_margin_large_batch_no_weight_decay.html" target="_blank">Margin</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_margin_param_per_class_no_weight_decay.html" target="_blank">Margin / class</a></td>
+<td><a href="../mlrc_plots/cars_margin_param_per_class_no_weight_decay.html" target="_blank">Margin / class</a></td>
+<td><a href="../mlrc_plots/sop_margin_param_per_class_no_weight_decay.html" target="_blank">Margin / class</a></td>
+<td><a href="../mlrc_plots/cub_margin_param_per_class_large_batch_no_weight_decay.html" target="_blank">Margin / class</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_normalized_softmax.html" target="_blank">Normalized Softmax</a></td>
+<td><a href="../mlrc_plots/cars_normalized_softmax.html" target="_blank">Normalized Softmax</a></td>
+<td><a href="../mlrc_plots/sop_normalized_softmax.html" target="_blank">Normalized Softmax</a></td>
+<td><a href="../mlrc_plots/cub_normalized_softmax_large_batch.html" target="_blank">Normalized Softmax</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_cosface.html" target="_blank">CosFace</a></td>
+<td><a href="../mlrc_plots/cars_cosface.html" target="_blank">CosFace</a></td>
+<td><a href="../mlrc_plots/sop_cosface.html" target="_blank">CosFace</a></td>
+<td><a href="../mlrc_plots/cub_cosface_large_batch.html" target="_blank">CosFace</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_arcface.html" target="_blank">ArcFace</a></td>
+<td><a href="../mlrc_plots/cars_arcface.html" target="_blank">ArcFace</a></td>
+<td><a href="../mlrc_plots/sop_arcface.html" target="_blank">ArcFace</a></td>
+<td><a href="../mlrc_plots/cub_arcface_large_batch.html" target="_blank">ArcFace</a></td>
+</tr>
+<tr>
+<td>FastAP</td>
+<td>FastAP</td>
+<td>FastAP</td>
+<td><a href="../mlrc_plots/cub_fastap_large_batch.html" target="_blank">FastAP</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_snr_contrastive.html" target="_blank">SNR Contrastive</a></td>
+<td><a href="../mlrc_plots/cars_snr_contrastive.html" target="_blank">SNR Contrastive</a></td>
+<td><a href="../mlrc_plots/sop_snr_contrastive.html" target="_blank">SNR Contrastive</a></td>
+<td><a href="../mlrc_plots/cub_snr_contrastive_large_batch.html" target="_blank">SNR Contrastive</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_multi_similarity.html" target="_blank">Multi Similarity</a></td>
+<td><a href="../mlrc_plots/cars_multi_similarity.html" target="_blank">Multi Similarity</a></td>
+<td><a href="../mlrc_plots/sop_multi_similarity.html" target="_blank">Multi Similarity</a></td>
+<td><a href="../mlrc_plots/cub_multi_similarity_large_batch.html" target="_blank">Multi Similarity</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_multi_similarity_with_ms_miner.html" target="_blank">Multi Similarity + Miner</a></td>
+<td><a href="../mlrc_plots/cars_multi_similarity_with_ms_miner.html" target="_blank">Multi Similarity + Miner</a></td>
+<td><a href="../mlrc_plots/sop_multi_similarity_with_ms_miner.html" target="_blank">Multi Similarity + Miner</a></td>
+<td><a href="../mlrc_plots/cub_multi_similarity_with_ms_miner_large_batch_wider_range.html" target="_blank">Multi Similarity + Miner</a></td>
+</tr>
+<tr>
+<td><a href="../mlrc_plots/cub_soft_triple.html" target="_blank">SoftTriple</a></td>
+<td><a href="../mlrc_plots/cars_soft_triple.html" target="_blank">SoftTriple</a></td>
+<td><a href="../mlrc_plots/sop_soft_triple.html" target="_blank">SoftTriple</a></td>
+<td><a href="../mlrc_plots/cub_soft_triple_large_batch_wider_range.html" target="_blank">SoftTriple</a></td>
+</tr>
+</tbody>
+</table>
                 
                   
                 
