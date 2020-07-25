@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="powerful-benchmarker",
-    version="0.9.30",
+    version="0.9.31.dev0",
     author="Kevin Musgrave",
     author_email="tkm45@cornell.edu",
     description="A highly-configurable tool that enables thorough evaluation of deep metric learning algorithms. ",
@@ -36,6 +36,7 @@ setuptools.setup(
           'pytorch-metric-learning == 0.9.88',
           'pandas',
           'ax-platform',
-          'faiss-gpu'
+          'faiss-gpu',
+          'gdown >= 3.12.0',
     ],
 )
