@@ -11,14 +11,18 @@ class SplitManagerFactory(BaseFactory):
         original_dataset_params = {k:original_dataset_params for k in split_manager.split_names}
 
         datasets = defaultdict(dict)
+        dataset_count = 0
         for transform_type, T in transforms.items():
             logging.info("{} transform: {}".format(transform_type, T))
             for split_name in split_manager.split_names:
                 dataset_params = copy.deepcopy(original_dataset_params[split_name])
                 dataset_params["transform"] = T
                 if "root" not in dataset_params:
-                    dataset_params["root"] = dataset_root            
+                    dataset_params["root"] = dataset_root  
+                if dataset_count > 0:
+                    dataset_params["download"] = False         
                 datasets[transform_type][split_name] = dataset[split_name](**dataset_params)
+                dataset_count += 1
         
         split_manager.create_split_schemes(datasets)
         return split_manager

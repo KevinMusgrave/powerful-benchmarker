@@ -3,6 +3,7 @@
 import numpy as np
 from torch.utils.data import Dataset
 from torchvision import datasets
+from torchvision.datasets.utils import check_integrity
 import gdown
 from gdown.cached_download import assert_md5sum
 import os
@@ -38,7 +39,10 @@ class CUB200(Dataset):
     def download_dataset(self):
         c_f.makedir_if_not_there(self.root)
         output_location = os.path.join(self.root, self.filename)
-        gdown.download(self.url, output_location, quiet=False)
-        assert_md5sum(output_location, self.md5)
-        with tarfile.open(output_location, "r:gz") as tar:
-            tar.extractall(path=self.root, members = c_f.extract_progress(tar))
+        if check_integrity(output_location, self.md5):
+            print('Using downloaded and verified file: ' + output_location)
+        else:
+            gdown.download(self.url, output_location, quiet=False)
+            assert_md5sum(output_location, self.md5)
+            with tarfile.open(output_location, "r:gz") as tar:
+                tar.extractall(path=self.root, members = c_f.extract_progress(tar))
