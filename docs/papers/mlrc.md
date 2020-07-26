@@ -114,6 +114,12 @@ Once evaluation is done, you can go to the ```meta_logs``` folder and view the r
 
 ## Frequently Asked Questions
 
+#### Do you have slides that accompany the paper?
+Slides are [here](https://docs.google.com/presentation/d/1KnLDFzMKLYlnMzMDc7wyKHVAh5dJ9z6Fs1qto4OqQFY/edit?usp=sharing){target=_blank}.
+
+#### Do you have examples to back up the claims in section 2.1 of the paper?
+See [this document](https://docs.google.com/document/d/1xx56SwR2a0JMWaiHgi2oIdCaSlMFMPMPlh_RBM94paw/edit?usp=sharing){target=_blank}.
+
 #### Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?
 Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.
 
