@@ -1,7 +1,10 @@
 # Powerful Benchmarker
 
+## Google Colab Examples
+See the [examples folder](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/examples) for notebooks that give an overview of how to use this library.
+
 ## Installation
-```
+```bash
 pip install powerful-benchmarker
 ```
 
@@ -26,7 +29,7 @@ You can add other classes and modules by using the [register functionality](cust
 
 ### Set default flags
 
-The easiest way to get started is to download the [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py). Then change the default values for the following flags:
+The easiest way to get started is to download the [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py). Then change the default values for the following flags (each one should be an absolute file path, not a relative path):
 
 - ```pytorch_home``` is where you want to save downloaded pretrained models.
 - ```dataset_root``` is where your datasets will be downloaded, or where they are already located.
@@ -34,7 +37,7 @@ The easiest way to get started is to download the [example script](https://githu
 
 ### Try a basic command
 The following command will run an experiment using the [default config files](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/src/powerful_benchmarker/configs), as well as download the CUB200 dataset into your ```dataset_root```
-```
+```bash
 python run.py --experiment_name test1 --dataset {CUB200: {download: True}}
 ```
 If the code runs properly, you'll see training and testing progress like this:

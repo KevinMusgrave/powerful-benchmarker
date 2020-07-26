@@ -11,7 +11,11 @@ To tune hyperparameters using bayesian optimization:
 Here is an example script which uses bayesian optimization to tune 3 hyperparameters for the multi similarity loss.
 ```bash
 python run.py --bayes_opt_iters 50 \
---loss_funcs~OVERRIDE~ {metric_loss: {MultiSimilarityLoss: {alpha~LOG_BAYESIAN~: [0.01, 100], beta~LOG_BAYESIAN~: [0.01, 100], base~BAYESIAN~: [0, 1]}}} \
+--loss_funcs~OVERRIDE~ \
+{metric_loss: {MultiSimilarityLoss: {\
+alpha~LOG_BAYESIAN~: [0.01, 100], \
+beta~LOG_BAYESIAN~: [0.01, 100], \
+base~BAYESIAN~: [0, 1]}}} \
 --experiment_name cub_bayes_opt \
 ```
 
