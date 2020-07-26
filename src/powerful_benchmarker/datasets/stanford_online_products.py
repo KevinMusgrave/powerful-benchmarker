@@ -7,6 +7,8 @@ from torchvision.datasets.utils import download_url
 import os
 import zipfile
 from ..utils import common_functions as c_f
+import logging
+import tqdm
 
 class StanfordOnlineProducts(Dataset):
     url = 'ftp://cs.stanford.edu/cs/cvgl/Stanford_Online_Products.zip'
@@ -16,12 +18,14 @@ class StanfordOnlineProducts(Dataset):
     def __init__(self, root, transform=None, download=False):
         self.root = root
         if download:
-            self.download_dataset()
-        self.dataset_folder = os.path.join(self.root, "Stanford_Online_Products")
-        self.load_labels()
+            try:
+                self.set_paths_and_labels(assert_files_exist=True)
+            except AssertionError:
+                self.download_dataset()
+                self.set_paths_and_labels()
+        else:
+            self.set_paths_and_labels()
         self.transform = transform
-        assert len(np.unique(self.labels)) == 22634
-        assert self.__len__() == 120053
 
     def __len__(self):
         return len(self.labels)
@@ -47,6 +51,16 @@ class StanfordOnlineProducts(Dataset):
             self.labels.extend(list(curr_file[:,1] - 1))
             global_idx += len(curr_file)
         self.labels = np.array(self.labels)
+
+    def set_paths_and_labels(self, assert_files_exist=False):
+        self.dataset_folder = os.path.join(self.root, "Stanford_Online_Products")
+        self.load_labels()
+        assert len(np.unique(self.labels)) == 22634
+        assert self.__len__() == 120053
+        if assert_files_exist:
+            logging.info("Checking if dataset images exist")
+            for x in tqdm.tqdm(self.img_paths):
+                assert os.path.isfile(x)
 
     def download_dataset(self):
         download_url(self.url, self.root, filename=self.filename, md5=self.md5)

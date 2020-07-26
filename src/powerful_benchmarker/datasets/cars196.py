@@ -8,6 +8,8 @@ from torchvision.datasets.utils import download_url
 import os
 import tarfile
 from ..utils import common_functions as c_f
+import logging
+import tqdm
 
 class Cars196(Dataset):
     ims_url = 'http://imagenet.stanford.edu/internal/car196/car_ims.tgz'
@@ -21,12 +23,14 @@ class Cars196(Dataset):
     def __init__(self, root, transform=None, download=False):
         self.root = os.path.join(root, "cars196")
         if download:
-            self.download_dataset()
-        self.dataset_folder = self.root
-        self.load_labels()
+            try:
+                self.set_paths_and_labels(assert_files_exist=True)
+            except AssertionError:
+                self.download_dataset()
+                self.set_paths_and_labels()
+        else:
+            self.set_paths_and_labels()
         self.transform = transform
-        assert len(np.unique(self.labels)) == 196
-        assert self.__len__() == 16185
 
     def __len__(self):
         return len(self.labels)
@@ -45,6 +49,16 @@ class Cars196(Dataset):
         self.labels = np.array([i[0, 0] for i in img_data["annotations"]["class"][0]])
         self.img_paths = [os.path.join(self.dataset_folder, i[0]) for i in img_data["annotations"]["relative_im_path"][0]]
         self.class_names = [i[0] for i in img_data["class_names"][0]]
+
+    def set_paths_and_labels(self, assert_files_exist=False):
+        self.dataset_folder = self.root
+        self.load_labels()
+        assert len(np.unique(self.labels)) == 196
+        assert self.__len__() == 16185
+        if assert_files_exist:
+            logging.info("Checking if dataset images exist")
+            for x in tqdm.tqdm(self.img_paths):
+                assert os.path.isfile(x)
 
     def download_dataset(self):
         url_infos = [(self.ims_url, self.ims_filename, self.ims_md5), 
