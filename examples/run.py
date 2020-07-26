@@ -3,9 +3,9 @@ import argparse
 logging.getLogger().setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser(allow_abbrev=False)
-parser.add_argument("--pytorch_home", type=str, default=None)
-parser.add_argument("--dataset_root", type=str, default="datasets")
-parser.add_argument("--root_experiment_folder", type=str, default=".")
+parser.add_argument("--pytorch_home", type=str, default=None) # absolute path
+parser.add_argument("--dataset_root", type=str, default="/content/datasets") # absolute path
+parser.add_argument("--root_experiment_folder", type=str, default="/content") # absolute path
 parser.add_argument("--global_db_path", type=str, default=None)
 parser.add_argument("--merge_argparse_when_resuming", default=False, action='store_true')
 parser.add_argument("--root_config_folder", type=str, default=None)
