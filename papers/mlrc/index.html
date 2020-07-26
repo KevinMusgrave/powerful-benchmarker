@@ -589,36 +589,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reproducing-results" class="md-nav__link">
-    Reproducing results
+  <a href="#optimal-hyperparameters" class="md-nav__link">
+    Optimal hyperparameters
   </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#download-the-experiment-folder" class="md-nav__link">
-    Download the experiment folder
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#command-line-scripts" class="md-nav__link">
-    Command line scripts
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
-    Run evaluation on the test set
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -668,6 +641,40 @@
           <li class="md-nav__item">
   <a href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" class="md-nav__link">
     For the contrastive loss, why is the optimal positive margin a negative value?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducing-results" class="md-nav__link">
+    Reproducing results
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-the-experiment-folder" class="md-nav__link">
+    Download the experiment folder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-scripts" class="md-nav__link">
+    Command line scripts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
+    Run evaluation on the test set
   </a>
   
 </li>
@@ -721,36 +728,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reproducing-results" class="md-nav__link">
-    Reproducing results
+  <a href="#optimal-hyperparameters" class="md-nav__link">
+    Optimal hyperparameters
   </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#download-the-experiment-folder" class="md-nav__link">
-    Download the experiment folder
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#command-line-scripts" class="md-nav__link">
-    Command line scripts
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
-    Run evaluation on the test set
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -809,6 +789,40 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reproducing-results" class="md-nav__link">
+    Reproducing results
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-the-experiment-folder" class="md-nav__link">
+    Download the experiment folder
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-scripts" class="md-nav__link">
+    Command line scripts
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
+    Run evaluation on the test set
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
       
       
       
@@ -831,7 +845,8 @@
                 <h1 id="a-metric-learning-reality-check">A Metric Learning Reality Check<a class="headerlink" href="#a-metric-learning-reality-check" title="Permanent link">&para;</a></h1>
 <p>This page contains additional information for the <a href="https://arxiv.org/abs/2003.08505">ECCV 2020 paper</a> by Musgrave et al.</p>
 <h2 id="optimization-plots">Optimization plots<a class="headerlink" href="#optimization-plots" title="Permanent link">&para;</a></h2>
-<p>Click on the links below to view the bayesian optimization plots</p>
+<p>Click on the links below to view the bayesian optimization plots. </p>
+<p>These are also available in the <a href="https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/">benchmark spreadsheet</a>.</p>
 <table>
 <thead>
 <tr>
@@ -928,6 +943,140 @@
 </tr>
 </tbody>
 </table>
+<h2 id="optimal-hyperparameters">Optimal hyperparameters<a class="headerlink" href="#optimal-hyperparameters" title="Permanent link">&para;</a></h2>
+<p>The values below are also available in the <a href="https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/">benchmark spreadsheet</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Loss function</th>
+<th>CUB200</th>
+<th>Cars196</th>
+<th>SOP</th>
+<th>CUB200 with Batch 256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contrastive</strong><br/>pos_margin<br/>neg_margin</td>
+<td><br/>-0.2000<br/>0.3841</td>
+<td><br/>0.2652<br/>0.5409</td>
+<td><br/>0.2850<br/>0.5130</td>
+<td><br/>0.2227<br/>0.7694</td>
+</tr>
+<tr>
+<td><strong>Triplet</strong><br/>margin</td>
+<td><br/>0.0961</td>
+<td><br/>0.1190</td>
+<td><br/>0.0451</td>
+<td><br/>0.1368</td>
+</tr>
+<tr>
+<td><strong>NTXent</strong><br/>temperature</td>
+<td><br/>0.0091</td>
+<td><br/>0.0219</td>
+<td><br/>0.0002</td>
+<td><br/>0.0415</td>
+</tr>
+<tr>
+<td><strong>ProxyNCA</strong><br/>proxy lr<br/>softmax_scale</td>
+<td><br/>6.04e-3<br/>13.98</td>
+<td><br/>4.43e-3<br/>7.97</td>
+<td><br/>5.28e-4<br/>10.73</td>
+<td><br/>2.16e-1<br/>10.03</td>
+</tr>
+<tr>
+<td><strong>Margin</strong><br/>beta lr<br/>margin<br/>init beta</td>
+<td><br/>1.31e-3<br/>0.0878<br/>0.7838<br/></td>
+<td><br/>1.11e-4<br/>0.0781<br/>1.3164<br/></td>
+<td><br/>1.82e-3<br/>0.0915<br/>1.1072</td>
+<td><br/>1.00e-6<br/>0.0674<br/>0.9762</td>
+</tr>
+<tr>
+<td><strong>Margin / class</strong><br/>beta lr<br/>margin<br/>init beta</td>
+<td><br/>2.65e-4<br/>0.0779<br/>0.9796</td>
+<td><br/>4.76e-05<br/>0.0776<br/>0.9598</td>
+<td><br/>7.10e-05<br/>0.0518<br/>0.8424</td>
+<td><br/>1.32e-2<br/>-0.0204<br/>0.1097</td>
+</tr>
+<tr>
+<td><strong>Normalized Softmax</strong><br/>weights lr<br/>temperature</td>
+<td><br/>4.46e-3<br/>0.1087</td>
+<td><br/>1.10e-2<br/>0.0886</td>
+<td><br/>5.46e-4<br/>0.0630</td>
+<td><br/>7.20e-2<br/>0.0707</td>
+</tr>
+<tr>
+<td><strong>CosFace</strong><br/>weights lr<br/>margin<br/>scale<br/></td>
+<td><br/>2.53e-3<br/>0.6182<br/>100.0</td>
+<td><br/>7.41e-3<br/>0.4324<br/>161.5</td>
+<td><br/>2.16e-3<br/>0.3364<br/>100.0</td>
+<td><br/>3.99e-3<br/>0.4144<br/>88.23</td>
+</tr>
+<tr>
+<td><strong>ArcFace</strong><br/>weights lr<br/>margin<br/>scale<br/></td>
+<td><br/>5.13e-3<br/>23.22<br/>100.0</td>
+<td><br/>7.39e-06<br/>20.52<br/>49.50</td>
+<td><br/>2.01e-3<br/>18.63<br/>220.3</td>
+<td><br/>3.95e-2<br/>23.14<br/>78.86</td>
+</tr>
+<tr>
+<td><strong>FastAP</strong><br/>num_bins</td>
+<td><br/>17</td>
+<td><br/>27</td>
+<td><br/>16</td>
+<td><br/>86</td>
+</tr>
+<tr>
+<td><strong>SNR Contrastive</strong><br/>pos_margin<br/>neg_margin<br/>regularizer_weight</td>
+<td><br/>0.3264<br/>0.8446<br/>0.1382</td>
+<td><br/>0.1670<br/>0.9337<br/>0</td>
+<td><br/>0.3759<br/>1.0831<br/>0</td>
+<td><br/>0.1182<br/>0.6822<br/>0.4744</td>
+</tr>
+<tr>
+<td><strong>Multi Similarity</strong><br/>alpha<br/>beta<br/>base</td>
+<td><br/>0.01<br/>50.60<br/>0.56</td>
+<td><br/>14.35<br/>75.83<br/>0.66</td>
+<td><br/>8.49<br/>57.38<br/>0.41</td>
+<td><br/>0.01<br/>46.85<br/>0.82</td>
+</tr>
+<tr>
+<td><strong>Multi Similarity + Miner</strong><br/>alpha<br/>beta<br/>base<br/>epsilon</td>
+<td><br/>17.97<br/>75.66<br/>0.77<br/>0.39</td>
+<td><br/>7.49<br/>47.99<br/>0.63<br/>0.72</td>
+<td><br/>15.94<br/>156.61<br/>0.72<br/>0.34</td>
+<td><br/>11.63<br/>55.20<br/>0.85<br/>0.42</td>
+</tr>
+<tr>
+<td><strong>SoftTriple</strong><br/>weights lr<br/>la<br/>gamma<br/>reg_weight<br/>margin</td>
+<td><br/>5.37e-05<br/>78.02<br/>58.95<br/>0.3754<br/>0.4307</td>
+<td><br/>1.40e-4<br/>17.69<br/>19.18<br/>0.0669<br/>0.3588</td>
+<td><br/>8.68e-05<br/>100.00<br/>47.90<br/>N/A<br/>0.3145</td>
+<td><br/>1.06e-4<br/>72.12<br/>51.07<br/>0.4430<br/>0.6959</td>
+</tr>
+</tbody>
+</table>
+<h2 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h2>
+<h4 id="do-you-have-slides-that-accompany-the-paper">Do you have slides that accompany the paper?<a class="headerlink" href="#do-you-have-slides-that-accompany-the-paper" title="Permanent link">&para;</a></h4>
+<p>Slides are <a href="https://docs.google.com/presentation/d/1KnLDFzMKLYlnMzMDc7wyKHVAh5dJ9z6Fs1qto4OqQFY/edit?usp=sharing" target="_blank">here</a>.</p>
+<h4 id="do-you-have-examples-to-back-up-the-claims-in-section-21-of-the-paper">Do you have examples to back up the claims in section 2.1 of the paper?<a class="headerlink" href="#do-you-have-examples-to-back-up-the-claims-in-section-21-of-the-paper" title="Permanent link">&para;</a></h4>
+<p>See <a href="https://docs.google.com/document/d/1xx56SwR2a0JMWaiHgi2oIdCaSlMFMPMPlh_RBM94paw/edit?usp=sharing" target="_blank">this document</a>.</p>
+<h4 id="isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size">Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?<a class="headerlink" href="#isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size" title="Permanent link">&para;</a></h4>
+<p>Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.</p>
+<h4 id="why-was-the-batch-size-set-to-32-for-most-of-the-results">Why was the batch size set to 32 for most of the results?<a class="headerlink" href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" title="Permanent link">&para;</a></h4>
+<p>This was done for the sake of computational efficiency. Note that there are: </p>
+<ul>
+<li>3 datasets </li>
+<li>14 algorithms </li>
+<li>50 steps of bayesian optmization </li>
+<li>4 fold cross validation </li>
+</ul>
+<p>This comes to 8400 models to train, which can take a considerable amount of time. Thus, a batch size of 32 made sense. It's also important to remember that there are real-world cases where a large batch size cannot be used. For example, if you want to train on large images, rather than the contrived case of 227x227, then training with a batch size of 32 suddenly makes a lot more sense because you are constrained by GPU memory. So it's reasonable to check the performance of these losses on a batch size of 32. </p>
+<p>That said, there is a good theoretical reason for a larger batch size benefiting embedding losses more than classification losses. Specifically, embedding losses can benefit from the increased number of pairs/triplets in larger batches. To address this, we benchmarked the 14 methods on CUB200, using a batch size of 256. The results can be found in the supplementary section (the final page) of the paper.</p>
+<h4 id="why-werent-more-hard-mining-methods-evaluated">Why weren't more hard-mining methods evaluated?<a class="headerlink" href="#why-werent-more-hard-mining-methods-evaluated" title="Permanent link">&para;</a></h4>
+<p>We did test one loss+miner combination (Multi-similarity loss + their mining method). But we mainly wanted to do a thorough evaluation of loss functions, because that is the subject of most recent metric learning papers.   </p>
+<h4 id="for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value">For the contrastive loss, why is the optimal positive margin a negative value?<a class="headerlink" href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" title="Permanent link">&para;</a></h4>
+<p>A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.</p>
 <h2 id="reproducing-results">Reproducing results<a class="headerlink" href="#reproducing-results" title="Permanent link">&para;</a></h2>
 <h3 id="download-the-experiment-folder">Download the experiment folder<a class="headerlink" href="#download-the-experiment-folder" title="Permanent link">&para;</a></h3>
 <ol>
@@ -1014,27 +1163,6 @@
 
 
 <p>Once evaluation is done, you can go to the <code>meta_logs</code> folder and view the results.</p>
-<h2 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h2>
-<h4 id="do-you-have-slides-that-accompany-the-paper">Do you have slides that accompany the paper?<a class="headerlink" href="#do-you-have-slides-that-accompany-the-paper" title="Permanent link">&para;</a></h4>
-<p>Slides are <a href="https://docs.google.com/presentation/d/1KnLDFzMKLYlnMzMDc7wyKHVAh5dJ9z6Fs1qto4OqQFY/edit?usp=sharing" target="_blank">here</a>.</p>
-<h4 id="do-you-have-examples-to-back-up-the-claims-in-section-21-of-the-paper">Do you have examples to back up the claims in section 2.1 of the paper?<a class="headerlink" href="#do-you-have-examples-to-back-up-the-claims-in-section-21-of-the-paper" title="Permanent link">&para;</a></h4>
-<p>See <a href="https://docs.google.com/document/d/1xx56SwR2a0JMWaiHgi2oIdCaSlMFMPMPlh_RBM94paw/edit?usp=sharing" target="_blank">this document</a>.</p>
-<h4 id="isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size">Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?<a class="headerlink" href="#isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size" title="Permanent link">&para;</a></h4>
-<p>Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.</p>
-<h4 id="why-was-the-batch-size-set-to-32-for-most-of-the-results">Why was the batch size set to 32 for most of the results?<a class="headerlink" href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" title="Permanent link">&para;</a></h4>
-<p>This was done for the sake of computational efficiency. Note that there are: </p>
-<ul>
-<li>3 datasets </li>
-<li>14 algorithms </li>
-<li>50 steps of bayesian optmization </li>
-<li>4 fold cross validation </li>
-</ul>
-<p>This comes to 8400 models to train, which can take a considerable amount of time. Thus, a batch size of 32 made sense. It's also important to remember that there are real-world cases where a large batch size cannot be used. For example, if you want to train on large images, rather than the contrived case of 227x227, then training with a batch size of 32 suddenly makes a lot more sense because you are constrained by GPU memory. So it's reasonable to check the performance of these losses on a batch size of 32. </p>
-<p>That said, there is a good theoretical reason for a larger batch size benefiting embedding losses more than classification losses. Specifically, embedding losses can benefit from the increased number of pairs/triplets in larger batches. To address this, we benchmarked the 14 methods on CUB200, using a batch size of 256. The results can be found in the supplementary section (the final page) of the paper.</p>
-<h4 id="why-werent-more-hard-mining-methods-evaluated">Why weren't more hard-mining methods evaluated?<a class="headerlink" href="#why-werent-more-hard-mining-methods-evaluated" title="Permanent link">&para;</a></h4>
-<p>We did test one loss+miner combination (Multi-similarity loss + their mining method). But we mainly wanted to do a thorough evaluation of loss functions, because that is the subject of most recent metric learning papers.   </p>
-<h4 id="for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value">For the contrastive loss, why is the optimal positive margin a negative value?<a class="headerlink" href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" title="Permanent link">&para;</a></h4>
-<p>A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.</p>
                 
                   
                 

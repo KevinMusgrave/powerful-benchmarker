@@ -726,7 +726,11 @@
 </ol>
 <p>Here is an example script which uses bayesian optimization to tune 3 hyperparameters for the multi similarity loss.</p>
 <div class="codehilite"><pre><span></span>python run.py --bayes_opt_iters <span class="m">50</span> <span class="se">\</span>
---loss_funcs~OVERRIDE~ <span class="o">{</span>metric_loss: <span class="o">{</span>MultiSimilarityLoss: <span class="o">{</span>alpha~LOG_BAYESIAN~: <span class="o">[</span><span class="m">0</span>.01, <span class="m">100</span><span class="o">]</span>, beta~LOG_BAYESIAN~: <span class="o">[</span><span class="m">0</span>.01, <span class="m">100</span><span class="o">]</span>, base~BAYESIAN~: <span class="o">[</span><span class="m">0</span>, <span class="m">1</span><span class="o">]}}}</span> <span class="se">\</span>
+--loss_funcs~OVERRIDE~ <span class="se">\</span>
+<span class="o">{</span>metric_loss: <span class="o">{</span>MultiSimilarityLoss: <span class="o">{</span><span class="se">\</span>
+alpha~LOG_BAYESIAN~: <span class="o">[</span><span class="m">0</span>.01, <span class="m">100</span><span class="o">]</span>, <span class="se">\</span>
+beta~LOG_BAYESIAN~: <span class="o">[</span><span class="m">0</span>.01, <span class="m">100</span><span class="o">]</span>, <span class="se">\</span>
+base~BAYESIAN~: <span class="o">[</span><span class="m">0</span>, <span class="m">1</span><span class="o">]}}}</span> <span class="se">\</span>
 --experiment_name cub_bayes_opt <span class="se">\</span>
 </pre></div>
 
