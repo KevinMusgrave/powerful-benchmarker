@@ -20,7 +20,7 @@ class StanfordOnlineProducts(Dataset):
         if download:
             try:
                 self.set_paths_and_labels(assert_files_exist=True)
-            except AssertionError:
+            except:
                 self.download_dataset()
                 self.set_paths_and_labels()
         else:

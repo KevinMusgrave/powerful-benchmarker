@@ -20,7 +20,7 @@ class CUB200(Dataset):
         if download:
             try:
                 self.set_paths_and_labels()
-            except AssertionError:
+            except:
                 self.download_dataset()
                 self.set_paths_and_labels()
         else:
