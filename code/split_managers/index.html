@@ -536,6 +536,19 @@
     BaseSplitManager
   </a>
   
+    <nav class="md-nav" aria-label="BaseSplitManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -557,18 +570,24 @@
     IndexSplitManager
   </a>
   
+    <nav class="md-nav" aria-label="IndexSplitManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#mlrcsplitmanager" class="md-nav__link">
     MLRCSplitManager
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#splitschemeholder" class="md-nav__link">
-    SplitSchemeHolder
   </a>
   
 </li>
@@ -669,6 +688,19 @@
     BaseSplitManager
   </a>
   
+    <nav class="md-nav" aria-label="BaseSplitManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -690,18 +722,24 @@
     IndexSplitManager
   </a>
   
+    <nav class="md-nav" aria-label="IndexSplitManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#mlrcsplitmanager" class="md-nav__link">
     MLRCSplitManager
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#splitschemeholder" class="md-nav__link">
-    SplitSchemeHolder
   </a>
   
 </li>
@@ -729,11 +767,65 @@
                 <h1 id="split-managers">Split Managers<a class="headerlink" href="#split-managers" title="Permanent link">&para;</a></h1>
 <p>Split managers take a dataset and form cross-validation splits based on some criteria.</p>
 <h2 id="basesplitmanager">BaseSplitManager<a class="headerlink" href="#basesplitmanager" title="Permanent link">&para;</a></h2>
+<p>Split managers must extend this class.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.split_managers</span> <span class="kn">import</span> <span class="n">BaseSplitManager</span>
+<span class="n">BaseSplitManager</span><span class="p">(</span><span class="n">hierarchy_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">data_and_label_getter_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">labels_attr_name</span><span class="o">=</span><span class="s2">&quot;labels&quot;</span><span class="p">,</span> 
+            <span class="n">label_set_attr_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>hierarchy_level</code>: For multi-label datasets, this will select the set of labels that correspond to a specific column in the two-dimensional labels. For example, if the dataset has 1000 elements, and each element has 5 labels, then the label set has shape (1000, 5). If <code>hierarchy_level=3</code>, then <code>labels[:,3]</code> will be used internally, if necessary.</li>
+<li><code>data_and_label_getter_keys</code>: If None, then calling <code>dataset[idx]</code> will simply return the raw value of <code>dataset[idx]</code>. Otherwise, it will be assumed that <code>dataset[idx]</code> returns a dictionary, in which case <code>data_and_label_getter_keys</code> should be a list of strings that correspond to the dictionary keys for the data and labels.</li>
+<li><code>labels_attr_name</code>: The name of the dataset's attribute that contains the label for each element.</li>
+<li><code>label_set_attr_name</code>: The name of the dataset's attribute that contains the set of labels. If None, then the set will be computed using the dataset's list of labels.</li>
+</ul>
 <h2 id="classdisjointsplitmanager">ClassDisjointSplitManager<a class="headerlink" href="#classdisjointsplitmanager" title="Permanent link">&para;</a></h2>
+<p>Creates split schemes such that the trainval/test split has no overlap in class labels, and that each train/val split has no overlap in class labels. Extends <a href="./#indexsplitmanager">IndexSplitManager</a>.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.split_managers</span> <span class="kn">import</span> <span class="n">ClassDisjointSplitManager</span>
+<span class="n">ClassDisjointSplitManager</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+
+
 <h2 id="closedsetsplitmanager">ClosedSetSplitManager<a class="headerlink" href="#closedsetsplitmanager" title="Permanent link">&para;</a></h2>
+<p>Creates split schemes such that the ratios of class labels in the dataset is reflected in the trainval/test split, and in each train/val split. In other words, if the dataset has two classes, A and B, and 75% of the dataset is class A, then every train/val/test split will consist of roughly 75% class A. Extends <a href="./#indexsplitmanager">IndexSplitManager</a>.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.split_managers</span> <span class="kn">import</span> <span class="n">ClosedSetSplitManager</span>
+<span class="n">ClosedSetSplitManager</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+
+
 <h2 id="indexsplitmanager">IndexSplitManager<a class="headerlink" href="#indexsplitmanager" title="Permanent link">&para;</a></h2>
+<p>Creates split schemes based on dataset index. The logic within this class can be adapted for other cases, like splitting based on class label.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.split_managers</span> <span class="kn">import</span> <span class="n">IndexSplitManager</span>
+<span class="n">IndexSplitManager</span><span class="p">(</span><span class="n">num_training_partitions</span><span class="p">,</span>
+                <span class="n">num_training_sets</span><span class="p">,</span>
+                <span class="n">test_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">test_start_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">shuffle</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="n">random_seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">helper_split_manager</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>num_training_partitions</code>: The number of partitions in the trainval set. For example, if 40% of the dataset is used for the test set, and <code>num_training_partitions = 2</code>, then 2 partitions of size (60%/2) = 30% will be created in the trainval set.</li>
+<li><code>num_training_sets</code>: The number of training and validation sets to create. Each validation set will have a size of one partition. For example, if <code>num_training_partitions = 10</code>, then the validation set will always be one of those partitions, while the training set will comprise the other 9.</li>
+<li><code>test_size</code>: The size of the test size, as a floating point number. For example, <code>test_size=0.4</code> will make the test set 40% of the dataset.</li>
+<li><code>test_start_idx</code>: The location in the dataset where the test set starts. For example, if <code>test_size=0.4</code> and <code>test_start_idx=0.5</code>, then the test set will consist of all dataset elements with indices between <code>len(dataset)*0.5</code> and <code>len(dataset)*0.9</code>. It will wrap around to the beginning of the dataset if necessary.</li>
+<li><code>shuffle</code>: Whether or not to shuffle the dataset when forming the splits.</li>
+<li><code>random_seed</code>: A random seed for shuffling. Only applicable if <code>shuffle = True</code>.</li>
+<li><code>helper_split_manager</code>: An optional external split manager. If provided, this external split manager will be used to create the trainval/test split. After that, IndexSplitManager will form the train/val splits.</li>
+</ul>
 <h2 id="mlrcsplitmanager">MLRCSplitManager<a class="headerlink" href="#mlrcsplitmanager" title="Permanent link">&para;</a></h2>
-<h2 id="splitschemeholder">SplitSchemeHolder<a class="headerlink" href="#splitschemeholder" title="Permanent link">&para;</a></h2>
+<p>The split manager used for <a href="https://arxiv.org/abs/2003.08505">A Metric Learning Reality Check</a>. It is basically the same as <a href="./#classdisjointsplitmanager">ClassDisjointSplitManager</a>, but with some differences in rounding and cross-validation fold order. Extends <a href="./#indexsplitmanager">IndexSplitManager</a>.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.split_managers</span> <span class="kn">import</span> <span class="n">MLRCSplitManager</span>
+<span class="n">MLRCSplitManager</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
                 
               
               
