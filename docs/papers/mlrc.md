@@ -49,157 +49,163 @@ Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 
 ## Examples of unfair comparisons in metric learning papers
 
-#### Papers that use a better architecture than their competitors, but don’t disclose it.
+#### Papers that use a better architecture than their competitors, but don’t disclose it
 
-  - Sampling Matters in Deep Embedding Learning (ICCV 2017)
+  - [Sampling Matters in Deep Embedding Learning (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Wu_Sampling_Matters_in_ICCV_2017_paper.pdf)
 
     - Uses ResNet50, but all competitors use GoogleNet
 
-  - Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)
+  - [Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)](https://openaccess.thecvf.com/content_ECCV_2018/papers/Ge_Deep_Metric_Learning_ECCV_2018_paper.pdf)
 
     - Uses BN-Inception, but all competitors use GoogleNet
 
-  - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+  - [Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Multi-Similarity_Loss_With_General_Pair_Weighting_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
 
     - Uses BN-Inception. Claims better performance than ensemble methods, but the ensemble methods use GoogleNet.
 
-  - Deep Metric Learning to Rank (CVPR 2019)
+  - [Deep Metric Learning to Rank (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Cakir_Deep_Metric_Learning_to_Rank_CVPR_2019_paper.pdf)
 
     - Uses ResNet50. In their SOP table, only 1 out of 11 competitor methods use ResNet50. All others use BN-Inception or GoogleNet. Claims better performance than ensemble methods, but the ensemble methods use GoogleNet. 
 
-  - Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
+  - [Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Sanakoyeu_Divide_and_Conquer_the_Embedding_Space_for_Metric_Learning_CVPR_2019_paper.pdf)
 
     - Uses ResNet50. In their Cars196 and SOP tables, only 1 out of 15 competitor methods use ResNet50. The rest use GoogleNet or BN-Inception. The same is true for their CUB200 results, but in that table, they re-implement two of the competitors to use ResNet50.
 
-  - SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
+  - [SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Qian_SoftTriple_Loss_Deep_Metric_Learning_Without_Triplet_Sampling_ICCV_2019_paper.pdf)
   
     - Uses BN-Inception. Compares with N-pairs and HDC, but doesn’t mention that these use GoogleNet. They only mention the competitors’ architectures when the competitors use an equal or superior network. Specifically, they mention that the Margin loss uses ResNet50,and HTL uses BN-Inception.
 
-  - Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)
+  - [Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Yu_Deep_Metric_Learning_With_Tuplet_Margin_Loss_ICCV_2019_paper.pdf)
   
     - Uses ResNet50. In their SOP table, only 1 out of 10 competitors use ResNet50, and in their CUB200 and Cars196 tables, only 1 out of 8 competitors use ResNet50. The rest use GoogleNet or BN-Inception. They also claim better performance than ensemble methods, but the ensemble methods use GoogleNet.
 
 
 
-#### Papers that use a higher dimensionality than their competitors, but don’t disclose it.
+#### Papers that use a higher dimensionality than their competitors, but don’t disclose it
 
-  - Sampling Matters in Deep Embedding Learning (ICCV 2017)
+  - [Sampling Matters in Deep Embedding Learning (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Wu_Sampling_Matters_in_ICCV_2017_paper.pdf)
 
     - Uses size 128. CUB200 table: 4 out of 7 use size 64. Cars196: 4 out of 5 use size 64. SOP: 4 out of 7 use size 64.
 
-  - Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)
+  - [Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)](https://openaccess.thecvf.com/content_ECCV_2018/papers/Ge_Deep_Metric_Learning_ECCV_2018_paper.pdf)
 
     - Uses size 512. The top two non-ensemble competitor results use size 384 and 64.
 
-  - Ranked List Loss for Deep Metric Learning (CVPR 2019)
+  - [Ranked List Loss for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Ranked_List_Loss_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
     
     - Uses size 512 or 1536. For all 3 datasets, 5 out of the 6 competitor results use size 64.
 
-  - Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)
+  - [Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Yu_Deep_Metric_Learning_With_Tuplet_Margin_Loss_ICCV_2019_paper.pdf)
     
     - Uses size 512. The only competing method that uses the same architecture, uses size 128.
 
 
-#### Papers that claim to do a simple 256 resize and 227 random crop, but actually use the more advanced RandomResizedCrop method:
+#### Papers that claim to do a simple 256 resize and 227 or 224 random crop, but actually use the more advanced RandomResizedCrop method
 
-  - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+  - [Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Multi-Similarity_Loss_With_General_Pair_Weighting_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
 
     - [Link to line in code](https://github.com/MalongTech/research-ms-loss/blob/master/ret_benchmark/data/transforms/build.py#L17){target=_blank}
 
-  - Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
+  - [Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Sanakoyeu_Divide_and_Conquer_the_Embedding_Space_for_Metric_Learning_CVPR_2019_paper.pdf)
 
     - [Link to line in code](https://github.com/CompVis/metric-learning-divide-and-conquer/blob/master/lib/data/set/transform.py#L51){target=_blank}
 
-  - MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)
+  - [MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Roth_MIC_Mining_Interclass_Characteristics_for_Improved_Metric_Learning_ICCV_2019_paper.pdf)
 
     - [Link to line in code](https://github.com/Confusezius/ICCV2019_MIC/blob/master/datasets.py#L324){target=_blank}
 
-  - SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
+  - [SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Qian_SoftTriple_Loss_Deep_Metric_Learning_Without_Triplet_Sampling_ICCV_2019_paper.pdf)
 
     - [Link to line in code](https://github.com/idstcv/SoftTriple/blob/master/train.py#L99){target=_blank}
 
-  - Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+  - [Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)](https://openaccess.thecvf.com/content_CVPR_2020/papers/Kim_Proxy_Anchor_Loss_for_Deep_Metric_Learning_CVPR_2020_paper.pdf)
 
     - [Link to line in code](https://github.com/tjddus9597/Proxy-Anchor-CVPR2020/blob/master/code/dataset/utils.py#L76){target=_blank}
 
 
-#### Papers that omit details:
+#### Papers that use a 256 crop size, but whose competitor results use a smaller 227 or 224 size
 
-  - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+  - [Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Jacob_Metric_Learning_With_HORDE_High-Order_Regularizer_for_Deep_Embeddings_ICCV_2019_paper.pdf)
+
+    - Their algorithm reimplementations use 256, but the referenced paper results use 227 or 224.
+
+#### Papers that omit details
+
+  - [Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Multi-Similarity_Loss_With_General_Pair_Weighting_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
 
     - [Freezes batchnorm parameters in their code](https://github.com/MalongTech/research-ms-loss/blob/master/ret_benchmark/utils/freeze_bn.py){target=_blank}, but this is not mentioned in the paper.
   
-  - Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+  - [Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)](https://openaccess.thecvf.com/content_CVPR_2020/papers/Kim_Proxy_Anchor_Loss_for_Deep_Metric_Learning_CVPR_2020_paper.pdf)
     
     - Uses the [sum of Global Average Pooling (GAP) and Global Max Pooling (GMP)](https://github.com/tjddus9597/Proxy-Anchor-CVPR2020/issues/1){target=_blank}. Competitor papers use just GAP. This is not mentioned in the paper. 
 
 
 ## Examples to back up other claims in section 2.1
 
-#### “Most papers claim to apply the following transformations: resize the image to 256 x 256, randomly crop to 227 x 227, and do a horizontal flip with 50% chance”. The following papers support this claim:
+#### “Most papers claim to apply the following transformations: resize the image to 256 x 256, randomly crop to 227 x 227, and do a horizontal flip with 50% chance”. The following papers support this claim
 
- - Deep Metric Learning via Lifted Structured Feature Embedding (CVPR 2016)
- - Deep Spectral Clustering Learning (ICML 2017)
- - Deep Metric Learning via Facility Location (CVPR 2017)
- - No Fuss Distance Metric Learning using Proxies (ICCV 2017)
- - Deep Metric Learning with Angular Loss (ICCV 2017)
- - Sampling Matters in Deep Embedding Learning (ICCV 2017)
- - Deep Adversarial Metric Learning (CVPR 2018)
- - Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)
- - Hardness-Aware Deep Metric Learning (CVPR 2019)
- - Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)
- - Stochastic Class-based Hard Example Mining for Deep Metric Learning (CVPR 2019)
- - Ranked List Loss for Deep Metric Learning (CVPR 2019)
- - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
- - Deep Metric Learning to Rank (CVPR 2019)
- - Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
- - MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)
- - SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
- - Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+ - [Deep Metric Learning via Lifted Structured Feature Embedding (CVPR 2016)](https://arxiv.org/pdf/1511.06452.pdf)
+ - [Deep Spectral Clustering Learning (ICML 2017)](https://www.cs.toronto.edu/~urtasun/publications/law_etal_icml17.pdf)
+ - [Deep Metric Learning via Facility Location (CVPR 2017)](https://openaccess.thecvf.com/content_cvpr_2017/papers/Song_Deep_Metric_Learning_CVPR_2017_paper.pdf)
+ - [No Fuss Distance Metric Learning using Proxies (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Movshovitz-Attias_No_Fuss_Distance_ICCV_2017_paper.pdf)
+ - [Deep Metric Learning with Angular Loss (ICCV 2017)](https://arxiv.org/pdf/1708.01682.pdf)
+ - [Sampling Matters in Deep Embedding Learning (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Wu_Sampling_Matters_in_ICCV_2017_paper.pdf)
+ - [Deep Adversarial Metric Learning (CVPR 2018)](https://openaccess.thecvf.com/content_cvpr_2018/papers/Duan_Deep_Adversarial_Metric_CVPR_2018_paper.pdf)
+ - [Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)](https://labs.pinterest.com/user/themes/pin_labs/assets/paper/classification-strong-baseline-bmvc-2019.pdf)
+ - [Hardness-Aware Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+ - [Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Xu_Deep_Asymmetric_Metric_Learning_via_Rich_Relationship_Mining_CVPR_2019_paper.pdf)
+ - [Stochastic Class-based Hard Example Mining for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Suh_Stochastic_Class-Based_Hard_Example_Mining_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+ - [Ranked List Loss for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Ranked_List_Loss_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+ - [Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Multi-Similarity_Loss_With_General_Pair_Weighting_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+ - [Deep Metric Learning to Rank (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Cakir_Deep_Metric_Learning_to_Rank_CVPR_2019_paper.pdf)
+ - [Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Sanakoyeu_Divide_and_Conquer_the_Embedding_Space_for_Metric_Learning_CVPR_2019_paper.pdf)
+ - [MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Roth_MIC_Mining_Interclass_Characteristics_for_Improved_Metric_Learning_ICCV_2019_paper.pdf)
+ - [SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Qian_SoftTriple_Loss_Deep_Metric_Learning_Without_Triplet_Sampling_ICCV_2019_paper.pdf)
+ - [Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)](https://openaccess.thecvf.com/content_CVPR_2020/papers/Kim_Proxy_Anchor_Loss_for_Deep_Metric_Learning_CVPR_2020_paper.pdf)
 
 
-#### Papers categorized by the optimizer they use:
+#### Papers categorized by the optimizer they use
 
  - SGD:
  
-	- Deep Spectral Clustering Learning (ICML 2017)
-	- Deep Metric Learning with Angular Loss (ICCV 2017)
-	- Hard-Aware Deeply Cascaded Embedding (ICCV 2017)
-	- Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)
-	- Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)
-	- Ranked List Loss for Deep Metric Learning (CVPR 2019)
-	- Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)
-	- Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)
+	- [Deep Spectral Clustering Learning (ICML 2017)](https://www.cs.toronto.edu/~urtasun/publications/law_etal_icml17.pdf)
+	- [Deep Metric Learning with Angular Loss (ICCV 2017)](https://arxiv.org/pdf/1708.01682.pdf)
+	- [Hard-Aware Deeply Cascaded Embedding (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Yuan_Hard-Aware_Deeply_Cascaded_ICCV_2017_paper.pdf)
+	- [Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)](https://openaccess.thecvf.com/content_ECCV_2018/papers/Ge_Deep_Metric_Learning_ECCV_2018_paper.pdf)
+	- [Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Xu_Deep_Asymmetric_Metric_Learning_via_Rich_Relationship_Mining_CVPR_2019_paper.pdf)
+	- [Ranked List Loss for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Ranked_List_Loss_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+	- [Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)](https://labs.pinterest.com/user/themes/pin_labs/assets/paper/classification-strong-baseline-bmvc-2019.pdf)
+	- [Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Yu_Deep_Metric_Learning_With_Tuplet_Margin_Loss_ICCV_2019_paper.pdf)
 
  - RMSprop:
 
-	- Deep Metric Learning via Facility Location (CVPR 2017)
-	- No Fuss Distance Metric Learning using Proxies (ICCV 2017)
+	- [Deep Metric Learning via Facility Location (CVPR 2017)](https://openaccess.thecvf.com/content_cvpr_2017/papers/Song_Deep_Metric_Learning_CVPR_2017_paper.pdf)
+	- [No Fuss Distance Metric Learning using Proxies (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Movshovitz-Attias_No_Fuss_Distance_ICCV_2017_paper.pdf)
 
  - Adam:
 
-	- Improved Deep Metric Learning with Multi-class N-pair Loss Objective (Neurips 2016)
-	- Sampling Matters in Deep Embedding Learning (ICCV 2017)
-	- Hybrid-Attention based Decoupled Metric Learning for Zero-Shot Image Retrieval (CVPR 2019)
-	- Stochastic Class-based Hard Example Mining for Deep Metric Learning (CVPR 2019)
-	- Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
-	- Deep Metric Learning to Rank (CVPR 2019)
-	- Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
-	- SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
-	- Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)
-	- MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)
+	- [Improved Deep Metric Learning with Multi-class N-pair Loss Objective (Neurips 2016)](https://papers.nips.cc/paper/6200-improved-deep-metric-learning-with-multi-class-n-pair-loss-objective.pdf)
+	- [Sampling Matters in Deep Embedding Learning (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Wu_Sampling_Matters_in_ICCV_2017_paper.pdf)
+	- [Hybrid-Attention based Decoupled Metric Learning for Zero-Shot Image Retrieval (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Chen_Hybrid-Attention_Based_Decoupled_Metric_Learning_for_Zero-Shot_Image_Retrieval_CVPR_2019_paper.pdf)
+	- [Stochastic Class-based Hard Example Mining for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Suh_Stochastic_Class-Based_Hard_Example_Mining_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+	- [Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Wang_Multi-Similarity_Loss_With_General_Pair_Weighting_for_Deep_Metric_Learning_CVPR_2019_paper.pdf)
+	- [Deep Metric Learning to Rank (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Cakir_Deep_Metric_Learning_to_Rank_CVPR_2019_paper.pdf)
+	- [Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Sanakoyeu_Divide_and_Conquer_the_Embedding_Space_for_Metric_Learning_CVPR_2019_paper.pdf)
+	- [SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Qian_SoftTriple_Loss_Deep_Metric_Learning_Without_Triplet_Sampling_ICCV_2019_paper.pdf)
+	- [Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Jacob_Metric_Learning_With_HORDE_High-Order_Regularizer_for_Deep_Embeddings_ICCV_2019_paper.pdf)
+	- [MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Roth_MIC_Mining_Interclass_Characteristics_for_Improved_Metric_Learning_ICCV_2019_paper.pdf)
 
  - AdamW
 
-	- Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+	- [Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)](https://openaccess.thecvf.com/content_CVPR_2020/papers/Kim_Proxy_Anchor_Loss_for_Deep_Metric_Learning_CVPR_2020_paper.pdf)
 
 
-#### Papers that do not use confidence intervals:
+#### Papers that do not use confidence intervals
  - All of the previously mentioned papers
 
 
 
-#### Papers that do not use a validation set:
+#### Papers that do not use a validation set
  - All of the previously mentioned papers
 
 
