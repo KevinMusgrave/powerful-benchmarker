@@ -47,13 +47,188 @@ Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 |**Multi Similarity + Miner**<br/>alpha<br/>beta<br/>base<br/>epsilon|<br/>17.97<br/>75.66<br/>0.77<br/>0.39|<br/>7.49<br/>47.99<br/>0.63<br/>0.72|<br/>15.94<br/>156.61<br/>0.72<br/>0.34|<br/>11.63<br/>55.20<br/>0.85<br/>0.42|
 |**SoftTriple**<br/>weights lr<br/>la<br/>gamma<br/>reg_weight<br/>margin|<br/>5.37e-05<br/>78.02<br/>58.95<br/>0.3754<br/>0.4307|<br/>1.40e-4<br/>17.69<br/>19.18<br/>0.0669<br/>0.3588|<br/>8.68e-05<br/>100.00<br/>47.90<br/>N/A<br/>0.3145|<br/>1.06e-4<br/>72.12<br/>51.07<br/>0.4430<br/>0.6959|
 
+## Examples of unfair comparisons in metric learning papers
+
+#### Papers that use a better architecture than their competitors, but don’t disclose it.
+
+  - Sampling Matters in Deep Embedding Learning (ICCV 2017)
+
+    - Uses ResNet50, but all competitors use GoogleNet
+
+  - Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)
+
+    - Uses BN-Inception, but all competitors use GoogleNet
+
+  - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+
+    - Uses BN-Inception. Claims better performance than ensemble methods, but the ensemble methods use GoogleNet.
+
+  - Deep Metric Learning to Rank (CVPR 2019)
+
+    - Uses ResNet50. In their SOP table, only 1 out of 11 competitor methods use ResNet50. All others use BN-Inception or GoogleNet. Claims better performance than ensemble methods, but the ensemble methods use GoogleNet. 
+
+  - Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
+
+    - Uses ResNet50. In their Cars196 and SOP tables, only 1 out of 15 competitor methods use ResNet50. The rest use GoogleNet or BN-Inception. The same is true for their CUB200 results, but in that table, they re-implement two of the competitors to use ResNet50.
+
+  - SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
+  
+    - Uses BN-Inception. Compares with N-pairs and HDC, but doesn’t mention that these use GoogleNet. They only mention the competitors’ architectures when the competitors use an equal or superior network. Specifically, they mention that the Margin loss uses ResNet50,and HTL uses BN-Inception.
+
+  - Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)
+  
+    - Uses ResNet50. In their SOP table, only 1 out of 10 competitors use ResNet50, and in their CUB200 and Cars196 tables, only 1 out of 8 competitors use ResNet50. The rest use GoogleNet or BN-Inception. They also claim better performance than ensemble methods, but the ensemble methods use GoogleNet.
+
+
+
+#### Papers that use a higher dimensionality than their competitors, but don’t disclose it.
+
+  - Sampling Matters in Deep Embedding Learning (ICCV 2017)
+
+    - Uses size 128. CUB200 table: 4 out of 7 use size 64. Cars196: 4 out of 5 use size 64. SOP: 4 out of 7 use size 64.
+
+  - Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)
+
+    - Uses size 512. The top two non-ensemble competitor results use size 384 and 64.
+
+  - Ranked List Loss for Deep Metric Learning (CVPR 2019)
+    
+    - Uses size 512 or 1536. For all 3 datasets, 5 out of the 6 competitor results use size 64.
+
+  - Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)
+    
+    - Uses size 512. The only competing method that uses the same architecture, uses size 128.
+
+
+#### Papers that claim to do a simple 256 resize and 227 random crop, but actually use the more advanced RandomResizedCrop method:
+
+  - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+
+    - [Link to line in code](https://github.com/MalongTech/research-ms-loss/blob/master/ret_benchmark/data/transforms/build.py#L17){target=_blank}
+
+  - Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
+
+    - [Link to line in code](https://github.com/CompVis/metric-learning-divide-and-conquer/blob/master/lib/data/set/transform.py#L51){target=_blank}
+
+  - MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)
+
+    - [Link to line in code](https://github.com/Confusezius/ICCV2019_MIC/blob/master/datasets.py#L324){target=_blank}
+
+  - SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
+
+    - [Link to line in code](https://github.com/idstcv/SoftTriple/blob/master/train.py#L99){target=_blank}
+
+  - Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+
+    - [Link to line in code](https://github.com/tjddus9597/Proxy-Anchor-CVPR2020/blob/master/code/dataset/utils.py#L76){target=_blank}
+
+
+#### Papers that omit details:
+
+  - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+
+    - [Freezes batchnorm parameters in their code](https://github.com/MalongTech/research-ms-loss/blob/master/ret_benchmark/utils/freeze_bn.py){target=_blank}, but this is not mentioned in the paper.
+  
+  - Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+    
+    - Uses the [sum of Global Average Pooling (GAP) and Global Max Pooling (GMP)](https://github.com/tjddus9597/Proxy-Anchor-CVPR2020/issues/1){target=_blank}. Competitor papers use just GAP. This is not mentioned in the paper. 
+
+
+## Examples to back up other claims in section 2.1
+
+#### “Most papers claim to apply the following transformations: resize the image to 256 x 256, randomly crop to 227 x 227, and do a horizontal flip with 50% chance”. The following papers support this claim:
+
+ - Deep Metric Learning via Lifted Structured Feature Embedding (CVPR 2016)
+ - Deep Spectral Clustering Learning (ICML 2017)
+ - Deep Metric Learning via Facility Location (CVPR 2017)
+ - No Fuss Distance Metric Learning using Proxies (ICCV 2017)
+ - Deep Metric Learning with Angular Loss (ICCV 2017)
+ - Sampling Matters in Deep Embedding Learning (ICCV 2017)
+ - Deep Adversarial Metric Learning (CVPR 2018)
+ - Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)
+ - Hardness-Aware Deep Metric Learning (CVPR 2019)
+ - Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)
+ - Stochastic Class-based Hard Example Mining for Deep Metric Learning (CVPR 2019)
+ - Ranked List Loss for Deep Metric Learning (CVPR 2019)
+ - Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+ - Deep Metric Learning to Rank (CVPR 2019)
+ - Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
+ - MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)
+ - SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
+ - Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+
+
+#### Papers categorized by the optimizer they use:
+
+ - SGD:
+ 
+	- Deep Spectral Clustering Learning (ICML 2017)
+	- Deep Metric Learning with Angular Loss (ICCV 2017)
+	- Hard-Aware Deeply Cascaded Embedding (ICCV 2017)
+	- Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)
+	- Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)
+	- Ranked List Loss for Deep Metric Learning (CVPR 2019)
+	- Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)
+	- Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)
+
+ - RMSprop:
+
+	- Deep Metric Learning via Facility Location (CVPR 2017)
+	- No Fuss Distance Metric Learning using Proxies (ICCV 2017)
+
+ - Adam:
+
+	- Improved Deep Metric Learning with Multi-class N-pair Loss Objective (Neurips 2016)
+	- Sampling Matters in Deep Embedding Learning (ICCV 2017)
+	- Hybrid-Attention based Decoupled Metric Learning for Zero-Shot Image Retrieval (CVPR 2019)
+	- Stochastic Class-based Hard Example Mining for Deep Metric Learning (CVPR 2019)
+	- Multi-Similarity Loss with General Pair Weighting for Deep Metric Learning (CVPR 2019)
+	- Deep Metric Learning to Rank (CVPR 2019)
+	- Divide and Conquer the Embedding Space for Metric Learning (CVPR 2019)
+	- SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)
+	- Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)
+	- MIC: Mining Interclass Characteristics for Improved Metric Learning (ICCV 2019)
+
+ - AdamW
+
+	- Proxy Anchor Loss for Deep Metric Learning (CVPR 2020)
+
+
+#### Papers that do not use confidence intervals:
+ - All of the previously mentioned papers
+
+
+
+#### Papers that do not use a validation set:
+ - All of the previously mentioned papers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Frequently Asked Questions
 
 #### Do you have slides that accompany the paper?
 Slides are [here](https://docs.google.com/presentation/d/1KnLDFzMKLYlnMzMDc7wyKHVAh5dJ9z6Fs1qto4OqQFY/edit?usp=sharing){target=_blank}.
 
-#### Do you have examples to back up the claims in section 2.1 of the paper?
-See [this document](https://docs.google.com/document/d/1xx56SwR2a0JMWaiHgi2oIdCaSlMFMPMPlh_RBM94paw/edit?usp=sharing){target=_blank}.
 
 #### Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?
 Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.
@@ -83,10 +258,11 @@ A negative value should be equivalent to a margin of 0, because the distance bet
 ## Reproducing results
 ### Download the experiment folder
 
-1. Go to the [benchmark spreadsheet](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/)
-2. Find the experiment you want to reproduce, and click on the link in the "Config files" column.
-3. You'll see 3 folders: one for CUB, one for Cars, and one for SOP. Open the folder for the dataset you want to train on.
-4. Now you'll see several files and folders, one of which ends in "reproduction0". Download this folder. (It will include saved models. If you don't want to download the saved models, go into the folder and download just the "configs" folder.)
+1. Download [run.py and set the default flags](../index.md#getting-started)
+2. Go to the [benchmark spreadsheet](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/)
+3. Find the experiment you want to reproduce, and click on the link in the "Config files" column.
+4. You'll see 3 folders: one for CUB, one for Cars, and one for SOP. Open the folder for the dataset you want to train on.
+5. Now you'll see several files and folders, one of which ends in "reproduction0". Download this folder. (It will include saved models. If you don't want to download the saved models, go into the folder and download just the "configs" folder.)
 
 ### Command line scripts
 Normally reproducing results is as easy as downloading an experiment folder, and [using the ```reproduce_results``` flag](../index.md#reproduce-an-experiment). However, there have been significant changes to the API since these experiments were run, so there are a couple of extra steps required, and they depend on the dataset. 
