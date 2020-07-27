@@ -9,8 +9,7 @@ pip install powerful-benchmarker
 ```
 
 ## Modules that can be benchmarked
-See [the list of default modules](modules.md).
-You can add other classes and modules by using the [register functionality](custom.md).
+See [the list of default modules](modules.md). You can add other classes and modules by using the [register functionality](custom.md).
 
 
 

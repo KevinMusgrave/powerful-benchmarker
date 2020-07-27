@@ -4,7 +4,7 @@ nav:
     - Command Line Syntax: cl_syntax.md
     - Yaml Syntax: yaml_syntax.md
     - Hyperparameter Optimization: hyperparams.md
-    - Modules You Can Access: modules.md
+    - Modules Available By Default : modules.md
     - Adding Custom Modules: custom.md
     - Default Config File Guide: 
       - config_dataset: configs/config_dataset.md
