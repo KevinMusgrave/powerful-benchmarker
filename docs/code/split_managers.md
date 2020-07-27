@@ -1,5 +1,7 @@
 # Split Managers
 
+Split managers take a dataset and form cross-validation splits based on some criteria.
+
 ## BaseSplitManager
 
 ## ClassDisjointSplitManager
@@ -8,6 +10,6 @@
 
 ## IndexSplitManager
 
-## PredefinedSplitManager
+## MLRCSplitManager
 
 ## SplitSchemeHolder

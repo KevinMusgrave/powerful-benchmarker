@@ -127,7 +127,7 @@ Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 
   - [Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Jacob_Metric_Learning_With_HORDE_High-Order_Regularizer_for_Deep_Embeddings_ICCV_2019_paper.pdf)
 
-    - Their algorithm reimplementations use 256, but the referenced paper results use 227 or 224.
+    - Although they do reimplement some algorithms that presumably use a crop size of 256, they also use reference paper results that use 227 or 224.
 
 #### Papers that omit details
 
