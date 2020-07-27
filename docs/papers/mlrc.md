@@ -4,9 +4,11 @@ This page contains additional information for the [ECCV 2020 paper](https://arxi
 
 ## Optimization plots
 
-Click on the links below to view the bayesian optimization plots. 
+Click on the links below to view the bayesian optimization plots. These are also available in the [benchmark spreadsheet](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/).
 
-These are also available in the [benchmark spreadsheet](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/).
+The plots were generated using the [Ax](https://github.com/facebook/Ax){target=_blank} package.
+
+
 
 | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 |-|-|-|-|

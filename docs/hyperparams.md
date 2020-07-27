@@ -2,6 +2,8 @@
 
 ## Bayesian optimization
 
+This library uses the [Ax](https://github.com/facebook/Ax){target=_blank} package for bayesian optimization.
+
 ### Syntax
 To tune hyperparameters using bayesian optimization:
 
