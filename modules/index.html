@@ -15,7 +15,7 @@
     
     
       
-        <title>Modules You Can Access - Powerful Benchmarker</title>
+        <title>Modules Available By Default - Powerful Benchmarker</title>
       
     
     
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#modules-you-can-access" class="md-skip">
+        <a href="#modules-available-by-default" class="md-skip">
           Skip to content
         </a>
       
@@ -88,7 +88,7 @@
           </span>
           <span class="md-header-nav__topic md-ellipsis">
             
-              Modules You Can Access
+              Modules Available By Default
             
           </span>
         </div>
@@ -244,8 +244,8 @@
       
     
     
-    <a href="./" title="Modules You Can Access" class="md-nav__link md-nav__link--active">
-      Modules You Can Access
+    <a href="./" title="Modules Available By Default" class="md-nav__link md-nav__link--active">
+      Modules Available By Default
     </a>
     
   </li>
@@ -604,51 +604,67 @@
                   
                 
                 
-                <h1 id="modules-you-can-access">Modules You Can Access<a class="headerlink" href="#modules-you-can-access" title="Permanent link">&para;</a></h1>
-<p>By default, you can access the following modules via the command line and the yaml config files:</p>
+                <h1 id="modules-available-by-default">Modules Available By Default<a class="headerlink" href="#modules-available-by-default" title="Permanent link">&para;</a></h1>
+<p>With this library, objects are created based on the class names and parameters specified in the config files or at the command line. For example, <code>shufflenet_v2_x1_0</code> is one of the models in the <code>torchvision.models</code> module, so you can use it for your experiment like this:</p>
+<p>In a config file:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">models</span><span class="p">:</span>
+  <span class="nt">trunk</span><span class="p">:</span>
+    <span class="nt">shufflenet_v2_x1_0</span><span class="p">:</span>
+      <span class="nt">pretrained</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+</code></pre></div>
+
+
+<p>At the command line:</p>
+<div class="codehilite"><pre><span></span><code>--models~OVERRIDE~ <span class="o">{</span>trunk: <span class="o">{</span>shufflenet_v2_x1_0: <span class="o">{</span>pretrained: True<span class="o">}}}</span>
+</code></pre></div>
+
+
+<p>By default, the following modules are available.</p>
 <ul>
-<li>Losses<ul>
-<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/losses/">pytorch_metric_learning.losses</a></li>
-<li><a href="https://pytorch.org/docs/stable/nn.html">torch.nn</a></li>
-</ul>
-</li>
-<li>Miners<ul>
-<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/miners/">pytorch_metric_learning.miners</a></li>
-</ul>
-</li>
-<li>Samplers<ul>
-<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/samplers/">pytorch_metric_learning.samplers</a></li>
-<li><a href="https://pytorch.org/docs/stable/data.html">torch.utils.data</a></li>
-</ul>
-</li>
-<li>Trainers<ul>
-<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/trainers/">pytorch_metric_learning.trainers</a></li>
-</ul>
-</li>
-<li>Testers<ul>
-<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/testers/">pytorch_metric_learning.testers</a></li>
-</ul>
-</li>
 <li>Models<ul>
-<li><a href="https://github.com/Cadene/pretrained-models.pytorch">pretrainedmodels</a></li>
-<li><a href="https://pytorch.org/docs/stable/torchvision/models.html">torchvision.models</a></li>
+<li><a href="https://github.com/Cadene/pretrained-models.pytorch" target="_blank">pretrainedmodels</a></li>
+<li><a href="https://pytorch.org/docs/stable/torchvision/models.html" target="_blank">torchvision.models</a></li>
 </ul>
 </li>
 <li>Optimizers<ul>
-<li><a href="https://pytorch.org/docs/stable/optim.html">torch.optim</a></li>
-<li><a href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate">torch.optim.lr_scheduler</a></li>
+<li><a href="https://pytorch.org/docs/stable/optim.html" target="_blank">torch.optim</a></li>
+<li><a href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate" target="_blank">torch.optim.lr_scheduler</a></li>
 </ul>
 </li>
 <li>Datasets<ul>
-<li><a href="code/datasets">powerful_benchmarker.datasets</a></li>
-<li><a href="https://pytorch.org/docs/stable/torchvision/datasets.html">torchvision.datasets</a></li>
+<li><a href="../code/datasets" target="_blank">powerful_benchmarker.datasets</a></li>
+<li><a href="https://pytorch.org/docs/stable/torchvision/datasets.html" target="_blank">torchvision.datasets</a></li>
 </ul>
 </li>
 <li>Transforms<ul>
-<li><a href="https://pytorch.org/docs/stable/torchvision/transforms.html">torchvision.transforms.transforms</a></li>
+<li><a href="https://pytorch.org/docs/stable/torchvision/transforms.html" target="_blank">torchvision.transforms.transforms</a></li>
+<li><a href="https://github.com/KevinMusgrave/easy-module-attribute-getter/blob/master/easy_module_attribute_getter/custom_transforms.py" target="_blank">easy_module_attribute_getter.custom_transforms</a></li>
+</ul>
+</li>
+<li>Losses<ul>
+<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/losses/" target="_blank">pytorch_metric_learning.losses</a></li>
+<li><a href="https://pytorch.org/docs/stable/nn.html" target="_blank">torch.nn</a></li>
+</ul>
+</li>
+<li>Miners<ul>
+<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/miners/" target="_blank">pytorch_metric_learning.miners</a></li>
+</ul>
+</li>
+<li>Samplers<ul>
+<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/samplers/" target="_blank">pytorch_metric_learning.samplers</a></li>
+<li><a href="https://pytorch.org/docs/stable/data.html" target="_blank">torch.utils.data</a></li>
+</ul>
+</li>
+<li>Trainers<ul>
+<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/trainers/" target="_blank">pytorch_metric_learning.trainers</a></li>
+</ul>
+</li>
+<li>Testers<ul>
+<li><a href="https://kevinmusgrave.github.io/pytorch-metric-learning/testers/" target="_blank">pytorch_metric_learning.testers</a></li>
 </ul>
 </li>
 </ul>
+<p>You can add other classes and modules by using the <a href="../custom/">register functionality</a>.</p>
                 
               
               
