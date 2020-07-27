@@ -448,6 +448,60 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#baseaggregator" class="md-nav__link">
+    BaseAggregator
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseAggregator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update_accuracies" class="md-nav__link">
+    update_accuracies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#record_accuracies" class="md-nav__link">
+    record_accuracies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_accuracy_and_standard_error" class="md-nav__link">
+    get_accuracy_and_standard_error
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_aggregate_performance" class="md-nav__link">
+    get_aggregate_performance
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#meanaggregator" class="md-nav__link">
     MeanAggregator
   </a>
@@ -630,6 +684,60 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#baseaggregator" class="md-nav__link">
+    BaseAggregator
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseAggregator">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#update_accuracies" class="md-nav__link">
+    update_accuracies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#record_accuracies" class="md-nav__link">
+    record_accuracies
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_accuracy_and_standard_error" class="md-nav__link">
+    get_accuracy_and_standard_error
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_aggregate_performance" class="md-nav__link">
+    get_aggregate_performance
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#meanaggregator" class="md-nav__link">
     MeanAggregator
   </a>
@@ -657,7 +765,44 @@
                 
                 
                 <h1 id="aggregators">Aggregators<a class="headerlink" href="#aggregators" title="Permanent link">&para;</a></h1>
+<p>Given the accuracies of multiple models, an aggregator will return a single value representing the total score.</p>
+<h2 id="baseaggregator">BaseAggregator<a class="headerlink" href="#baseaggregator" title="Permanent link">&para;</a></h2>
+<p>The base aggregator class.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.aggregators</span> <span class="kn">import</span> <span class="n">BaseAggregator</span>
+<span class="n">BaseAggregator</span><span class="p">()</span>
+</code></pre></div>
+
+
+<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<h4 id="update_accuracies">update_accuracies<a class="headerlink" href="#update_accuracies" title="Permanent link">&para;</a></h4>
+<p>Updates the internal state with the accuracy for a particular split scheme and splits.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">update_accuracies</span><span class="p">(</span><span class="n">split_scheme_name</span><span class="p">,</span> <span class="n">splits_to_eval</span><span class="p">,</span> <span class="n">hooks</span><span class="p">,</span> <span class="n">tester</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h4 id="record_accuracies">record_accuracies<a class="headerlink" href="#record_accuracies" title="Permanent link">&para;</a></h4>
+<p>Saves the internal state to the record keeper (CSV, SQLite, and tensorboard).</p>
+<div class="codehilite"><pre><span></span><code><span class="n">record_accuracies</span><span class="p">(</span><span class="n">splits_to_eval</span><span class="p">,</span> <span class="n">meta_record_keeper</span><span class="p">,</span> <span class="n">hooks</span><span class="p">,</span> <span class="n">tester</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h4 id="get_accuracy_and_standard_error">get_accuracy_and_standard_error<a class="headerlink" href="#get_accuracy_and_standard_error" title="Permanent link">&para;</a></h4>
+<p>If more than one split scheme is used, then the aggregate accuracy and standard error of the mean is returned. Otherwise, just the aggregate accuracy is returned.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">get_accuracy_and_standard_error</span><span class="p">(</span><span class="n">hooks</span><span class="p">,</span> <span class="n">tester</span><span class="p">,</span> <span class="n">meta_record_keeper</span><span class="p">,</span> <span class="n">num_split_schemes</span><span class="p">,</span> <span class="n">split_name</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h4 id="get_aggregate_performance">get_aggregate_performance<a class="headerlink" href="#get_aggregate_performance" title="Permanent link">&para;</a></h4>
+<p>Must be implemented by the child class.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">get_aggregate_performance</span><span class="p">(</span><span class="n">accuracy_per_split</span><span class="p">)</span>
+</code></pre></div>
+
+
 <h2 id="meanaggregator">MeanAggregator<a class="headerlink" href="#meanaggregator" title="Permanent link">&para;</a></h2>
+<p>Returns the mean accuracy of multiple models.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.aggregators</span> <span class="kn">import</span> <span class="n">MeanAggregator</span>
+<span class="n">MeanAggregator</span><span class="p">()</span>
+</code></pre></div>
                 
               
               

@@ -476,12 +476,58 @@
     ListOfModels
   </a>
   
+    <nav class="md-nav" aria-label="ListOfModels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forward" class="md-nav__link">
+    forward
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#mlp" class="md-nav__link">
     MLP
   </a>
+  
+    <nav class="md-nav" aria-label="MLP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -641,12 +687,58 @@
     ListOfModels
   </a>
   
+    <nav class="md-nav" aria-label="ListOfModels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forward" class="md-nav__link">
+    forward
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#mlp" class="md-nav__link">
     MLP
   </a>
+  
+    <nav class="md-nav" aria-label="MLP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters_1" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -672,7 +764,40 @@
                 
                 <h1 id="architectures">Architectures<a class="headerlink" href="#architectures" title="Permanent link">&para;</a></h1>
 <h2 id="listofmodels">ListOfModels<a class="headerlink" href="#listofmodels" title="Permanent link">&para;</a></h2>
+<p>Turns a list of models into a single model. The specific behavior depends on the init parameters</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.architectures.misc_models</span> <span class="kn">import</span> <span class="n">ListOfModels</span>
+<span class="n">ListOfModels</span><span class="p">(</span><span class="n">list_of_models</span><span class="p">,</span> <span class="n">input_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">operation_before_concat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</code></pre></div>
+
+
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>list_of_models</code>: A list of PyTorch models. The list will be converted into <code>torch.nn.ModuleList(list_of_models)</code>.</li>
+<li><code>input_sizes</code>: A list of numbers, with the same length as <code>list_of_models</code>. <code>input_sizes[i]</code> is the expected input size of <code>list_of_models[i]</code>. Can also be left as <code>None</code>.</li>
+<li><code>operation_before_concat</code>: A function that is applied to the output of <code>list_of_models[i]</code> before being concatenated with the output of the other models.</li>
+</ul>
+<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<h4 id="forward">forward<a class="headerlink" href="#forward" title="Permanent link">&para;</a></h4>
+<p>The standard PyTorch <code>forward</code> method, but the behavior differs depending on the value of <code>self.input_sizes</code>.</p>
+<p>If <code>self.input_sizes</code> is None, then each <code>list_of_models[i]</code> will receive the entire input <code>x</code>.</p>
+<p>If <code>self.input_sizes</code> is a list, then:</p>
+<ul>
+<li><code>list_of_models[0]</code> will receive <code>x[:self.input_sizes[0]]</code></li>
+<li><code>list_of_models[1]</code> will receive <code>x[self.input_sizes[0]:self.input_sizes[1]]</code></li>
+<li>etc.</li>
+</ul>
 <h2 id="mlp">MLP<a class="headerlink" href="#mlp" title="Permanent link">&para;</a></h2>
+<p>A very simple multi layer perceptron.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.architectures.misc_models</span> <span class="kn">import</span> <span class="n">MLP</span>
+<span class="n">MLP</span><span class="p">(</span><span class="n">layer_sizes</span><span class="p">,</span> <span class="n">final_relu</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3 id="parameters_1">Parameters<a class="headerlink" href="#parameters_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>layer_sizes</code>: A list of numbers, where <code>layer_sizes[0]</code> is the size of the input, and <code>layer_sizes[-1]</code> is the size of the output. </li>
+<li><code>final_relu</code>: If True, will apply ReLU to the final layer's input.</li>
+</ul>
                 
               
               

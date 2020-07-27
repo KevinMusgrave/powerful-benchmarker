@@ -496,6 +496,53 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#baseensemble" class="md-nav__link">
+    BaseEnsemble
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseEnsemble">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_list_of_models" class="md-nav__link">
+    get_list_of_models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_ensemble_model" class="md-nav__link">
+    create_ensemble_model
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#concatenateembeddings" class="md-nav__link">
     ConcatenateEmbeddings
   </a>
@@ -630,6 +677,53 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#baseensemble" class="md-nav__link">
+    BaseEnsemble
+  </a>
+  
+    <nav class="md-nav" aria-label="BaseEnsemble">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_list_of_models" class="md-nav__link">
+    get_list_of_models
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create_ensemble_model" class="md-nav__link">
+    create_ensemble_model
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#concatenateembeddings" class="md-nav__link">
     ConcatenateEmbeddings
   </a>
@@ -657,7 +751,38 @@
                 
                 
                 <h1 id="ensembles">Ensembles<a class="headerlink" href="#ensembles" title="Permanent link">&para;</a></h1>
+<p>Ensembles take multiple models and combine them into a single model.</p>
+<h2 id="baseensemble">BaseEnsemble<a class="headerlink" href="#baseensemble" title="Permanent link">&para;</a></h2>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.ensembles</span> <span class="kn">import</span> <span class="n">BaseEnsemble</span>
+<span class="n">BaseEnsemble</span><span class="p">(</span><span class="n">normalize_embeddings</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_trunk_output</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>normalize_embeddings</code>: Perform L2 normalization if True. The specific details are determined by the child class.</li>
+<li><code>use_trunk_output</code>: Use the output of the trunk of the ensemble. The specific details are determined by the child class.</li>
+</ul>
+<h3 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h3>
+<h4 id="get_list_of_models">get_list_of_models<a class="headerlink" href="#get_list_of_models" title="Permanent link">&para;</a></h4>
+<p>Loads models given a list of split scheme folders, and returns a list containing the loaded models.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">get_list_of_models</span><span class="p">(</span><span class="n">model_factory</span><span class="p">,</span> <span class="n">model_args</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">factory_kwargs</span><span class="p">,</span> <span class="n">split_folders</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h4 id="create_ensemble_model">create_ensemble_model<a class="headerlink" href="#create_ensemble_model" title="Permanent link">&para;</a></h4>
+<p>Returns a single trunk and embedder, given a list of trunks and embedders. Must be implemented by the child class.</p>
+<div class="codehilite"><pre><span></span><code><span class="n">create_ensemble_model</span><span class="p">(</span><span class="n">list_of_trunks</span><span class="p">,</span> <span class="n">list_of_embedders</span><span class="p">)</span>
+</code></pre></div>
+
+
 <h2 id="concatenateembeddings">ConcatenateEmbeddings<a class="headerlink" href="#concatenateembeddings" title="Permanent link">&para;</a></h2>
+<p>Returns a trunk that outputs the concatenation of multiple trunk models.</p>
+<p>Returns an embedder that outputs the concatenation of multiple embedder models.</p>
+<p>The trunk's output can be passed into the embedder.</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">powerful_benchmarker.ensembles</span> <span class="kn">import</span> <span class="n">ConcatenateEmbeddings</span>
+<span class="n">ConcatenateEmbeddings</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</code></pre></div>
                 
               
               
