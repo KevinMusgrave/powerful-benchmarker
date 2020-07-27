@@ -9,19 +9,7 @@ pip install powerful-benchmarker
 ```
 
 ## Modules that can be benchmarked
-By default, you can access the following modules via the command line and the yaml config files:
-
-- [pytorch-metric-learning](https://github.com/KevinMusgrave/pytorch-metric-learning)
-- [powerful_benchmarker.datasets](code/datasets)
-- [torch.nn](https://pytorch.org/docs/stable/nn.html)
-- [torch.optim](https://pytorch.org/docs/stable/optim.html)
-- [torch.optim.lr_scheduler](https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate)
-- [torch.utils.data](https://pytorch.org/docs/stable/data.html)
-- [torchvision.transforms.transforms](https://pytorch.org/docs/stable/torchvision/transforms.html)
-- [torchvision.datasets](https://pytorch.org/docs/stable/torchvision/datasets.html)
-- [torchvision.models](https://pytorch.org/docs/stable/torchvision/models.html)
-- [pretrainedmodels](https://github.com/Cadene/pretrained-models.pytorch)
-
+See [the list of default modules](modules.md).
 You can add other classes and modules by using the [register functionality](custom.md).
 
 
