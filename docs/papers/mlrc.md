@@ -211,25 +211,38 @@ Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
  - All of the previously mentioned papers
 
 
+## What papers report for the contrastive and triplet losses
+
+#### Reported Precision@1 for the Contrastive Loss
+| Paper | CUB200 | Cars196 | SOP |
+|-|-|-|-|
+|[Deep Metric Learning via Lifted Structured Feature Embedding (CVPR 2016)](https://arxiv.org/pdf/1511.06452.pdf)|26.4|21.7|42|
+|[Learning Deep Embeddings with Histogram Loss (NIPS 2016)](https://arxiv.org/pdf/1611.00822.pdf)|26.4|N/A|42|
+|[Hard-Aware Deeply Cascaded Embedding (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Yuan_Hard-Aware_Deeply_Cascaded_ICCV_2017_paper.pdf)|26.4|21.7|42|
+|[Sampling Matters in Deep Embedding Learning (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Wu_Sampling_Matters_in_ICCV_2017_paper.pdf)|N/A|N/A|30.1|
+|[Deep Adversarial Metric Learning (CVPR 2018)](https://openaccess.thecvf.com/content_cvpr_2018/papers/Duan_Deep_Adversarial_Metric_CVPR_2018_paper.pdf)|27.2|27.6|37.5|
+|[Attention-based Ensemble for Deep Metric Learning (ECCV 2018)](https://openaccess.thecvf.com/content_ECCV_2018/papers/Wonsik_Kim_Attention-based_Ensemble_for_ECCV_2018_paper.pdf)|26.4|21.7|42|
+|[Deep Variational Metric Learning (ECCV 2018)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf)|32.8|35.8|37.4|
+|[Classification is a Strong Baseline for Deep Metric Learning (BMVC 2019)](https://labs.pinterest.com/user/themes/pin_labs/assets/paper/classification-strong-baseline-bmvc-2019.pdf)|26.4|21.7|42|
+|[Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Xu_Deep_Asymmetric_Metric_Learning_via_Rich_Relationship_Mining_CVPR_2019_paper.pdf)|27.2|27.6|37.5|
+|[Hardness-Aware Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf)|27.2|27.6|37.5|
+|[Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Jacob_Metric_Learning_With_HORDE_High-Order_Regularizer_for_Deep_Embeddings_ICCV_2019_paper.pdf)|55|72.2|N/A| 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#### Reported Precision@1 for the Triplet Loss
+| Paper | CUB200 | Cars196 | SOP |
+|-|-|-|-|
+|[Deep Metric Learning via Lifted Structured Feature Embedding (CVPR 2016)](https://arxiv.org/pdf/1511.06452.pdf)|36.1|39.1|42.1|
+|[Learning Deep Embeddings with Histogram Loss (NIPS 2016)](https://arxiv.org/pdf/1611.00822.pdf)|36.1|N/A|42.1|
+|[Improved Deep Metric Learning with Multi-class N-pair Loss Objective (NIPS 2016)](https://papers.nips.cc/paper/6200-improved-deep-metric-learning-with-multi-class-n-pair-loss-objective.pdf)|43.3|53.84|53.32|
+|[Hard-Aware Deeply Cascaded Embedding (ICCV 2017)](https://openaccess.thecvf.com/content_ICCV_2017/papers/Yuan_Hard-Aware_Deeply_Cascaded_ICCV_2017_paper.pdf)|36.1|39.1|42.1|
+|[Deep Metric Learning with Angular Loss (ICCV 2017)](https://arxiv.org/pdf/1708.01682.pdf)|42.2|45.5|56.5|
+|[Deep Adversarial Metric Learning (CVPR 2018)](https://openaccess.thecvf.com/content_cvpr_2018/papers/Duan_Deep_Adversarial_Metric_CVPR_2018_paper.pdf)|35.9|45.1|53.9|
+|[Deep Variational Metric Learning (ECCV 2018)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf)|39.8|58.5|54.9|
+|[Deep Metric Learning with Hierarchical Triplet Loss (ECCV 2018)](https://openaccess.thecvf.com/content_ECCV_2018/papers/Ge_Deep_Metric_Learning_ECCV_2018_paper.pdf)|55.9|79.2|72.6|
+|[Hardness-Aware Deep Metric Learning (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf)|35.9|45.1|53.9|
+|[Deep Asymmetric Metric Learning via Rich Relationship Mining (CVPR 2019)](https://openaccess.thecvf.com/content_CVPR_2019/papers/Xu_Deep_Asymmetric_Metric_Learning_via_Rich_Relationship_Mining_CVPR_2019_paper.pdf)|35.9|45.1|53.9|
+|[Metric Learning With HORDE: High-Order Regularizer for Deep Embeddings (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Jacob_Metric_Learning_With_HORDE_High-Order_Regularizer_for_Deep_Embeddings_ICCV_2019_paper.pdf)|50.5|65.2|N/A| 
 
 
 ## Frequently Asked Questions
