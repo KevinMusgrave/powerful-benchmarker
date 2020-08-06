@@ -75,7 +75,7 @@ Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 
   - [SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Qian_SoftTriple_Loss_Deep_Metric_Learning_Without_Triplet_Sampling_ICCV_2019_paper.pdf)
   
-    - Uses BN-Inception. Compares with N-pairs and HDC, but doesn’t mention that these use GoogleNet. They only mention the competitors’ architectures when the competitors use an equal or superior network. Specifically, they mention that the Margin loss uses ResNet50,and HTL uses BN-Inception.
+    - Uses BN-Inception. Compares with N-pairs and HDC, but doesn’t mention that these use GoogleNet. They only mention the competitors’ architectures when the competitors use an equal or superior network. Specifically, they mention that the Margin loss uses ResNet50, and HTL uses BN-Inception.
 
   - [Deep Metric Learning with Tuplet Margin Loss (ICCV 2019)](https://openaccess.thecvf.com/content_ICCV_2019/papers/Yu_Deep_Metric_Learning_With_Tuplet_Margin_Loss_ICCV_2019_paper.pdf)
   
@@ -213,6 +213,12 @@ Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 
 ## What papers report for the contrastive and triplet losses
 
+The tables below are what papers have reported for the contrastive and triplet loss, **using convnets**. We know that the papers are reporting convnet results because they explicitly say so. For example:
+
+* [Lifted Structure Loss](https://arxiv.org/pdf/1511.06452.pdf): See figures 6, 7, and 12, which indicate that the contrastive and triplet results were obtained using GoogleNet. These results have been cited several times in recent papers.
+* [Deep Adversarial Metric Learning](https://openaccess.thecvf.com/content_cvpr_2018/papers/Duan_Deep_Adversarial_Metric_CVPR_2018_paper.pdf): See tables 1, 2, and 3, and this quote from the bottom of page 6 / top of page 7: "For all the baseline methods and DAML, we employed the same GoogLeNet architecture pre-trained on ImageNet for fair comparisons"
+* [Hardness-Aware Deep Metric Learning](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf): See tables 1, 2, and 3, and this quote from page 8: "We evaluated all the methods mentioned above using the same pretrained CNN model for fair comparison."
+
 #### Reported Precision@1 for the Contrastive Loss
 | Paper | CUB200 | Cars196 | SOP |
 |-|-|-|-|
@@ -254,6 +260,9 @@ Slides are [here](https://docs.google.com/presentation/d/1KnLDFzMKLYlnMzMDc7wyKH
 #### Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?
 Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.
 
+#### Why did you use BN-Inception?
+We chose this architecture because it is commonly used in recent metric learning papers.
+
 #### Why was the batch size set to 32 for most of the results?
 This was done for the sake of computational efficiency. Note that there are: 
 
@@ -274,6 +283,12 @@ We did test one loss+miner combination (Multi-similarity loss + their mining met
 #### For the contrastive loss, why is the optimal positive margin a negative value?
 
 A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.
+
+
+#### In Figure 2 (papers vs reality) why do you use Precision@1 instead of MAP@R?
+None of the referenced papers report MAP@R. Since Figure 2a is meant to show reported results, we had to use a metric that was actually reported, i.e. Precision@1. We used the same metric for Figure 2b so that the two graphs could be compared directly side by side. But for the sake of completeness, here's Figure 2b using MAP@R:
+
+![reality_over_time_mapr](mlrc_plots/reality_over_time_mapr.png)
 
 
 ## Reproducing results
