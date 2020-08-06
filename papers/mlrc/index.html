@@ -738,6 +738,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#why-did-you-use-bn-inception" class="md-nav__link">
+    Why did you use BN-Inception?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" class="md-nav__link">
     Why was the batch size set to 32 for most of the results?
   </a>
@@ -754,6 +761,13 @@
           <li class="md-nav__item">
   <a href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" class="md-nav__link">
     For the contrastive loss, why is the optimal positive margin a negative value?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-figure-2-papers-vs-reality-why-do-you-use-precision1-instead-of-mapr" class="md-nav__link">
+    In Figure 2 (papers vs reality) why do you use Precision@1 instead of MAP@R?
   </a>
   
 </li>
@@ -987,6 +1001,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#why-did-you-use-bn-inception" class="md-nav__link">
+    Why did you use BN-Inception?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" class="md-nav__link">
     Why was the batch size set to 32 for most of the results?
   </a>
@@ -1003,6 +1024,13 @@
           <li class="md-nav__item">
   <a href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" class="md-nav__link">
     For the contrastive loss, why is the optimal positive margin a negative value?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-figure-2-papers-vs-reality-why-do-you-use-precision1-instead-of-mapr" class="md-nav__link">
+    In Figure 2 (papers vs reality) why do you use Precision@1 instead of MAP@R?
   </a>
   
 </li>
@@ -1316,7 +1344,7 @@
 <li>
 <p><a href="https://openaccess.thecvf.com/content_ICCV_2019/papers/Qian_SoftTriple_Loss_Deep_Metric_Learning_Without_Triplet_Sampling_ICCV_2019_paper.pdf">SoftTriple Loss: Deep Metric Learning Without Triplet Sampling (ICCV 2019)</a></p>
 <ul>
-<li>Uses BN-Inception. Compares with N-pairs and HDC, but doesn’t mention that these use GoogleNet. They only mention the competitors’ architectures when the competitors use an equal or superior network. Specifically, they mention that the Margin loss uses ResNet50,and HTL uses BN-Inception.</li>
+<li>Uses BN-Inception. Compares with N-pairs and HDC, but doesn’t mention that these use GoogleNet. They only mention the competitors’ architectures when the competitors use an equal or superior network. Specifically, they mention that the Margin loss uses ResNet50, and HTL uses BN-Inception.</li>
 </ul>
 </li>
 <li>
@@ -1485,6 +1513,12 @@
 <li>All of the previously mentioned papers</li>
 </ul>
 <h2 id="what-papers-report-for-the-contrastive-and-triplet-losses">What papers report for the contrastive and triplet losses<a class="headerlink" href="#what-papers-report-for-the-contrastive-and-triplet-losses" title="Permanent link">&para;</a></h2>
+<p>The tables below are what papers have reported for the contrastive and triplet loss, <strong>using convnets</strong>. We know that the papers are reporting convnet results because they explicitly say so. For example:</p>
+<ul>
+<li><a href="https://arxiv.org/pdf/1511.06452.pdf">Lifted Structure Loss</a>: See figures 6, 7, and 12, which indicate that the contrastive and triplet results were obtained using GoogleNet. These results have been cited several times in recent papers.</li>
+<li><a href="https://openaccess.thecvf.com/content_cvpr_2018/papers/Duan_Deep_Adversarial_Metric_CVPR_2018_paper.pdf">Deep Adversarial Metric Learning</a>: See tables 1, 2, and 3, and this quote from the bottom of page 6 / top of page 7: "For all the baseline methods and DAML, we employed the same GoogLeNet architecture pre-trained on ImageNet for fair comparisons"</li>
+<li><a href="https://openaccess.thecvf.com/content_CVPR_2019/papers/Zheng_Hardness-Aware_Deep_Metric_Learning_CVPR_2019_paper.pdf">Hardness-Aware Deep Metric Learning</a>: See tables 1, 2, and 3, and this quote from page 8: "We evaluated all the methods mentioned above using the same pretrained CNN model for fair comparison."</li>
+</ul>
 <h4 id="reported-precision1-for-the-contrastive-loss">Reported Precision@1 for the Contrastive Loss<a class="headerlink" href="#reported-precision1-for-the-contrastive-loss" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
@@ -1648,6 +1682,8 @@
 <p>Slides are <a href="https://docs.google.com/presentation/d/1KnLDFzMKLYlnMzMDc7wyKHVAh5dJ9z6Fs1qto4OqQFY/edit?usp=sharing" target="_blank">here</a>.</p>
 <h4 id="isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size">Isn't it unfair to fix the model, optimizer, learning rate, and embedding size?<a class="headerlink" href="#isnt-it-unfair-to-fix-the-model-optimizer-learning-rate-and-embedding-size" title="Permanent link">&para;</a></h4>
 <p>Our goal was to compare algorithms fairly. To accomplish this, we used the same network, optimizer, learning rate, image transforms, and embedding dimensionality for each algorithm. There is no theoretical reason why changing any of these parameters would benefit one particular algorithm over the rest. If there is no theoretical reason, then we can only speculate, and if we add hyperparameters based on speculation, then the search space becomes too large to explore.</p>
+<h4 id="why-did-you-use-bn-inception">Why did you use BN-Inception?<a class="headerlink" href="#why-did-you-use-bn-inception" title="Permanent link">&para;</a></h4>
+<p>We chose this architecture because it is commonly used in recent metric learning papers.</p>
 <h4 id="why-was-the-batch-size-set-to-32-for-most-of-the-results">Why was the batch size set to 32 for most of the results?<a class="headerlink" href="#why-was-the-batch-size-set-to-32-for-most-of-the-results" title="Permanent link">&para;</a></h4>
 <p>This was done for the sake of computational efficiency. Note that there are: </p>
 <ul>
@@ -1662,6 +1698,9 @@
 <p>We did test one loss+miner combination (Multi-similarity loss + their mining method). But we mainly wanted to do a thorough evaluation of loss functions, because that is the subject of most recent metric learning papers.   </p>
 <h4 id="for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value">For the contrastive loss, why is the optimal positive margin a negative value?<a class="headerlink" href="#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value" title="Permanent link">&para;</a></h4>
 <p>A negative value should be equivalent to a margin of 0, because the distance between positive pairs cannot be negative, and the margin does not contribute to the gradient. So allowing the hyperparameter optimization to explore negative margins was unnecesary, but by the time I realized this, it wasn't worth changing the optimization bounds.</p>
+<h4 id="in-figure-2-papers-vs-reality-why-do-you-use-precision1-instead-of-mapr">In Figure 2 (papers vs reality) why do you use Precision@1 instead of MAP@R?<a class="headerlink" href="#in-figure-2-papers-vs-reality-why-do-you-use-precision1-instead-of-mapr" title="Permanent link">&para;</a></h4>
+<p>None of the referenced papers report MAP@R. Since Figure 2a is meant to show reported results, we had to use a metric that was actually reported, i.e. Precision@1. We used the same metric for Figure 2b so that the two graphs could be compared directly side by side. But for the sake of completeness, here's Figure 2b using MAP@R:</p>
+<p><img alt="reality_over_time_mapr" src="../mlrc_plots/reality_over_time_mapr.png" /></p>
 <h2 id="reproducing-results">Reproducing results<a class="headerlink" href="#reproducing-results" title="Permanent link">&para;</a></h2>
 <h3 id="download-the-experiment-folder">Download the experiment folder<a class="headerlink" href="#download-the-experiment-folder" title="Permanent link">&para;</a></h3>
 <ol>
