@@ -34,7 +34,7 @@ The values below are also available in the [benchmark spreadsheet](https://docs.
 
 Loss function | CUB200 | Cars196 | SOP | CUB200 with Batch 256 |
 |-|-|-|-|-|
-|**Contrastive**<br/>pos_margin<br/>neg_margin|<br/>-0.2000<br/>0.3841|<br/>0.2652<br/>0.5409|<br/>0.2850<br/>0.5130|<br/>0.2227<br/>0.7694|
+|**Contrastive**<br/>pos_margin<br/>neg_margin|<br/>-0.2000<sup>[1](../mlrc/#for-the-contrastive-loss-why-is-the-optimal-positive-margin-a-negative-value)</sup><br/>0.3841|<br/>0.2652<br/>0.5409|<br/>0.2850<br/>0.5130|<br/>0.2227<br/>0.7694|
 |**Triplet**<br/>margin|<br/>0.0961|<br/>0.1190|<br/>0.0451|<br/>0.1368|
 |**NTXent**<br/>temperature|<br/>0.0091|<br/>0.0219|<br/>0.0002|<br/>0.0415|
 |**ProxyNCA**<br/>proxy lr<br/>softmax_scale|<br/>6.04e-3<br/>13.98|<br/>4.43e-3<br/>7.97|<br/>5.28e-4<br/>10.73|<br/>2.16e-1<br/>10.03|
