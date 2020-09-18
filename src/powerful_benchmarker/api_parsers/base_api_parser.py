@@ -37,7 +37,7 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
         self.delete_old_objects()
         if self.is_training():
             hooks, tester = self.get_dummy_hook_and_tester()
-            return self.aggregator.get_accuracy_and_standard_error(hooks, tester, self.meta_record_keeper, self.split_manager.num_split_schemes, "val")
+            return self.aggregator.get_accuracy_and_standard_error(hooks, tester, self.meta_record_keeper, self.split_manager.num_split_schemes)
 
 
     def run_for_each_split_scheme(self):

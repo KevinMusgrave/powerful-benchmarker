@@ -35,9 +35,13 @@ class BaseRunner:
     def register(self, module_type, module):
         self.pytorch_getter.register(module_type, module)
 
+    def unregister(self, module_type, module):
+        self.pytorch_getter.unregister(module_type, module)
+
     def init_pytorch_getter(self):
         from pytorch_metric_learning import trainers, losses, miners, regularizers, samplers, testers, utils
         from .. import architectures, datasets, factories, api_parsers, split_managers, aggregators, ensembles
+        from sklearn.manifold import TSNE
         self.pytorch_getter = PytorchGetter(use_pretrainedmodels_package=True)
         self.pytorch_getter.register('model', architectures.misc_models)
         self.pytorch_getter.register('model', utils.common_functions.Identity)
@@ -55,6 +59,7 @@ class BaseRunner:
         self.pytorch_getter.register('factory', factories)
         self.pytorch_getter.register('aggregator', aggregators)
         self.pytorch_getter.register('ensemble', ensembles)
+        self.pytorch_getter.register('visualizer', TSNE)
 
 
     def set_YR(self):

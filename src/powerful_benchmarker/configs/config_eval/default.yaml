@@ -9,10 +9,11 @@ tester:
     accuracy_calculator:
       AccuracyCalculator:
     label_hierarchy_level: 0
-
+    visualizer: {}
 
 aggregator:
   MeanAggregator:
+    split_to_aggregate: val
 
 ensemble:
   ConcatenateEmbeddings:
@@ -24,4 +25,5 @@ hook_container:
   HookContainer:
     primary_metric: mean_average_precision_at_r
     validation_split_name: val
+    save_models: True
     

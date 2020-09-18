@@ -17,14 +17,12 @@ class GetterAndSetter:
         self.experiment_folder = args.experiment_folder
         self.global_db_path = global_db_path
 
-        _model_folder = os.path.join("%s", "%s", "saved_models")
-        _csv_folder = os.path.join("%s", "%s", "saved_csvs")
-        _tensorboard_folder = os.path.join("%s", "%s", "tensorboard_logs")
-        self.sub_experiment_dirs = {
-            "models": _model_folder,
-            "csvs": _csv_folder,
-            "tensorboard": _tensorboard_folder
-        }
+        self.sub_experiment_dirs = {}
+        for dir_type_name, folder_name in {"models": "saved_models",
+                                            "csvs": "saved_csvs", 
+                                            "tensorboard": "tensorboard_logs",
+                                            "plots": "saved_plots"}.items():
+            self.sub_experiment_dirs[dir_type_name] = os.path.join("%s", "%s", folder_name)
 
         self.set_factories()
 
@@ -81,7 +79,8 @@ class GetterAndSetter:
     def default_kwargs_tester(self):
         return {"data_device": lambda: self.device,
                 "data_and_label_getter": lambda: self.split_manager.data_and_label_getter,
-                "end_of_testing_hook": lambda: self.hooks.end_of_testing_hook} 
+                "end_of_testing_hook": lambda: self.hooks.end_of_testing_hook,
+                "plots_folder": lambda: self.plots_folder} 
 
     def default_kwargs_trainer(self):
         return {

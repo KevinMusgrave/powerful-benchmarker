@@ -3,8 +3,9 @@ from collections import defaultdict
 from scipy import stats as scipy_stats
 
 class BaseAggregator:
-    def __init__(self):
+    def __init__(self, split_to_aggregate):
         self.meta_accuracies = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))
+        self.split_to_aggregate = split_to_aggregate
 
     def update_accuracies(self, split_scheme_name, splits_to_eval, hooks, tester):
         for split in splits_to_eval:
@@ -38,7 +39,9 @@ class BaseAggregator:
             meta_record_keeper.save_records()
 
 
-    def get_accuracy_and_standard_error(self, hooks, tester, meta_record_keeper, num_split_schemes, split_name):
+    def get_accuracy_and_standard_error(self, hooks, tester, meta_record_keeper, num_split_schemes, split_name=None):
+        if split_name is None:
+            split_name = self.split_to_aggregate
         group_name = self.get_eval_record_name_dict(hooks, tester, [split_name])[split_name]
         def get_average_best_and_sem(key):
             if num_split_schemes > 1:

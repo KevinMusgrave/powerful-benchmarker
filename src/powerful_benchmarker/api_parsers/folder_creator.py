@@ -20,7 +20,7 @@ class FolderCreator:
 
     def set_curr_folders(self):
         folders = self.get_sub_experiment_dir_paths()[self.split_manager.curr_split_scheme_name]
-        self.model_folder, self.csv_folder, self.tensorboard_folder = folders["models"], folders["csvs"], folders["tensorboard"]
+        self.model_folder, self.csv_folder, self.tensorboard_folder, self.plots_folder = folders["models"], folders["csvs"], folders["tensorboard"], folders["plots"]
 
     def get_sub_experiment_dir_paths(self):
         sub_experiment_dir_paths = {}
