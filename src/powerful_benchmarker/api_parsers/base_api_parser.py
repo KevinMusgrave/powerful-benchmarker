@@ -59,6 +59,8 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
     def train(self, num_epochs):
         # first evaluate untrained model
         self.setup_eval_and_run(load_best_model=False, use_input_embedder=self.epoch==1)
+        if self.epoch == 1:
+            self.hooks.save_models(self.trainer, self.model_folder, "best0") # save 0th model
         self.training_assertions(self.trainer)        
         self.trainer.train(self.epoch, num_epochs)
 
