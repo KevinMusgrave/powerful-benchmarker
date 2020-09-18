@@ -13,8 +13,11 @@
 ## Documentation
 [**View the documentation here**](https://kevinmusgrave.github.io/powerful-benchmarker/)
 
+## Google Colab Examples
+See the [examples folder](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/examples) for notebooks that show a bit of this library's functionality.
+
 ## A Metric Learning Reality Check
-This library was used for [A Metric Learning Reality Check](https://arxiv.org/abs/2003.08505). See [the documentation](https://kevinmusgrave.github.io/powerful-benchmarker/papers/mlrc) for supplementary material.
+See [**supplementary material**](https://kevinmusgrave.github.io/powerful-benchmarker/papers/mlrc) for the [ECCV 2020 paper](https://arxiv.org/abs/2003.08505).
 
 ## Benchmark results: 
 - [4-fold cross validation, test on 2nd-half of classes](https://docs.google.com/spreadsheets/d/1brUBishNxmld-KLDAJewIc43A4EVZk3gY6yKe8OIKbY/edit?usp=sharing)

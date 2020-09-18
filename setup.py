@@ -9,7 +9,7 @@ setuptools.setup(
     version="0.9.33.dev0",
     author="Kevin Musgrave",
     author_email="tkm45@cornell.edu",
-    description="A highly-configurable tool that enables thorough evaluation of deep metric learning algorithms. ",
+    description="A PyTorch library for benchmarking deep metric learning. It's powerful.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/KevinMusgrave/powerful-benchmarker",
