@@ -358,6 +358,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#api_parser" class="md-nav__link">
+    api_parser
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#trainer" class="md-nav__link">
     trainer
   </a>
@@ -402,6 +409,13 @@
         <li class="md-nav__item">
   <a href="#skip_ensemble_eval_if_already_done" class="md-nav__link">
     skip_ensemble_eval_if_already_done
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#log_data_to_tensorboard" class="md-nav__link">
+    log_data_to_tensorboard
   </a>
   
 </li>
@@ -693,6 +707,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#api_parser" class="md-nav__link">
+    api_parser
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#trainer" class="md-nav__link">
     trainer
   </a>
@@ -742,6 +763,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#log_data_to_tensorboard" class="md-nav__link">
+    log_data_to_tensorboard
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#save_figures_on_tensorboard" class="md-nav__link">
     save_figures_on_tensorboard
   </a>
@@ -783,6 +811,19 @@
                 
                 
                 <h1 id="config_general">config_general<a class="headerlink" href="#config_general" title="Permanent link">&para;</a></h1>
+<h2 id="api_parser">api_parser<a class="headerlink" href="#api_parser" title="Permanent link">&para;</a></h2>
+<p>The API parser controls the experiment by making objects and running trainers and testers. (The API parser is called by the Runner, which is the entry point to the program.) </p>
+<p>By default, <code>BaseAPIParser</code> is used. If you use a custom trainer, the code will try to use <code>API&lt;name_of_your_trainer&gt;</code>, and if that doesn't exist, it will fall back to <code>BaseAPIParser</code>. However, if you explicitly set the <code>api_parser</code> option, then the one you specify will be used.</p>
+<p>Default yaml:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">api_parser</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">null</span>
+</code></pre></div>
+
+
+<p>Example command line modification:</p>
+<div class="codehilite"><pre><span></span><code>--api_parser <span class="o">{</span>YourCustomAPIParser: <span class="o">{}}</span>
+</code></pre></div>
+
+
 <h2 id="trainer">trainer<a class="headerlink" href="#trainer" title="Permanent link">&para;</a></h2>
 <p>The trainer trains your model.</p>
 <p>Default yaml:</p>
@@ -874,6 +915,18 @@
 
 <p>Example command line modification:</p>
 <div class="codehilite"><pre><span></span><code>--skip_ensemble_eval_if_already_done False
+</code></pre></div>
+
+
+<h2 id="log_data_to_tensorboard">log_data_to_tensorboard<a class="headerlink" href="#log_data_to_tensorboard" title="Permanent link">&para;</a></h2>
+<p>Set to False if you don't want to log data to tensorboard. You might want to do this if your disk I/O is slow.</p>
+<p>Default yaml:</p>
+<div class="codehilite"><pre><span></span><code><span class="nt">log_data_to_tensorboard</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+</code></pre></div>
+
+
+<p>Example command line modification:</p>
+<div class="codehilite"><pre><span></span><code>--log_data_to_tensorboard False
 </code></pre></div>
 
 

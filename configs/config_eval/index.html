@@ -713,6 +713,7 @@
     <span class="nt">accuracy_calculator</span><span class="p">:</span>
       <span class="nt">AccuracyCalculator</span><span class="p">:</span>
     <span class="nt">label_hierarchy_level</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+    <span class="nt">visualizer</span><span class="p">:</span> <span class="p p-Indicator">{}</span>
 </code></pre></div>
 
 
@@ -727,6 +728,7 @@
 <p>Default yaml:</p>
 <div class="codehilite"><pre><span></span><code><span class="nt">aggregator</span><span class="p">:</span>
   <span class="nt">MeanAggregator</span><span class="p">:</span>
+    <span class="nt">split_to_aggregate</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">val</span>
 </code></pre></div>
 
 
@@ -753,6 +755,7 @@
   <span class="nt">HookContainer</span><span class="p">:</span>
     <span class="nt">primary_metric</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mean_average_precision_at_r</span>
     <span class="nt">validation_split_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">val</span>
+    <span class="nt">save_models</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
 </code></pre></div>
 
 
