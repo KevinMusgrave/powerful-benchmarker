@@ -102,7 +102,7 @@ class GetterAndSetter:
 
     def default_kwargs_record_keeper(self):
         return {"csv_folder": lambda: self.csv_folder, 
-                "tensorboard_folder": lambda: self.tensorboard_folder, 
+                "tensorboard_folder": lambda: (self.tensorboard_folder if self.args.log_data_to_tensorboard else None), 
                 "global_db_path": lambda: self.global_db_path, 
                 "experiment_name": lambda: self.args.experiment_name, 
                 "is_new_experiment": lambda: self.beginning_of_training() and self.curr_split_count == 0, 
@@ -110,10 +110,10 @@ class GetterAndSetter:
                 "save_lists": lambda: self.args.save_lists_in_db}
 
     def default_kwargs_meta_record_keeper(self):
-        folders = {folder_type: s % (self.experiment_folder, "meta_logs") for folder_type, s in self.sub_experiment_dirs.items()}
+        folders = self.get_meta_log_folders()
         csv_folder, tensorboard_folder = folders["csvs"], folders["tensorboard"]
         return {"csv_folder": lambda: csv_folder, 
-                "tensorboard_folder": lambda: tensorboard_folder,
+                "tensorboard_folder": lambda: (tensorboard_folder if self.args.log_data_to_tensorboard else None),
                 "global_db_path": lambda: self.global_db_path, 
                 "experiment_name": lambda: self.args.experiment_name, 
                 "is_new_experiment": lambda: self.beginning_of_training(),
@@ -215,11 +215,12 @@ class GetterAndSetter:
 
 
     def flush_tensorboard(self):
-        for keeper in ["record_keeper", "meta_record_keeper"]:
-            k = getattr(self, keeper, None)
-            if k:
-                k.tensorboard_writer.flush()
-                k.tensorboard_writer.close()
+        if self.args.log_data_to_tensorboard:
+            for keeper in ["record_keeper", "meta_record_keeper"]:
+                k = getattr(self, keeper, None)
+                if k:
+                    k.tensorboard_writer.flush()
+                    k.tensorboard_writer.close()
 
 
     def _kwargs(self, object_type, kwargs, prefix="default_kwargs"):

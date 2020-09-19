@@ -14,6 +14,7 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
         self.save_config_files()
         self.set_num_epochs_dict()
         self.make_sub_experiment_dirs()
+        self.make_meta_log_dirs()
         return self.run_train_or_eval()
 
 
@@ -91,11 +92,13 @@ class BaseAPIParser(GetterAndSetter, FolderCreator):
 
 
     def eval_ensemble(self):
+        plots_folder = self.get_meta_log_folders()["plots"]
         ensemble = self.get_ensemble()
         record_keeper = self.get_meta_record_keeper()
         hooks = self.get_hooks(record_keeper = lambda: record_keeper, 
                             record_group_name_prefix = lambda: ensemble.__class__.__name__)
-        tester = self.get_tester(end_of_testing_hook = lambda: hooks.end_of_testing_hook)
+        tester = self.get_tester(end_of_testing_hook = lambda: hooks.end_of_testing_hook,
+                                plots_folder = lambda: plots_folder)
 
         models_to_eval = []
         if self.args.check_untrained_accuracy: 

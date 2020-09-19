@@ -17,6 +17,7 @@ patience: 9
 check_untrained_accuracy: True
 skip_eval_if_already_done: True
 skip_ensemble_eval_if_already_done: True
+log_data_to_tensorboard: True
 save_figures_on_tensorboard: False
 save_lists_in_db: False
 override_required_compatible_factories: False

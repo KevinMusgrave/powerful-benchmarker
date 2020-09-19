@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="powerful-benchmarker",
-    version="0.9.33.dev0",
+    version="0.9.33.dev1",
     author="Kevin Musgrave",
     author_email="tkm45@cornell.edu",
     description="A PyTorch library for benchmarking deep metric learning. It's powerful.",

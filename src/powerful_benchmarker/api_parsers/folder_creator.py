@@ -1,6 +1,6 @@
 import pathlib
 import sys
-from ..utils import common_functions as c_f
+from ..utils import common_functions as c_f, constants
 import logging 
 
 class FolderCreator:
@@ -18,6 +18,10 @@ class FolderCreator:
             for r in self.split_manager.split_scheme_names:
                 c_f.makedir_if_not_there(s % (self.experiment_folder, r))
 
+    def make_meta_log_dirs(self):
+        for v in self.get_meta_log_folders().values():
+            c_f.makedir_if_not_there(v)
+
     def set_curr_folders(self):
         folders = self.get_sub_experiment_dir_paths()[self.split_manager.curr_split_scheme_name]
         self.model_folder, self.csv_folder, self.tensorboard_folder, self.plots_folder = folders["models"], folders["csvs"], folders["tensorboard"], folders["plots"]
@@ -27,6 +31,9 @@ class FolderCreator:
         for k in self.split_manager.split_scheme_names:
             sub_experiment_dir_paths[k] = {folder_type: s % (self.experiment_folder, k) for folder_type, s in self.sub_experiment_dirs.items()}
         return sub_experiment_dir_paths
+
+    def get_meta_log_folders(self):
+        return {folder_type: s % (self.experiment_folder, constants.META_LOGS_FOLDER_NAME) for folder_type, s in self.sub_experiment_dirs.items()}
 
     def save_config_files(self):
         self.latest_sub_experiment_epochs = c_f.latest_sub_experiment_epochs(self.get_sub_experiment_dir_paths())
