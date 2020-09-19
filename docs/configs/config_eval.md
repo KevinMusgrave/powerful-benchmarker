@@ -16,6 +16,7 @@ tester:
     accuracy_calculator:
       AccuracyCalculator:
     label_hierarchy_level: 0
+    visualizer: {}
 ```
 Example command line modification:
 ```bash
@@ -30,6 +31,7 @@ Default yaml:
 ```yaml
 aggregator:
   MeanAggregator:
+    split_to_aggregate: val
 ```
 
 Example command line modification:
@@ -58,6 +60,7 @@ hook_container:
   HookContainer:
     primary_metric: mean_average_precision_at_r
     validation_split_name: val
+    save_models: True
 ```
 
 Example command line modification:

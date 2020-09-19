@@ -1,5 +1,21 @@
 # config_general
 
+## api_parser
+
+The API parser controls the experiment by making objects and running trainers and testers. (The API parser is called by the Runner, which is the entry point to the program.) 
+
+By default, ```BaseAPIParser``` is used. If you use a custom trainer, the code will try to use ```API<name_of_your_trainer>```, and if that doesn't exist, it will fall back to ```BaseAPIParser```. However, if you explicitly set the ```api_parser``` option, then the one you specify will be used.
+
+Default yaml:
+```yaml
+api_parser: null
+```
+Example command line modification:
+```bash
+--api_parser {YourCustomAPIParser: {}}
+```
+
+
 ## trainer
 The trainer trains your model.
 
@@ -101,6 +117,20 @@ Example command line modification:
 ```bash
 --skip_ensemble_eval_if_already_done False
 ```
+
+## log_data_to_tensorboard
+Set to False if you don't want to log data to tensorboard. You might want to do this if your disk I/O is slow.
+
+Default yaml:
+```yaml
+log_data_to_tensorboard: True
+```
+
+Example command line modification:
+```bash
+--log_data_to_tensorboard False
+```
+
 
 ## save_figures_on_tensorboard
 Use matplotlib to plot things on tensorboard. (Most data doesn't require matplotlib.)
