@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import logging
 logging.info("Importing packages in base_runner")
-from easy_module_attribute_getter import YamlReader, PytorchGetter
+from easy_module_attribute_getter import YamlReader, PytorchGetter, utils as emag_utils
 from ..utils import common_functions as c_f
 import argparse
 import glob
@@ -76,7 +76,18 @@ class BaseRunner:
 
     def get_api_parser(self, args):
         api_parser_kwargs = {"args": args, "pytorch_getter": self.pytorch_getter, "global_db_path": self.global_db_path}
-        return self.pytorch_getter.get('api_parser', class_name="API"+c_f.first_key_of_dict(args.trainer), params=api_parser_kwargs)
+        if args.api_parser:
+            AP, AP_params = self.pytorch_getter.get('api_parser', yaml_dict=args.api_parser, return_uninitialized=True)
+            AP_params = emag_utils.merge_two_dicts(api_parser_kwargs, AP_params)
+            AP = AP(**AP_params)
+        else:
+            class_name = "API"+c_f.first_key_of_dict(args.trainer)
+            try:
+                AP = self.pytorch_getter.get('api_parser', class_name=class_name, params=api_parser_kwargs)
+            except AttributeError:
+                logging.warning("Couldn't find api_parser named {}. Using BaseAPIParser instead.".format(class_name))
+                AP = self.pytorch_getter.get('api_parser', class_name="BaseAPIParser", params=api_parser_kwargs)
+        return AP
 
     def setup_argparser(self):
         parser = argparse.ArgumentParser(allow_abbrev=False)
