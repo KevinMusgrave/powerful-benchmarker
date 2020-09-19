@@ -292,6 +292,13 @@ None of the referenced papers report MAP@R. Since Figure 2a is meant to show rep
 
 
 ## Reproducing results
+
+### Install the compatible version
+Please install version 0.9.32:
+```
+pip install powerful-benchmarker==0.9.32
+```
+
 ### Download the experiment folder
 
 1. Download [run.py and set the default flags](../index.md#getting-started)
