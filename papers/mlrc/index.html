@@ -818,6 +818,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#using-the-trained-models-outside-of-powerful-benchmarker" class="md-nav__link">
+    Using the trained models outside of powerful-benchmarker
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the trained models outside of powerful-benchmarker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-load-the-models-after-youve-downloaded-them" class="md-nav__link">
+    1. Load the models (after you've downloaded them)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-apply-the-correct-transforms" class="md-nav__link">
+    2. Apply the correct transforms
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1079,6 +1106,33 @@
           <li class="md-nav__item">
   <a href="#run-evaluation-on-the-test-set" class="md-nav__link">
     Run evaluation on the test set
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-trained-models-outside-of-powerful-benchmarker" class="md-nav__link">
+    Using the trained models outside of powerful-benchmarker
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the trained models outside of powerful-benchmarker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-load-the-models-after-youve-downloaded-them" class="md-nav__link">
+    1. Load the models (after you've downloaded them)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-apply-the-correct-transforms" class="md-nav__link">
+    2. Apply the correct transforms
   </a>
   
 </li>
@@ -1808,6 +1862,64 @@
 
 
 <p>Once evaluation is done, you can go to the <code>meta_logs</code> folder and view the results.</p>
+<h2 id="using-the-trained-models-outside-of-powerful-benchmarker">Using the trained models outside of powerful-benchmarker<a class="headerlink" href="#using-the-trained-models-outside-of-powerful-benchmarker" title="Permanent link">&para;</a></h2>
+<p>If you want to use the trained models in your own code, here are the steps:</p>
+<h3 id="1-load-the-models-after-youve-downloaded-them">1. Load the models (after you've downloaded them)<a class="headerlink" href="#1-load-the-models-after-youve-downloaded-them" title="Permanent link">&para;</a></h3>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">pretrainedmodels</span> <span class="c1"># needs to be installed with pip</span>
+<span class="kn">from</span> <span class="nn">pytorch_metric_learning.utils</span> <span class="kn">import</span> <span class="n">common_functions</span> <span class="k">as</span> <span class="n">c_f</span>
+<span class="kn">from</span> <span class="nn">powerful_benchmarker</span> <span class="kn">import</span> <span class="n">architectures</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">trunk</span> <span class="o">=</span> <span class="n">pretrainedmodels</span><span class="o">.</span><span class="n">bninception</span><span class="p">()</span>
+<span class="n">trunk</span><span class="o">.</span><span class="n">last_linear</span> <span class="o">=</span> <span class="n">c_f</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+<span class="n">embedder</span> <span class="o">=</span> <span class="n">architectures</span><span class="o">.</span><span class="n">misc_models</span><span class="o">.</span><span class="n">MLP</span><span class="p">([</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">128</span><span class="p">])</span>
+
+<span class="n">trunk</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;trunk_best.pth&quot;</span><span class="p">))</span>
+<span class="n">embedder</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;embedder_best.pth&quot;</span><span class="p">))</span>
+</code></pre></div>
+
+
+<h3 id="2-apply-the-correct-transforms">2. Apply the correct transforms<a class="headerlink" href="#2-apply-the-correct-transforms" title="Permanent link">&para;</a></h3>
+<p>Make sure to apply the <code>ConvertToBGR</code> and <code>Multiplier</code> transforms, and use the correct <code>mean</code> and <code>std</code> in the <code>Normalize</code> transform:</p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
+
+<span class="k">class</span> <span class="nc">ConvertToBGR</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a PIL image from RGB to BGR</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">img</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">()&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Multiplier</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiple</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span> <span class="o">=</span> <span class="n">multiple</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">img</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">multiple</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">(multiple=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiple</span><span class="p">)</span>
+
+
+<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">ConvertToBGR</span><span class="p">(),</span>
+                                <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span> 
+                                <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">227</span><span class="p">),</span> 
+                                <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                                <span class="n">Multiplier</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+                                <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span> <span class="o">=</span> <span class="p">[</span><span class="mi">104</span><span class="p">,</span> <span class="mi">117</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> 
+                                                     <span class="n">std</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])])</span>
+</code></pre></div>
                 
               
               
