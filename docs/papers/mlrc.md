@@ -384,3 +384,69 @@ python run.py --experiment_name <your_experiment_name> \
 ```
 
 Once evaluation is done, you can go to the ```meta_logs``` folder and view the results.
+
+
+## Using the trained models outside of powerful-benchmarker
+
+If you want to use the trained models in your own code, here are the steps:
+
+### 1. Load the models (after you've downloaded them)
+
+```python
+import pretrainedmodels # needs to be installed with pip
+from pytorch_metric_learning.utils import common_functions as c_f
+from powerful_benchmarker import architectures
+import torch
+
+trunk = pretrainedmodels.bninception()
+trunk.last_linear = c_f.Identity()
+embedder = architectures.misc_models.MLP([1024, 128])
+
+trunk.load_state_dict(torch.load("trunk_best.pth"))
+embedder.load_state_dict(torch.load("embedder_best.pth"))
+```
+
+### 2. Apply the correct transforms
+
+Make sure to apply the ```ConvertToBGR``` and ```Multiplier``` transforms, and use the correct ```mean``` and ```std``` in the ```Normalize``` transform:
+
+```python
+from PIL import Image
+from torchvision import transforms
+
+class ConvertToBGR(object):
+    """
+    Converts a PIL image from RGB to BGR
+    """
+
+    def __init__(self):
+        pass
+
+    def __call__(self, img):
+        r, g, b = img.split()
+        img = Image.merge("RGB", (b, g, r))
+        return img
+
+    def __repr__(self):
+        return "{}()".format(self.__class__.__name__)
+
+
+class Multiplier(object):
+    def __init__(self, multiple):
+        self.multiple = multiple
+
+    def __call__(self, img):
+        return img*self.multiple
+
+    def __repr__(self):
+        return "{}(multiple={})".format(self.__class__.__name__, self.multiple)
+
+
+transform = transforms.Compose([ConvertToBGR(),
+                                transforms.Resize(256), 
+                                transforms.CenterCrop(227), 
+                                transforms.ToTensor(),
+                                Multiplier(255),
+                                transforms.Normalize(mean = [104, 117, 128], 
+                                                     std = [1, 1, 1])])
+```
