@@ -14,7 +14,7 @@
 [**View the documentation here**](https://kevinmusgrave.github.io/powerful-benchmarker/)
 
 ## Google Colab Examples
-See the [examples folder](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/examples) for notebooks that show a bit of this library's functionality.
+See the [examples folder](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning/examples) for notebooks that show a bit of this library's functionality.
 
 ## A Metric Learning Reality Check
 See [**supplementary material**](https://kevinmusgrave.github.io/powerful-benchmarker/papers/mlrc) for the [ECCV 2020 paper](https://arxiv.org/abs/2003.08505).

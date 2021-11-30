@@ -3,7 +3,7 @@
 ### Register your own classes and modules
 By default, this library gives you access to [various classes in pytorch-metric-learning, torch, torchvision, and pretrainedmodels](index.md#modules-that-can-be-benchmarked).
 
-Let's say you want to use your own loss function as well as a custom optimizer that isn't available in torch.optim. You can accomplish this by replacing the last two lines of the [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/examples/run.py) with this:
+Let's say you want to use your own loss function as well as a custom optimizer that isn't available in torch.optim. You can accomplish this by replacing the last two lines of the [example script](https://github.com/KevinMusgrave/powerful-benchmarker/blob/metric-learning/examples/run.py) with this:
 
 ```python
 from your_own_loss import YourLossFunction
