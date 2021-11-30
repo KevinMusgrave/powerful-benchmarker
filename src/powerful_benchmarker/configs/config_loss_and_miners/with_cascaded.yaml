@@ -1,6 +1,0 @@
-loss_funcs~OVERRIDE~:
-  metric_loss_0: 
-    ContrastiveLoss:
-  metric_loss_1:
-    TripletMarginLoss:
-      margin: 0.1

@@ -1,8 +1,0 @@
-models:
-  trunk:
-    bninception:
-      pretrained: imagenet
-  embedder:
-    MLP:
-      layer_sizes:
-        - 128

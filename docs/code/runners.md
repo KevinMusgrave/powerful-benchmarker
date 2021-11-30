@@ -1,7 +1,0 @@
-# Runners
-
-## BaseRunner
-
-## BayesOptRunner
-
-## SingleExperimentRunner

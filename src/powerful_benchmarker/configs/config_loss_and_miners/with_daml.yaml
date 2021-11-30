@@ -1,7 +1,0 @@
-loss_funcs:
-  synth_loss:
-    TripletMarginLoss:
-      margin: 0.01
-  g_adv_loss:
-    TripletMarginLoss:
-      margin: 0.01

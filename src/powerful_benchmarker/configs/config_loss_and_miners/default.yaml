@@ -1,9 +1,0 @@
-loss_funcs:
-  metric_loss: 
-    ContrastiveLoss:
-
-sampler:
-  MPerClassSampler:
-    m: 4
-
-mining_funcs: {}
