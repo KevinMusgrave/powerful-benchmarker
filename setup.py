@@ -8,7 +8,6 @@ setuptools.setup(
     name="powerful-benchmarker",
     version="0.9.33",
     author="Kevin Musgrave",
-    author_email="tkm45@cornell.edu",
     description="A PyTorch library for benchmarking deep metric learning. It's powerful.",
     long_description=long_description,
     long_description_content_type="text/markdown",

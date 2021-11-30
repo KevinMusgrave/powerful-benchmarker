@@ -42,7 +42,7 @@ See [**supplementary material**](https://kevinmusgrave.github.io/powerful-benchm
 pip install powerful-benchmarker
 ```
 
-## Citing the benchmark results
+## Citing the benchmark results or code
 If you'd like to cite the benchmark results, please cite this paper:
 ```latex
 @misc{musgrave2020metric,
@@ -52,19 +52,6 @@ If you'd like to cite the benchmark results, please cite this paper:
     eprint={2003.08505},
     archivePrefix={arXiv},
     primaryClass={cs.CV}
-}
-```
-
-## Citing the code
-If you'd like to cite the powerful-benchmarker code, you can use this bibtex:
-```latex
-@misc{Musgrave2019,
-  author = {Musgrave, Kevin and Lim, Ser-Nam and Belongie, Serge},
-  title = {Powerful Benchmarker},
-  year = {2019},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/KevinMusgrave/powerful-benchmarker}},
 }
 ```
 
