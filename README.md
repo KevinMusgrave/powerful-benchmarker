@@ -61,5 +61,20 @@ The [notebooks](https://github.com/KevinMusgrave/powerful-benchmarker/blob/maste
 
 - [ValidationScores.ipynb](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/notebooks/ValidationScores.ipynb)
 
+### Citing the paper
+
+If you'd like to cite the paper, paste this into your latex bib file:
+```
+@misc{musgrave2021unsupervised,
+      title={Unsupervised Domain Adaptation: A Reality Check}, 
+      author={Kevin Musgrave and Serge Belongie and Ser-Nam Lim},
+      year={2021},
+      eprint={2111.15672},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
+
+
 ## Looking for [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)?
 Checkout the [metric-learning branch](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning).
