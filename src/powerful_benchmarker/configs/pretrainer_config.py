@@ -11,14 +11,8 @@ from pytorch_adapt.hooks import (
     TargetDiversityHook,
     TargetEntropyHook,
 )
-from pytorch_adapt.layers import (
-    AdaptiveFeatureNorm,
-    L2PreservedDropout,
-    MCCLoss,
-    NLLLoss,
-)
+from pytorch_adapt.layers import AdaptiveFeatureNorm, L2PreservedDropout, MCCLoss
 from pytorch_adapt.weighters import MeanWeighter
-from pytorch_metric_learning.distances import LpDistance
 
 from powerful_benchmarker.utils import main_utils
 
@@ -150,79 +144,4 @@ class ITLConfig(TEDConfig):
         weight = self.optuna_trial.suggest_float("ist_weight", 0, 1)
         all_kwargs["hook_kwargs"]["weighter"].weights["ist_loss"] = weight
         all_kwargs["hook_kwargs"]["post"] += [ISTLossHook()]
-        return all_kwargs
-
-
-class ITLFL8Config(ITLConfig):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["loss_fn"] = NLLLoss(reduction="none")
-        return all_kwargs
-
-
-class ITLNoDivConfig(ITLConfig):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(with_div=False)
-        return all_kwargs
-
-
-class ITLFL8NoDivConfig(ITLFL8Config):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(with_div=False)
-        return all_kwargs
-
-
-class ITLL1Config(ITLConfig):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(
-            distance=LpDistance(p=1, normalize_embeddings=False)
-        )
-        return all_kwargs
-
-
-class ITLL1FL8Config(ITLFL8Config):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(
-            distance=LpDistance(p=1, normalize_embeddings=False)
-        )
-        return all_kwargs
-
-
-class ITLL1NoDivConfig(ITLConfig):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(
-            distance=LpDistance(p=1, normalize_embeddings=False), with_div=False
-        )
-        return all_kwargs
-
-
-class ITLL1FL8NoDivConfig(ITLFL8Config):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(
-            distance=LpDistance(p=1, normalize_embeddings=False), with_div=False
-        )
-        return all_kwargs
-
-
-class ITLL2FL8Config(ITLFL8Config):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(
-            distance=LpDistance(p=2, normalize_embeddings=False)
-        )
-        return all_kwargs
-
-
-class ITLL2FL8NoDivConfig(ITLFL8Config):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"]["post"][-1] = ISTLossHook(
-            distance=LpDistance(p=2, normalize_embeddings=False), with_div=False
-        )
         return all_kwargs

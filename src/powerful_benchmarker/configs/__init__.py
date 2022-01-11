@@ -1,11 +1,5 @@
 from .adda_config import ADDAConfig
-from .aligner_config import (
-    AlignerConfig,
-    CORALConfig,
-    JMMDConfig,
-    MeanDistConfig,
-    MMDConfig,
-)
+from .aligner_config import AlignerConfig, CORALConfig, JMMDConfig, MMDConfig
 from .base_config import BaseConfig
 from .cdan_config import CDANConfig, CDANEConfig, CDANEUConfig
 from .dann_config import (
@@ -40,15 +34,6 @@ from .pretrainer_config import (
     BSPConfig,
     FinetunerConfig,
     ITLConfig,
-    ITLFL8Config,
-    ITLFL8NoDivConfig,
-    ITLL1Config,
-    ITLL1FL8Config,
-    ITLL1FL8NoDivConfig,
-    ITLL1NoDivConfig,
-    ITLL2FL8Config,
-    ITLL2FL8NoDivConfig,
-    ITLNoDivConfig,
     MCCConfig,
     PretrainerConfig,
     TEConfig,

@@ -1,7 +1,7 @@
 from pytorch_adapt.adapters import Aligner
 from pytorch_adapt.containers import Models, Optimizers
 from pytorch_adapt.hooks import JointAlignerHook
-from pytorch_adapt.layers import CORALLoss, MeanDistLoss, MMDLoss
+from pytorch_adapt.layers import CORALLoss, MMDLoss
 from pytorch_adapt.layers.utils import get_kernel_scales
 from pytorch_adapt.weighters import MeanWeighter
 
@@ -86,17 +86,5 @@ class JMMDConfig(MMDConfig):
         )
         all_kwargs["hook_kwargs"].update(
             {"weighter": weighter, "aligner_hook": aligner_hook}
-        )
-        return all_kwargs
-
-
-class MeanDistConfig(AlignerConfig):
-    def get_adapter_kwargs(self, *args, **kwargs):
-        all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
-        all_kwargs["hook_kwargs"].update(
-            {
-                "loss_fn": MeanDistLoss(),
-                "softmax": True,
-            }
         )
         return all_kwargs
