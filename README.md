@@ -41,6 +41,17 @@ python main.py --experiment_name bnm_experiment --dataset office31 \
 --download_datasets --start_with_pretrained
 ```
 
+### Note on algorithm/validator names
+Some names in the code don't match the names in the paper. It would be good to change the names in the code, but I'm going to delay doing that, in case I have to rerun experiments and combine new dataframes with existing saved dataframes.
+
+Here are the main differences between code and paper:
+
+| Code | Paper |
+| - | - |
+| ```--validator entropy_diversity``` | Information Maximization (IM) validator |
+| ```--adapter TEConfig``` | MinEnt algorithm |
+| ```--adapter TEDConfig``` | IM algorithm |
+
 
 **January 7**: Added [ValidationScores.ipynb](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/notebooks/ValidationScores.ipynb)
 
