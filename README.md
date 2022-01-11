@@ -5,6 +5,9 @@
 ## [Unsupervised Domain Adaptation: A Reality Check](https://arxiv.org/pdf/2111.15672.pdf)
 
 ### Installation
+
+Clone this repo, then:
+
 ```
 pip install -r requirements.txt
 ```
@@ -52,8 +55,11 @@ Here are the main differences between code and paper:
 | ```--adapter TEConfig``` | MinEnt algorithm |
 | ```--adapter TEDConfig``` | IM algorithm |
 
+### Notebooks
 
-**January 7**: Added [ValidationScores.ipynb](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/notebooks/ValidationScores.ipynb)
+The [notebooks](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/notebooks) folder currently contains:
+
+- [ValidationScores.ipynb](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/notebooks/ValidationScores.ipynb)
 
 ## Looking for [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)?
 Checkout the [metric-learning branch](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning).
