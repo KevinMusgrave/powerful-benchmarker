@@ -146,6 +146,7 @@ def get_datasets(
     target_domains,
     pretrain_on_src,
     folder,
+    download,
     is_evaluation=False,
 ):
     if (not is_evaluation) and (not set(src_domains).isdisjoint(target_domains)):
@@ -159,7 +160,11 @@ def get_datasets(
         "officehome": get_officehome,
     }[dataset]
     datasets = getter(
-        src_domains, target_domains, folder, return_target_with_labels=True
+        src_domains,
+        target_domains,
+        folder,
+        return_target_with_labels=True,
+        download=download,
     )
     if pretrain_on_src:
         datasets["train"] = datasets["train"].source_dataset

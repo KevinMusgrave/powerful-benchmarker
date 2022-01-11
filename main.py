@@ -95,6 +95,7 @@ def get_adapter_datasets_etc(
         target_domains,
         cfg.pretrain_on_src,
         cfg.dataset_folder,
+        cfg.download_datasets,
         is_evaluation,
     )
 
@@ -362,5 +363,6 @@ if __name__ == "__main__":
     parser.add_argument("--pretrain_lr", type=float, default=0.01)
     parser.add_argument("--fixed_param_source", type=str, default=None)
     parser.add_argument("--save_features", action="store_true")
+    parser.add_argument("--download_datasets", action="store_true")
     args = parser.parse_args()
     main(args)
