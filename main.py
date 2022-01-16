@@ -41,7 +41,6 @@ from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
-assert pytorch_adapt.__version__ == "0.0.41"
 
 
 def evaluate(cfg, experiment_path, adapter, datasets, validator, saver):
