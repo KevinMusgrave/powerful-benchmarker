@@ -92,19 +92,10 @@ def main(cfg, slurm_args):
         ("te", "TEConfig"),
         ("ted", "TEDConfig"),
         ("itl", "ITLConfig"),
-        ("itlfl8", "ITLFL8Config"),
-        ("itlnodiv", "ITLNoDivConfig"),
-        ("itlfl8nodiv", "ITLFL8NoDivConfig"),
         ("mccdann", "MCCDANNConfig"),
         ("bnmdann", "BNMDANNConfig"),
         ("afndann", "AFNDANNConfig"),
         ("atdocdann", "ATDOCDANNConfig"),
-        ("itll1", "ITLL1Config"),
-        ("itll1fl8", "ITLL1FL8Config"),
-        ("itll1nodiv", "ITLL1NoDivConfig"),
-        ("itll1fl8nodiv", "ITLL1FL8NoDivConfig"),
-        ("itll2fl8", "ITLL2FL8Config"),
-        ("itll2fl8nodiv", "ITLL2FL8NoDivConfig"),
     ]
 
     for i in [0, 1]:
