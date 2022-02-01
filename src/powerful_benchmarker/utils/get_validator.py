@@ -1,8 +1,8 @@
 import os
 
 import torch
+from pytorch_adapt.frameworks.ignite import savers
 from pytorch_adapt.layers import NLLLoss
-from pytorch_adapt.utils import savers
 from pytorch_adapt.validators import (
     AccuracyValidator,
     DeepEmbeddedValidator,
