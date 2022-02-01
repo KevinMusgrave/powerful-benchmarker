@@ -9,6 +9,8 @@ def get_val_data_hook(folder):
 
     def save_features(engine, collected_data):
         epoch = engine.state.epoch
+        if epoch == 0:
+            return
         all_data = {}
         for k, v in collected_data.items():
             all_data.update(
