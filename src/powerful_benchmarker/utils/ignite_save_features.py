@@ -1,6 +1,6 @@
 import os
 
-import torch
+import numpy as np
 from pytorch_adapt.utils import common_functions as c_f
 
 
@@ -9,11 +9,16 @@ def get_val_data_hook(folder):
 
     def save_features(engine, collected_data):
         epoch = engine.state.epoch
+        all_data = {}
         for k, v in collected_data.items():
-            if k not in ["src_val", "target_val_with_labels"]:
-                continue
-            for feature_name in ["logits", "labels"]:
-                filename = os.path.join(folder, f"{k}_{feature_name}_{epoch}.pt")
-                torch.save(v[feature_name].cpu(), filename)
+            all_data.update(
+                {
+                    f"{k}_{name}": v[name].cpu().numpy()
+                    for name in ["features", "logits", "labels"]
+                    if name in v
+                }
+            )
+        filename = os.path.join(folder, f"features_{epoch}")
+        np.savez_compressed(filename, **all_data)
 
     return save_features
