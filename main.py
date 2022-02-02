@@ -37,6 +37,7 @@ from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
 from powerful_benchmarker.utils import main_utils
+from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME
 from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 
@@ -268,7 +269,9 @@ def main(cfg):
         num_fixed_params = 0
         if cfg.fixed_param_source:
             fp_source_path = cfg.fixed_param_source
-            fp_source_best_trial_json = os.path.join(fp_source_path, "best_trial.json")
+            fp_source_best_trial_json = os.path.join(
+                fp_source_path, BEST_TRIAL_FILENAME
+            )
             if not os.path.isfile(fp_source_best_trial_json):
                 FileNotFoundError(
                     "Fixed param source needs to be complete to use its best params"
@@ -319,7 +322,7 @@ def main(cfg):
             field: str(getattr(study.best_trial, field))
             for field in study.best_trial._ordered_fields
         }
-        with open(os.path.join(experiment_path, "best_trial.json"), "w") as f:
+        with open(os.path.join(experiment_path, BEST_TRIAL_FILENAME), "w") as f:
             json.dump(best_json, f, indent=2)
 
 

@@ -6,7 +6,8 @@ root_folder=$3
 experiment_folder="$root_folder/$experiment_name/"
 conda_env=$4
 devices=$5
-command=$6
+best_trial_filename=$6
+command=$7
 
 echo "Command to be wrapped: $command"
 
@@ -16,7 +17,11 @@ echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
 conda deactivate && conda activate ${conda_env}
 
-while [ ! -f "$experiment_folder/best_trial.json" ]
+best_trial_full_path="$experiment_folder$best_trial_filename"
+
+echo "Will run until this file is made: $best_trial_full_path"
+
+while [ ! -f $best_trial_full_path ]
 do
 	echo "STARTING $script_name"
 	echo "Checking folder: $experiment_folder"

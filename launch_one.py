@@ -1,17 +1,21 @@
 import argparse
 import os
 import subprocess
+import sys
 
 import submitit
 import torch
 import yaml
+
+sys.path.insert(0, "src")
+from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME
 
 
 def already_done(experiment_path, config_names):
     all_done = True
     for c in config_names:
         full_path = os.path.join(experiment_path, c)
-        best_trial_file = os.path.join(full_path, "best_trial.json")
+        best_trial_file = os.path.join(full_path, BEST_TRIAL_FILENAME)
         if not os.path.isfile(best_trial_file):
             all_done = False
             break
@@ -47,7 +51,7 @@ def exp_launcher(cfg, experiment_path, exp_names):
     gpu_list = list(range(num_gpus))
     use_devices = ",".join([str(x) for x in rotate(gpu_list, local_rank)])
     command = base_command(dir_name, config_name, experiment_path, cfg)
-    full_command = f"bash -i ./scripts/{cfg.script_wrapper} {dir_name} {str(cfg.script_wrapper_timeout)} {experiment_path} {cfg.conda_env} {use_devices}".split(
+    full_command = f"bash -i ./scripts/{cfg.script_wrapper} {dir_name} {str(cfg.script_wrapper_timeout)} {experiment_path} {cfg.conda_env} {use_devices} {BEST_TRIAL_FILENAME}".split(
         " "
     )
     full_command += [command]
