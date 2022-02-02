@@ -1,6 +1,8 @@
 black
+flake8
 isort
 matplotlib
+nbqa
 optuna
 pandas
 plotly
