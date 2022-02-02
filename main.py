@@ -29,7 +29,6 @@ import numpy as np
 import optuna
 import pytorch_adapt
 import torch
-import yaml
 from optuna.samplers import PartialFixedSampler, TPESampler
 from pytorch_adapt.frameworks.ignite import Ignite, IgniteRecordKeeperLogger
 from pytorch_adapt.meta_validators import ForwardOnlyValidator
@@ -37,7 +36,7 @@ from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
 from powerful_benchmarker.utils import main_utils
-from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME
+from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
 from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 
@@ -328,21 +327,19 @@ def main(cfg):
 
 if __name__ == "__main__":
     print("num gpus available in main =", torch.cuda.device_count())
-
-    with open("constants.yaml", "r") as f:
-        constants = yaml.safe_load(f)
-
     parser = argparse.ArgumentParser(allow_abbrev=False)
+    add_default_args(
+        parser,
+        [
+            ("experiment_folder", "experiment_path"),
+            "dataset_folder",
+        ],
+    )
+
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--src_domains", nargs="+", required=True)
     parser.add_argument("--target_domains", nargs="+", required=True)
     parser.add_argument("--adapter", type=str, required=True)
-    parser.add_argument(
-        "--experiment_path", type=str, default=constants["experiment_folder"]
-    )
-    parser.add_argument(
-        "--dataset_folder", type=str, default=constants["dataset_folder"]
-    )
     parser.add_argument("--experiment_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--patience", type=int, default=10)

@@ -5,10 +5,9 @@ import sys
 
 import submitit
 import torch
-import yaml
 
 sys.path.insert(0, "src")
-from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME
+from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
 
 
 def already_done(experiment_path, config_names):
@@ -111,21 +110,17 @@ def main(cfg, slurm_args):
 
 
 if __name__ == "__main__":
-    with open("constants.yaml", "r") as f:
-        constants = yaml.safe_load(f)
-
     parser = argparse.ArgumentParser(allow_abbrev=False)
+    add_default_args(
+        parser,
+        [
+            ("experiment_folder", "root_experiment_folder"),
+            "dataset_folder",
+            "conda_env",
+        ],
+    )
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
     parser.add_argument("--num_workers", type=int, default=8)
-    parser.add_argument(
-        "--root_experiment_folder",
-        type=str,
-        default=constants["experiment_folder"],
-    )
-    parser.add_argument(
-        "--dataset_folder", type=str, default=constants["dataset_folder"]
-    )
-    parser.add_argument("--conda_env", type=str, default=constants["conda_env"])
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--src_domain", type=str, required=True)

@@ -1,8 +1,10 @@
 import argparse
 import os
 import subprocess
+import sys
 
-import yaml
+sys.path.insert(0, "src")
+from powerful_benchmarker.utils.constants import add_default_args
 
 
 def main(cfg):
@@ -18,14 +20,7 @@ def main(cfg):
 
 
 if __name__ == "__main__":
-    with open("constants.yaml", "r") as f:
-        constants = yaml.safe_load(f)
-
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument(
-        "--root_experiment_folder",
-        type=str,
-        default=constants["experiment_folder"],
-    )
+    add_default_args(parser, [("experiment_folder", "root_experiment_folder")])
     args = parser.parse_args()
     main(args)

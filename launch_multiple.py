@@ -19,9 +19,6 @@ def main(cfg, slurm_args):
 
 
 if __name__ == "__main__":
-    with open("constants.yaml", "r") as f:
-        constants = yaml.safe_load(f)
-
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--config-folder", type=str, default="slurm_configs")
     parser.add_argument("--config", type=str, required=True)
