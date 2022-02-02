@@ -76,7 +76,7 @@ class DANNEUConfig(DANNEConfig):
         return all_kwargs
 
 
-class DANNTEConfig(DANNConfig):
+class DANNMinEntConfig(DANNConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         all_kwargs["hook_kwargs"]["post_g"] = [TargetEntropyHook()]
@@ -85,7 +85,7 @@ class DANNTEConfig(DANNConfig):
         return all_kwargs
 
 
-class DANNTEDConfig(DANNTEConfig):
+class DANNIMConfig(DANNMinEntConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         all_kwargs["hook_kwargs"]["post_g"] += [TargetDiversityHook()]

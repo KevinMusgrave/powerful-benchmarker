@@ -75,7 +75,7 @@ class GANEUConfig(GANEConfig):
         return all_kwargs
 
 
-class GANTEConfig(GANConfig):
+class GANMinEntConfig(GANConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         all_kwargs["hook_kwargs"]["post_g"] = [TargetEntropyHook()]
@@ -84,7 +84,7 @@ class GANTEConfig(GANConfig):
         return all_kwargs
 
 
-class GANTEDConfig(GANTEConfig):
+class GANIMConfig(GANMinEntConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         all_kwargs["hook_kwargs"]["post_g"] += [TargetDiversityHook()]

@@ -120,7 +120,7 @@ class ATDOCConfig(ClassifierConfig):
         return all_kwargs
 
 
-class TEConfig(ClassifierConfig):
+class MinEntConfig(ClassifierConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         weight = self.optuna_trial.suggest_float("entropy_weight", 0, 1)
@@ -129,7 +129,7 @@ class TEConfig(ClassifierConfig):
         return all_kwargs
 
 
-class TEDConfig(TEConfig):
+class IMConfig(MinEntConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         all_kwargs["hook_kwargs"]["post"] += [TargetDiversityHook()]
@@ -138,7 +138,7 @@ class TEDConfig(TEConfig):
         return all_kwargs
 
 
-class ITLConfig(TEDConfig):
+class ITLConfig(IMConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
         weight = self.optuna_trial.suggest_float("ist_weight", 0, 1)

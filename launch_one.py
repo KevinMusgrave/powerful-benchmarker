@@ -31,6 +31,9 @@ def base_command(experiment_name, adapter, experiment_path, cfg):
     if cfg.fixed_param_source:
         fps = os.path.join(experiment_path, cfg.fixed_param_source)
         x += f" --fixed_param_source {fps}"
+    for name in ["save_features", "download_datasets"]:
+        if getattr(cfg, name):
+            x += f" --{name}"
     return x
 
 
@@ -53,49 +56,16 @@ def exp_launcher(cfg, experiment_path, exp_names):
 
 def main(cfg, slurm_args):
     exp_names = [
-        ("adda", "ADDAConfig"),
         ("cdan", "CDANConfig"),
-        ("cdane", "CDANEConfig"),
-        ("cdaneu", "CDANEUConfig"),
-        ("cdanneu", "CDANNEUConfig"),
-        ("coral", "CORALConfig"),
         ("dann", "DANNConfig"),
-        ("danne", "DANNEConfig"),
-        ("danneu", "DANNEUConfig"),
-        ("gan", "GANConfig"),
-        ("gane", "GANEConfig"),
-        ("ganeu", "GANEUConfig"),
-        ("dc", "DomainConfusionConfig"),
-        ("jmmd", "JMMDConfig"),
         ("mcc", "MCCConfig"),
         ("mcd", "MCDConfig"),
         ("mmd", "MMDConfig"),
-        ("rtn", "RTNConfig"),
-        ("vada", "VADAConfig"),
-        ("afn", "AFNConfig"),
         ("bsp", "BSPConfig"),
-        ("bspdann", "BSPDANNConfig"),
-        ("swd", "SWDConfig"),
         ("bnm", "BNMConfig"),
         ("gvb", "GVBConfig"),
-        ("gvbe", "GVBEConfig"),
-        ("gvbeu", "GVBEUConfig"),
-        ("starinit", "STARConfig"),
-        ("symnets", "SymNetsConfig"),
         ("atdoc", "ATDOCConfig"),
-        ("dannte", "DANNTEConfig"),
-        ("gante", "GANTEConfig"),
-        ("dannted", "DANNTEDConfig"),
-        ("ganted", "GANTEDConfig"),
-        ("dannfl8", "DANNFL8Config"),
-        ("ganfl8", "GANFL8Config"),
-        ("te", "TEConfig"),
-        ("ted", "TEDConfig"),
-        ("itl", "ITLConfig"),
-        ("mccdann", "MCCDANNConfig"),
-        ("bnmdann", "BNMDANNConfig"),
-        ("afndann", "AFNDANNConfig"),
-        ("atdocdann", "ATDOCDANNConfig"),
+        ("im", "IMConfig"),
     ]
 
     for i in [0, 1]:
@@ -164,6 +134,8 @@ if __name__ == "__main__":
     parser.add_argument("--patience", type=int, required=True)
     parser.add_argument("--validation_interval", type=int, default=1)
     parser.add_argument("--fixed_param_source", type=str, default=None)
+    parser.add_argument("--save_features", action="store_true")
+    parser.add_argument("--download_datasets", action="store_true")
     parser.add_argument("--script_wrapper", type=str, default="script_wrapper.sh")
     args, unknown_args = parser.parse_known_args()
 

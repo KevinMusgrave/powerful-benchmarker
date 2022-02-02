@@ -12,8 +12,8 @@ from .dann_config import (
     DANNEConfig,
     DANNEUConfig,
     DANNFL8Config,
-    DANNTEConfig,
-    DANNTEDConfig,
+    DANNIMConfig,
+    DANNMinEntConfig,
     MCCDANNConfig,
 )
 from .gan_config import (
@@ -22,8 +22,8 @@ from .gan_config import (
     GANEConfig,
     GANEUConfig,
     GANFL8Config,
-    GANTEConfig,
-    GANTEDConfig,
+    GANIMConfig,
+    GANMinEntConfig,
 )
 from .gvb_config import GVBConfig, GVBEConfig, GVBEUConfig
 from .mcd_config import MCDConfig, STARConfig, SWDConfig
@@ -33,11 +33,11 @@ from .pretrainer_config import (
     BNMConfig,
     BSPConfig,
     FinetunerConfig,
+    IMConfig,
     ITLConfig,
     MCCConfig,
+    MinEntConfig,
     PretrainerConfig,
-    TEConfig,
-    TEDConfig,
 )
 from .rtn_config import RTNConfig
 from .symnets_config import SymNetsConfig

@@ -52,8 +52,6 @@ Here are the main differences between code and paper:
 | Code | Paper |
 | - | - |
 | ```--validator entropy_diversity``` | Information Maximization (IM) validator |
-| ```--adapter TEConfig``` | MinEnt algorithm |
-| ```--adapter TEDConfig``` | IM algorithm |
 
 ### Notebooks
 
