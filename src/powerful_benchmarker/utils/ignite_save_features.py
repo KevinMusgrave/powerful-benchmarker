@@ -13,9 +13,10 @@ def get_val_data_hook(folder):
             return
         all_data = {"epoch": epoch}
         for k, v in collected_data.items():
+            curr_k = k.replace("_with_labels", "")
             all_data.update(
                 {
-                    f"{k}_{name}": v[name].cpu().numpy()
+                    f"{curr_k}_{name}": v[name].cpu().numpy()
                     for name in ["features", "logits", "labels"]
                     if name in v
                 }
