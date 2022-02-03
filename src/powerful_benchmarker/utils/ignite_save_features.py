@@ -11,7 +11,7 @@ def get_val_data_hook(folder):
         epoch = engine.state.epoch
         if epoch == 0:
             return
-        all_data = {}
+        all_data = {"epoch": epoch}
         for k, v in collected_data.items():
             all_data.update(
                 {
