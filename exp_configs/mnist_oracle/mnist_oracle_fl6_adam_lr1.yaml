@@ -1,4 +1,4 @@
-common: &common --wckey="" --group_config mnist
+common: &common --group_config mnist
 A: &A --config_names atdoc bnm
 B: &B --config_names bsp cdan
 C: &C --config_names dann gvb
@@ -11,18 +11,18 @@ commands:
   - *A
   - *common
   
-- - python launch_one.py
-  - *B
-  - *common
+# - - python launch_one.py
+#   - *B
+#   - *common
 
-- - python launch_one.py
-  - *C
-  - *common
+# - - python launch_one.py
+#   - *C
+#   - *common
 
-- - python launch_one.py
-  - *D
-  - *common
+# - - python launch_one.py
+#   - *D
+#   - *common
 
-- - python launch_one.py
-  - *E
-  - *common
+# - - python launch_one.py
+#   - *E
+#   - *common

@@ -5,9 +5,25 @@ import sys
 
 import submitit
 import torch
+import yaml
 
 sys.path.insert(0, "src")
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+
+
+def create_slurm_args(args, other_args):
+    slurm_config_file = os.path.join("slurm_configs", f"{args.slurm_config}.yaml")
+
+    with open(slurm_config_file, "r") as f:
+        slurm_args = yaml.safe_load(f)
+
+    for s in unknown_args:
+        if s == "":
+            continue
+        k, v = s.split("=")
+        slurm_args[k.lstrip("--")] = v
+
+    return slurm_args
 
 
 def already_done(exp_path, config_names):
@@ -113,29 +129,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "dataset_folder", "conda_env"])
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
-    parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
-    parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--src_domain", type=str, required=True)
-    parser.add_argument("--target_domain", type=str, required=True)
-    parser.add_argument("--validator", type=str, required=True)
-    parser.add_argument("--feature_layer", type=int, required=True)
-    parser.add_argument("--optimizer", type=str, required=True)
-    parser.add_argument("--lr_multiplier", type=float, required=True)
-    parser.add_argument("--max_epochs", type=int, required=True)
-    parser.add_argument("--patience", type=int, required=True)
-    parser.add_argument("--validation_interval", type=int, default=1)
-    parser.add_argument("--fixed_param_source", type=str, default=None)
-    parser.add_argument("--save_features", action="store_true")
-    parser.add_argument("--download_datasets", action="store_true")
     parser.add_argument("--script_wrapper", type=str, default="script_wrapper.sh")
+    parser.add_argument("--slurm_config", type=str, required=True)
+    parser.add_argument("--group_config", type=str, required=True)
     args, unknown_args = parser.parse_known_args()
 
-    slurm_args = {}
-    for s in unknown_args:
-        if s == "":
-            continue
-        k, v = s.split("=")
-        slurm_args[k.lstrip("--")] = v
+    slurm_args = create_slurm_args(args, unknown_args)
+    print(slurm_args)
 
-    main(args, slurm_args)
+    # main(args, slurm_args)
