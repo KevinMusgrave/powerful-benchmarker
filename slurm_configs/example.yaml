@@ -1,0 +1,2 @@
+cpus-per-task: 2
+gres: "gpu:2"

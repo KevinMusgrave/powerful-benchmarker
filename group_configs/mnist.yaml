@@ -1,0 +1,13 @@
+dataset: mnist
+src_domain: mnist
+target_domain: mnistm
+max_epochs: 100
+validation_interval: 2
+patience: 5
+validator: oracle
+feature_layer: 6
+optimizer: Adam
+lr_multiplier: 1
+save_features: true 
+download_datasets: true
+num_workers: 2
