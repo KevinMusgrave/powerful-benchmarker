@@ -43,7 +43,7 @@ from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
 
-def evaluate(cfg, experiment_path, adapter, datasets, validator, saver):
+def evaluate(cfg, exp_path, adapter, datasets, validator, saver):
     main_utils.set_validator_required_data_mapping_for_eval(
         validator, cfg.evaluate_validator, cfg.evaluate
     )
@@ -57,7 +57,7 @@ def evaluate(cfg, experiment_path, adapter, datasets, validator, saver):
     print(validator)
     target_domains = "_".join(k for k in cfg.evaluate_target_domains)
     filename = os.path.join(
-        experiment_path,
+        exp_path,
         f"{cfg.evaluate_validator}_{target_domains}_{cfg.evaluate}_score.txt",
     )
     with open(filename, "w") as fd:
@@ -66,15 +66,15 @@ def evaluate(cfg, experiment_path, adapter, datasets, validator, saver):
 
 def get_adapter_datasets_etc(
     cfg,
-    experiment_path,
+    exp_path,
     validator_name,
     target_domains,
     trial=None,
     config_path=None,
     num_fixed_params=0,
 ):
-    model_save_path = os.path.join(experiment_path, "models")
-    stats_save_path = os.path.join(experiment_path, "stats")
+    model_save_path = os.path.join(exp_path, "models")
+    stats_save_path = os.path.join(exp_path, "stats")
     is_evaluation = cfg.evaluate is not None
     num_classes = main_utils.num_classes(cfg.dataset)
 
@@ -124,7 +124,7 @@ def get_adapter_datasets_etc(
         cfg.lr_multiplier,
         datasets=datasets,
     )
-    logger_path = os.path.join(experiment_path, "logs")
+    logger_path = os.path.join(exp_path, "logs")
     logger = IgniteRecordKeeperLogger(folder=logger_path)
     if framework is None:
         framework = Ignite
@@ -144,17 +144,15 @@ def get_adapter_datasets_etc(
     )
 
 
-def objective(
-    cfg, root_experiment_path, trial, reproduce_iter=None, num_fixed_params=0
-):
+def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0):
     if reproduce_iter is not None:
         trial_num = f"reproduction{reproduce_iter}"
     else:
         trial_num = str(trial.number)
-    experiment_path = os.path.join(root_experiment_path, trial_num)
-    config_path = os.path.join(experiment_path, "configs")
-    if os.path.isdir(experiment_path):
-        shutil.rmtree(experiment_path)
+    exp_path = os.path.join(root_exp_path, trial_num)
+    config_path = os.path.join(exp_path, "configs")
+    if os.path.isdir(exp_path):
+        shutil.rmtree(exp_path)
 
     (
         framework,
@@ -167,7 +165,7 @@ def objective(
         num_classes,
     ) = get_adapter_datasets_etc(
         cfg,
-        experiment_path,
+        exp_path,
         cfg.validator,
         cfg.target_domains,
         trial,
@@ -186,7 +184,9 @@ def objective(
 
     val_data_hook = None
     if cfg.save_features:
-        val_data_hook = get_val_data_hook(os.path.join(experiment_path, "features"))
+        val_data_hook = get_val_data_hook(
+            os.path.join(exp_path, "features"), cfg.adapter, trial_num
+        )
 
     adapter = framework(
         adapter,
@@ -213,7 +213,7 @@ def objective(
         return float("nan")
 
     scores_csv_filename = main_utils.get_scores_csv_filename(
-        root_experiment_path, reproduce_iter
+        root_exp_path, reproduce_iter
     )
     print("***best score***", best_score)
     accuracies = main_utils.get_accuracies_of_best_model(
@@ -229,10 +229,10 @@ def objective(
 
 
 def main(cfg):
-    experiment_path = os.path.join(cfg.experiment_path, cfg.experiment_name)
+    exp_path = os.path.join(cfg.root_exp_folder, cfg.exp_name)
     if cfg.evaluate:
         assert cfg.evaluate in ["target_train_with_labels", "target_val_with_labels"]
-        experiment_path = os.path.join(experiment_path, cfg.evaluate_trial)
+        exp_path = os.path.join(exp_path, cfg.evaluate_trial)
         (
             framework,
             adapter,
@@ -243,20 +243,20 @@ def main(cfg):
             _,
             _,
         ) = get_adapter_datasets_etc(
-            cfg, experiment_path, cfg.evaluate_validator, cfg.evaluate_target_domains
+            cfg, exp_path, cfg.evaluate_validator, cfg.evaluate_target_domains
         )
         adapter = framework(adapter)
-        evaluate(cfg, experiment_path, adapter, datasets, validator, saver)
+        evaluate(cfg, exp_path, adapter, datasets, validator, saver)
     else:
         optuna.logging.set_verbosity(optuna.logging.WARNING)
-        study_path = os.path.join(experiment_path, "study.pkl")
-        plot_path = os.path.join(experiment_path, "plots")
-        log_path = os.path.join(experiment_path, "trials.csv")
+        study_path = os.path.join(exp_path, "study.pkl")
+        plot_path = os.path.join(exp_path, "plots")
+        log_path = os.path.join(exp_path, "trials.csv")
 
-        if os.path.isdir(experiment_path) and os.path.isfile(study_path):
+        if os.path.isdir(exp_path) and os.path.isfile(study_path):
             study = joblib.load(study_path)
         else:
-            c_f.makedir_if_not_there(experiment_path)
+            c_f.makedir_if_not_there(exp_path)
             c_f.makedir_if_not_there(plot_path)
             pruner = optuna.pruners.NopPruner()
             study = optuna.create_study(
@@ -289,7 +289,7 @@ def main(cfg):
         while i < cfg.num_trials:
             study.optimize(
                 lambda trial: objective(
-                    cfg, experiment_path, trial, num_fixed_params=num_fixed_params
+                    cfg, exp_path, trial, num_fixed_params=num_fixed_params
                 ),
                 n_trials=1,
                 timeout=None,
@@ -297,19 +297,19 @@ def main(cfg):
                     main_utils.save_study(study_path),
                     main_utils.plot_visualizations(plot_path),
                     main_utils.save_dataframe(log_path),
-                    main_utils.delete_suboptimal_models(experiment_path),
+                    main_utils.delete_suboptimal_models(exp_path),
                 ],
                 gc_after_trial=True,
             )
             if study.trials[-1].value is not None:
                 i += 1
 
-        i = main_utils.num_reproductions_complete(experiment_path)
+        i = main_utils.num_reproductions_complete(exp_path)
         print("num_reproduce_complete", i)
         while i < cfg.num_reproduce:
             result = objective(
                 cfg,
-                experiment_path,
+                exp_path,
                 optuna.trial.FixedTrial(study.best_trial.params),
                 i,
                 num_fixed_params=num_fixed_params,
@@ -321,7 +321,7 @@ def main(cfg):
             field: str(getattr(study.best_trial, field))
             for field in study.best_trial._ordered_fields
         }
-        with open(os.path.join(experiment_path, BEST_TRIAL_FILENAME), "w") as f:
+        with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "w") as f:
             json.dump(best_json, f, indent=2)
 
 
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     add_default_args(
         parser,
         [
-            ("experiment_folder", "experiment_path"),
+            ("exp_folder", "root_exp_folder"),
             "dataset_folder",
         ],
     )
@@ -340,7 +340,7 @@ if __name__ == "__main__":
     parser.add_argument("--src_domains", nargs="+", required=True)
     parser.add_argument("--target_domains", nargs="+", required=True)
     parser.add_argument("--adapter", type=str, required=True)
-    parser.add_argument("--experiment_name", type=str, default="test")
+    parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--patience", type=int, default=10)
     parser.add_argument("--validation_interval", type=int, default=1)

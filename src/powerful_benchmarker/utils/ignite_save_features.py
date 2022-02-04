@@ -4,14 +4,14 @@ import numpy as np
 from pytorch_adapt.utils import common_functions as c_f
 
 
-def get_val_data_hook(folder):
+def get_val_data_hook(folder, config_name, trial_num):
     c_f.makedir_if_not_there(folder)
 
     def save_features(engine, collected_data):
         epoch = engine.state.epoch
         if epoch == 0:
             return
-        all_data = {"epoch": epoch}
+        all_data = {"config_name": config_name, "trial_num": trial_num, "epoch": epoch}
         for k, v in collected_data.items():
             curr_k = k.replace("_with_labels", "")
             all_data.update(

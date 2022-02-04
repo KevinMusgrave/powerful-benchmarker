@@ -38,22 +38,22 @@ def keys_vals_str(x, correct_header):
     return keys, vals
 
 
-def scores_csv_filename(experiment_path):
-    return os.path.join(experiment_path, "score_vs_test_accuracy.csv")
+def scores_csv_filename(exp_path):
+    return os.path.join(exp_path, "score_vs_test_accuracy.csv")
 
 
-def reproductions_filename(experiment_path):
-    return os.path.join(experiment_path, "reproduction_score_vs_test_accuracy.csv")
+def reproductions_filename(exp_path):
+    return os.path.join(exp_path, "reproduction_score_vs_test_accuracy.csv")
 
 
-def get_scores_csv_filename(experiment_path, reproduce_iter=None):
+def get_scores_csv_filename(exp_path, reproduce_iter=None):
     if reproduce_iter is None:
-        return scores_csv_filename(experiment_path)
-    return reproductions_filename(experiment_path)
+        return scores_csv_filename(exp_path)
+    return reproductions_filename(exp_path)
 
 
-def num_reproductions_complete(experiment_path):
-    log_path = reproductions_filename(experiment_path)
+def num_reproductions_complete(exp_path):
+    log_path = reproductions_filename(exp_path)
     if not os.path.isfile(log_path):
         return 0
     with open(log_path, "r") as f:
@@ -202,7 +202,7 @@ def save_dataframe(log_path):
     return return_func
 
 
-def delete_suboptimal_models(experiment_path):
+def delete_suboptimal_models(exp_path):
     def return_func(study, frozen_trial):
         print("delete_suboptimal_models")
         try:
@@ -210,7 +210,7 @@ def delete_suboptimal_models(experiment_path):
         except ValueError:
             return
         keep = str(bt.number)
-        all_paths = sorted(glob.glob(f"{experiment_path}/*"))
+        all_paths = sorted(glob.glob(f"{exp_path}/*"))
         for x in all_paths:
             if os.path.isdir(x):
                 trial_num = os.path.basename(x)
