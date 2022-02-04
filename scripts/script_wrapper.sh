@@ -2,8 +2,8 @@
 
 exp_name=$1
 timeout=$2
-root_folder=$3
-exp_folder="$root_folder/$exp_name/"
+exp_folder=$3
+full_path="$exp_folder/$exp_name/"
 conda_env=$4
 devices=$5
 best_trial_filename=$6
@@ -17,14 +17,14 @@ echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
 
 conda deactivate && conda activate ${conda_env}
 
-best_trial_full_path="$exp_folder$best_trial_filename"
+best_trial_full_path="$full_path$best_trial_filename"
 
 echo "Will run until this file is made: $best_trial_full_path"
 
 while [ ! -f $best_trial_full_path ]
 do
 	echo "STARTING $script_name"
-	echo "Checking folder: $exp_folder"
+	echo "Checking folder: $full_path"
 	echo "Will kill script if folder has not updated in the past $timeout seconds"
 	${command} & 
 	curr_pid=$!
@@ -36,8 +36,8 @@ do
 	while ((is_running == 1))
 	do
 			sleep 1m
-			if [ -d "$exp_folder" ]; then
-				is_running=$(bash ./scripts/process_checker.sh ${exp_folder} ${timeout})
+			if [ -d "$full_path" ]; then
+				is_running=$(bash ./scripts/process_checker.sh ${full_path} ${timeout})
 			fi
 	done
 	pkill -9 -P ${curr_pid}
