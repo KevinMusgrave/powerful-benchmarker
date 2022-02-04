@@ -30,7 +30,7 @@ def base_command(exp_name, adapter, exp_path, cfg):
 --num_workers {cfg.num_workers} --exp_path {exp_path} --dataset_folder {cfg.dataset_folder} \
 --num_trials 100 --n_startup_trials 100 --batch_size 64 --max_epochs {cfg.max_epochs} --patience {cfg.patience} --validation_interval {cfg.validation_interval} \
 --dataset {cfg.dataset} --src_domains {cfg.src_domain} --target_domains {cfg.target_domain} --validator {cfg.validator} \
---feature_layer {cfg.feature_layer} --optimizer_name {cfg.optimizer_name} --lr_multiplier {cfg.lr_multiplier} --num_reproduce 4"
+--feature_layer {cfg.feature_layer} --optimizer {cfg.optimizer} --lr_multiplier {cfg.lr_multiplier} --num_reproduce 4"
     if cfg.fixed_param_source:
         fps = os.path.join(exp_path, cfg.fixed_param_source)
         x += f" --fixed_param_source {fps}"
@@ -86,7 +86,7 @@ def main(cfg, slurm_args):
     else:
         lr_str = f"{int(cfg.lr_multiplier)}"
 
-    exp_group_name = f"{cfg.dataset}_{cfg.src_domain}_{cfg.target_domain}_{cfg.validator}_fl{cfg.feature_layer}_{cfg.optimizer_name}_lr{lr_str}"
+    exp_group_name = f"{cfg.dataset}_{cfg.src_domain}_{cfg.target_domain}_{cfg.validator}_fl{cfg.feature_layer}_{cfg.optimizer}_lr{lr_str}"
     exp_path = os.path.join(cfg.exp_folder, exp_group_name)
 
     if already_done(exp_path, cfg.config_names):
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--target_domain", type=str, required=True)
     parser.add_argument("--validator", type=str, required=True)
     parser.add_argument("--feature_layer", type=int, required=True)
-    parser.add_argument("--optimizer_name", type=str, required=True)
+    parser.add_argument("--optimizer", type=str, required=True)
     parser.add_argument("--lr_multiplier", type=float, required=True)
     parser.add_argument("--max_epochs", type=int, required=True)
     parser.add_argument("--patience", type=int, required=True)

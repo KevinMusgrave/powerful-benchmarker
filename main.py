@@ -108,10 +108,10 @@ def get_adapter_datasets_etc(
     )
     if trial is not None:
         optimizers = configerer.get_optimizers(
-            cfg.pretrain_on_src, cfg.optimizer_name, cfg.pretrain_lr
+            cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
         )
         before_training_starts = configerer.get_before_training_starts_hook(
-            cfg.optimizer_name
+            cfg.optimizer
         )
     else:
         optimizers = defaultdict()
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     parser.add_argument("--evaluate_target_domains", nargs="+", default=None)
     parser.add_argument("--num_reproduce", type=int, default=0)
     parser.add_argument("--feature_layer", type=int, default=0)
-    parser.add_argument("--optimizer_name", type=str, default="SGD")
+    parser.add_argument("--optimizer", type=str, default="SGD")
     parser.add_argument("--lr_multiplier", type=float, default=1)
     parser.add_argument("--pretrain_lr", type=float, default=0.01)
     parser.add_argument("--fixed_param_source", type=str, default=None)

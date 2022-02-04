@@ -14,22 +14,22 @@ class BaseConfig:
     def __init__(self, optuna_trial):
         self.optuna_trial = optuna_trial
 
-    def get_optimizers(self, pretrain_on_src, optimizer_name, pretrain_lr):
+    def get_optimizers(self, pretrain_on_src, optimizer, pretrain_lr):
         if pretrain_on_src:
             lr = pretrain_lr
         else:
             lr = self.optuna_trial.suggest_float("lr", 1e-5, 0.1, log=True)
-        if optimizer_name == "SGD":
+        if optimizer == "SGD":
             return (
                 torch.optim.SGD,
                 {"lr": lr, "momentum": 0.9, "weight_decay": 1e-4},
             )
-        elif optimizer_name == "Adam":
+        elif optimizer == "Adam":
             return (torch.optim.Adam, {"lr": lr, "weight_decay": 1e-4})
         else:
             raise TypeError
 
-    def get_before_training_starts_hook(self, optimizer_name):
+    def get_before_training_starts_hook(self, optimizer):
         def before_training_starts(cls):
             def func(framework):
                 _, max_iters = framework.get_training_length()

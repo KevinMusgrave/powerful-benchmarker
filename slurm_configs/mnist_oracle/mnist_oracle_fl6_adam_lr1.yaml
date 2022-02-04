@@ -1,4 +1,4 @@
-common: &common --wckey="" --dataset mnist --src_domain mnist --target_domain mnistm --max_epochs 100 --validation_interval 2 --patience 5 --validator oracle --feature_layer 6 --optimizer_name Adam --lr_multiplier 1 --save_features --download_datasets
+common: &common --wckey="" --dataset mnist --src_domain mnist --target_domain mnistm --max_epochs 100 --validation_interval 2 --patience 5 --validator oracle --feature_layer 6 --optimizer Adam --lr_multiplier 1 --save_features --download_datasets
 A: &A --config_names atdoc bnm
 B: &B --config_names bsp cdan
 C: &C --config_names dann gvb
