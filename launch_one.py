@@ -30,7 +30,7 @@ def base_command(exp_name, adapter, exp_path, cfg):
 --num_workers {cfg.num_workers} --exp_path {exp_path} --dataset_folder {cfg.dataset_folder} \
 --num_trials 100 --n_startup_trials 100 --batch_size 64 --max_epochs {cfg.max_epochs} --patience {cfg.patience} --validation_interval {cfg.validation_interval} \
 --dataset {cfg.dataset} --src_domains {cfg.src_domain} --target_domains {cfg.target_domain} --validator {cfg.validator} \
---feature_layer {cfg.feature_layer} --optimizer {cfg.optimizer} --lr_multiplier {cfg.lr_multiplier} --num_reproduce 4"
+--feature_layer {cfg.feature_layer} --optimizer {cfg.optimizer} --lr_multiplier {cfg.lr_multiplier} --num_reproduce 4 --is_within_exp_group"
     if cfg.fixed_param_source:
         fps = os.path.join(exp_path, cfg.fixed_param_source)
         x += f" --fixed_param_source {fps}"
