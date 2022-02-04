@@ -87,7 +87,7 @@ def main(cfg, slurm_args):
         lr_str = f"{int(cfg.lr_multiplier)}"
 
     exp_group_name = f"{cfg.dataset}_{cfg.src_domain}_{cfg.target_domain}_{cfg.validator}_fl{cfg.feature_layer}_{cfg.optimizer_name}_lr{lr_str}"
-    exp_path = os.path.join(cfg.root_exp_folder, exp_group_name)
+    exp_path = os.path.join(cfg.exp_folder, exp_group_name)
 
     if already_done(exp_path, cfg.config_names):
         print("These experiments are already done. Exiting.")
@@ -104,21 +104,14 @@ def main(cfg, slurm_args):
     job = executor.submit(exp_launcher, cfg, exp_path, exp_names)
     jobid = job.job_id
     print(f"running job_id = {jobid}")
-    all_jobids_filename = os.path.join(cfg.root_exp_folder, "all_jobids.txt")
+    all_jobids_filename = os.path.join(cfg.exp_folder, "all_jobids.txt")
     with open(all_jobids_filename, "a") as fd:
         fd.write(f"{jobid}\n")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    add_default_args(
-        parser,
-        [
-            ("exp_folder", "root_exp_folder"),
-            "dataset_folder",
-            "conda_env",
-        ],
-    )
+    add_default_args(parser, ["exp_folder", "dataset_folder", "conda_env"])
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--config_names", nargs="+", type=str, required=True)

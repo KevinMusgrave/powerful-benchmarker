@@ -229,7 +229,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
 
 
 def main(cfg):
-    exp_path = os.path.join(cfg.root_exp_folder, cfg.exp_name)
+    exp_path = os.path.join(cfg.exp_folder, cfg.exp_name)
     if cfg.evaluate:
         assert cfg.evaluate in ["target_train_with_labels", "target_val_with_labels"]
         exp_path = os.path.join(exp_path, cfg.evaluate_trial)
@@ -328,14 +328,7 @@ def main(cfg):
 if __name__ == "__main__":
     print("num gpus available in main =", torch.cuda.device_count())
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    add_default_args(
-        parser,
-        [
-            ("exp_folder", "root_exp_folder"),
-            "dataset_folder",
-        ],
-    )
-
+    add_default_args(parser, ["exp_folder", "dataset_folder"])
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--src_domains", nargs="+", required=True)
     parser.add_argument("--target_domains", nargs="+", required=True)

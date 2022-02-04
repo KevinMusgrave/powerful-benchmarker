@@ -8,7 +8,7 @@ from powerful_benchmarker.utils.constants import add_default_args
 
 
 def main(cfg):
-    all_jobids_filename = os.path.join(cfg.root_exp_folder, "all_jobids.txt")
+    all_jobids_filename = os.path.join(cfg.exp_folder, "all_jobids.txt")
     with open(all_jobids_filename, "r") as f:
         jobids = " ".join([line.rstrip("\n") for line in f])
 
@@ -21,6 +21,6 @@ def main(cfg):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    add_default_args(parser, [("exp_folder", "root_exp_folder")])
+    add_default_args(parser, ["exp_folder"])
     args = parser.parse_args()
     main(args)
