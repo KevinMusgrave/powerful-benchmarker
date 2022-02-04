@@ -12,9 +12,12 @@ from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_defaul
 
 
 def get_group_config(args):
-    config_file = os.path.join("group_configs", f"{args.group_config}.yaml")
-    with open(config_file, "r") as f:
-        return yaml.safe_load(f)
+    x = {}
+    for g in args.group_configs:
+        config_file = os.path.join("group_configs", f"{g}.yaml")
+        with open(config_file, "r") as f:
+            x.update(yaml.safe_load(f))
+    return x
 
 
 def get_group_config_str(exp_folder, cfg):
@@ -142,7 +145,7 @@ if __name__ == "__main__":
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
     parser.add_argument("--script_wrapper", type=str, default="script_wrapper.sh")
     parser.add_argument("--slurm_config", type=str, required=True)
-    parser.add_argument("--group_config", type=str, required=True)
+    parser.add_argument("--group_configs", nargs="+", type=str, required=True)
     args, unknown_args = parser.parse_known_args()
 
     slurm_args = create_slurm_args(args, unknown_args)
