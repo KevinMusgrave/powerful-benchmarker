@@ -146,10 +146,10 @@ def get_adapter_datasets_etc(
 
 def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0):
     if reproduce_iter is not None:
-        trial_num = f"reproduction{reproduce_iter}"
+        trial_name = f"reproduction{reproduce_iter}"
     else:
-        trial_num = str(trial.number)
-    exp_path = os.path.join(root_exp_path, trial_num)
+        trial_name = str(trial.number)
+    exp_path = os.path.join(root_exp_path, trial_name)
     config_path = os.path.join(exp_path, "configs")
     if os.path.isdir(exp_path):
         shutil.rmtree(exp_path)
@@ -185,7 +185,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     val_data_hook = None
     if cfg.save_features:
         val_data_hook = get_val_data_hook(
-            exp_path, cfg.is_within_exp_group, cfg.exp_name, cfg.adapter, trial_num
+            exp_path, cfg.is_within_exp_group, cfg.exp_name, cfg.adapter, trial_name
         )
 
     adapter = framework(
@@ -223,7 +223,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         scores_csv_filename,
         best_score,
         accuracies,
-        trial_num,
+        trial_name,
     )
     return best_score
 

@@ -5,7 +5,7 @@ import numpy as np
 from pytorch_adapt.utils import common_functions as c_f
 
 
-def get_val_data_hook(folder, is_within_exp_group, exp_name, config_name, trial_num):
+def get_val_data_hook(folder, is_within_exp_group, exp_name, config_name, trial_name):
     folder = os.path.join(folder, "features")
     c_f.makedir_if_not_there(folder)
     components = os.path.normpath(folder).split(os.path.sep)
@@ -20,7 +20,7 @@ def get_val_data_hook(folder, is_within_exp_group, exp_name, config_name, trial_
             "exp_group": exp_group,
             "exp_name": exp_name,
             "config_name": config_name,
-            "trial_num": trial_num,
+            "trial_name": trial_name,
             "epoch": epoch,
         }
         for k, v in collected_data.items():

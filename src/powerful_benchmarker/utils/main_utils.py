@@ -213,8 +213,8 @@ def delete_suboptimal_models(exp_path):
         all_paths = sorted(glob.glob(f"{exp_path}/*"))
         for x in all_paths:
             if os.path.isdir(x):
-                trial_num = os.path.basename(x)
-                if trial_num.isdigit() and trial_num != keep:
+                trial_name = os.path.basename(x)
+                if trial_name.isdigit() and trial_name != keep:
                     model_folder = os.path.join(x, "models")
                     if os.path.isdir(model_folder):
                         print(f"deleting {model_folder}")
