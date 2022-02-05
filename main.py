@@ -184,9 +184,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
 
     val_data_hook = None
     if cfg.save_features:
-        val_data_hook = get_val_data_hook(
-            exp_path, cfg.is_within_exp_group, cfg.exp_name, cfg.adapter, trial_name
-        )
+        val_data_hook = get_val_data_hook(cfg, exp_path, trial_name)
 
     adapter = framework(
         adapter,
@@ -356,6 +354,5 @@ if __name__ == "__main__":
     parser.add_argument("--fixed_param_source", type=str, default=None)
     parser.add_argument("--save_features", action="store_true")
     parser.add_argument("--download_datasets", action="store_true")
-    parser.add_argument("--is_within_exp_group", action="store_true")
     args = parser.parse_args()
     main(args)

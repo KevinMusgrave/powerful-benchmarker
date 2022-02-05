@@ -5,5 +5,4 @@ num_reproduce: 4
 
 save_features: true
 download_datasets: true
-is_within_exp_group: true
 start_with_pretrained: true
