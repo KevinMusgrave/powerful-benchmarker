@@ -2,8 +2,7 @@ from pytorch_adapt.adapters import ADDA
 from pytorch_adapt.containers import Models, Optimizers
 from pytorch_adapt.weighters import MeanWeighter
 
-from powerful_benchmarker.utils import main_utils
-
+from ..utils import main_utils
 from .base_config import BaseConfig
 
 

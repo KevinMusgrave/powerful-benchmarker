@@ -1,7 +1,11 @@
 import numpy as np
 
+from .main_utils import domain_len_assertion
 
-def pretrained_src_val_accuracy(dataset, src_domain):
+
+def pretrained_src_val_accuracy(dataset, src_domains):
+    src_domain = domain_len_assertion(src_domains)
+
     x = {
         "mnist": {"mnist": 0.9949950575828552},
         "office31": {
@@ -19,7 +23,10 @@ def pretrained_src_val_accuracy(dataset, src_domain):
     return np.round(x[dataset][src_domain], 4)
 
 
-def pretrained_target_train_accuracy(dataset, src_domain, target_domain):
+def pretrained_target_train_accuracy(dataset, src_domains, target_domains):
+    src_domain = domain_len_assertion(src_domains)
+    target_domain = domain_len_assertion(target_domains)
+
     x = {
         "mnist": {"mnist": {"mnistm": 0.5797358751296997}},
         "office31": {

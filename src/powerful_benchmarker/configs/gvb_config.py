@@ -5,8 +5,7 @@ from pytorch_adapt.layers import ModelWithBridge
 from pytorch_adapt.models import Discriminator
 from pytorch_adapt.weighters import MeanWeighter
 
-from powerful_benchmarker.utils import main_utils
-
+from ..utils import main_utils
 from .base_config import BaseConfig
 
 

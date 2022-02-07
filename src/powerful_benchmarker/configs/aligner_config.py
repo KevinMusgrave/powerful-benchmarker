@@ -5,8 +5,7 @@ from pytorch_adapt.layers import CORALLoss, MMDLoss
 from pytorch_adapt.layers.utils import get_kernel_scales
 from pytorch_adapt.weighters import MeanWeighter
 
-from powerful_benchmarker.utils import main_utils
-
+from ..utils import main_utils
 from .base_config import BaseConfig
 
 

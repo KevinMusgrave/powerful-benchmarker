@@ -5,8 +5,6 @@ from pytorch_adapt.models import Discriminator
 from pytorch_adapt.models import pretrained as pretrained_module
 from pytorch_adapt.utils.common_functions import get_lr
 
-from powerful_benchmarker.utils import main_utils
-
 from ..utils import main_utils
 
 
@@ -64,7 +62,7 @@ class BaseConfig:
         num_classes,
         feature_layer,
     ):
-        assert len(src_domains) == 1
+        src_domains = main_utils.domain_len_assertion(src_domains)
         self.num_classes = num_classes
 
         kwargs = {"pretrained": start_with_pretrained}

@@ -14,8 +14,7 @@ from pytorch_adapt.hooks import (
 from pytorch_adapt.layers import AdaptiveFeatureNorm, L2PreservedDropout, MCCLoss
 from pytorch_adapt.weighters import MeanWeighter
 
-from powerful_benchmarker.utils import main_utils
-
+from ..utils import main_utils
 from .base_config import BaseConfig
 
 

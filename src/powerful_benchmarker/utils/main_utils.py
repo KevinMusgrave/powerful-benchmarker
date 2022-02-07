@@ -270,3 +270,9 @@ def num_classes(dataset_name):
         "office31": 31,
         "officehome": 65,
     }[dataset_name]
+
+
+def domain_len_assertion(domain_list):
+    if len(domain_list) > 1:
+        raise ValueError("only 1 domain currently supported")
+    return domain_list[0]

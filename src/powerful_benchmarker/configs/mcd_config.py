@@ -11,8 +11,7 @@ from pytorch_adapt.layers import (
 from pytorch_adapt.utils.common_functions import reinit
 from pytorch_adapt.weighters import MeanWeighter
 
-from powerful_benchmarker.utils import main_utils
-
+from ..utils import main_utils
 from .base_config import BaseConfig
 
 
