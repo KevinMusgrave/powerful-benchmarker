@@ -44,6 +44,7 @@ print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
 def evaluate_best_model(cfg, exp_path):
     assert cfg.validator in ["oracle", "oracle_micro"]
+    original_exp_path = exp_path
     with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "r") as f:
         best_trial = json.load(f)
 
@@ -52,23 +53,30 @@ def evaluate_best_model(cfg, exp_path):
         original_cfg = json.load(f)
 
     for k in ["dataset", "src_domains", "adapter", "feature_layer"]:
-        setattr(cfg, k, getattr(original_cfg, k))
+        setattr(cfg, k, original_cfg[k])
 
-    # (
-    #     framework,
-    #     adapter,
-    #     datasets,
-    #     dataloader_creator,
-    #     validator,
-    #     saver,
-    #     _,
-    #     _,
-    #     _,
-    # ) = get_adapter_datasets_etc(
-    #     cfg, exp_path, cfg.validator, cfg.target_domains
-    # )
-    # adapter = framework(adapter)
-    # main_utils.evaluate(cfg, exp_path, adapter, datasets, validator, saver, dataloader_creator)
+    scores = {}
+    for d in cfg.target_domains:
+        (
+            framework,
+            adapter,
+            datasets,
+            dataloader_creator,
+            validator,
+            saver,
+            _,
+            _,
+            _,
+        ) = get_adapter_datasets_etc(cfg, exp_path, cfg.validator, [d])
+        adapter = framework(adapter, saver=saver)
+        validator = validator.validator  # don't need ScoreHistory
+        scores[d] = main_utils.evaluate(
+            adapter, datasets, validator, dataloader_creator
+        )
+
+    filename = f"best_model_{cfg.validator}_{'_'.join(cfg.target_domains)}.json"
+    with open(os.path.join(original_exp_path, filename), "w") as f:
+        json.dump(scores, f, indent=2)
 
 
 def get_adapter_datasets_etc(
@@ -79,6 +87,8 @@ def get_adapter_datasets_etc(
     trial=None,
     num_fixed_params=0,
 ):
+    if cfg.pretrain_on_src:
+        assert cfg.feature_layer == 0
     model_save_path = os.path.join(exp_path, "models")
     stats_save_path = os.path.join(exp_path, "stats")
     is_evaluation = cfg.evaluate is not None
@@ -308,9 +318,9 @@ if __name__ == "__main__":
     print("num gpus available in main =", torch.cuda.device_count())
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "dataset_folder"])
-    parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--src_domains", nargs="+", required=True)
-    parser.add_argument("--target_domains", nargs="+", required=True)
+    parser.add_argument("--dataset", type=str)
+    parser.add_argument("--src_domains", nargs="+")
+    parser.add_argument("--target_domains", nargs="+")
     parser.add_argument("--adapter", type=str)
     parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)

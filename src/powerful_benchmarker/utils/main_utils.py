@@ -195,19 +195,16 @@ def delete_suboptimal_models(exp_path):
     return return_func
 
 
-def evaluate(cfg, exp_path, adapter, datasets, validator, saver, dataloader_creator):
-    validator.key_map = {cfg.evaluate: "target_train"}
-    score = adapter.evaluate_best_model(
-        datasets, validator, saver, dataloader_creator=dataloader_creator
-    )
-    print(validator)
-    target_domains = "_".join(k for k in cfg.evaluate_target_domains)
-    filename = os.path.join(
-        exp_path,
-        f"{cfg.evaluate_validator}_{target_domains}_{cfg.evaluate}_score.txt",
-    )
-    with open(filename, "w") as fd:
-        fd.write(str(score))
+# assumes oracle validator
+def evaluate(adapter, datasets, validator, dataloader_creator):
+    dataloader_creator.all_val = True
+    scores = {}
+    for split in ["target_train_with_labels", "target_val_with_labels"]:
+        validator.key_map = {split: "src_val"}
+        scores[split] = adapter.evaluate_best_model(
+            datasets, validator, dataloader_creator
+        )
+    return scores
 
 
 def num_classes(dataset_name):
