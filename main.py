@@ -31,7 +31,6 @@ import pytorch_adapt
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from pytorch_adapt.frameworks.ignite import Ignite, IgniteRecordKeeperLogger
-from pytorch_adapt.meta_validators import ForwardOnlyValidator
 from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
@@ -195,10 +194,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         val_data_hook=val_data_hook,
     )
 
-    meta_validator = ForwardOnlyValidator()
-
-    best_score, best_epoch = meta_validator.run(
-        adapter,
+    best_score, best_epoch = adapter.run(
         datasets=datasets,
         dataloader_creator=dataloader_creator,
         max_epochs=cfg.max_epochs,
@@ -206,6 +202,9 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         validation_interval=cfg.validation_interval,
         check_initial_score=True,
     )
+
+    if validator is None:
+        return 0
 
     if best_score is None:
         return float("nan")
@@ -340,7 +339,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_trials", type=int, default=10)
     parser.add_argument("--n_startup_trials", type=int, default=10)
     parser.add_argument("--start_with_pretrained", action="store_true")
-    parser.add_argument("--validator", type=str, default="oracle")
+    parser.add_argument("--validator", type=str, default=None)
     parser.add_argument("--pretrain_on_src", action="store_true")
     parser.add_argument("--evaluate", type=str, default=None)
     parser.add_argument("--evaluate_trial", type=str, default=None)

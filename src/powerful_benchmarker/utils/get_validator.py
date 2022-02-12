@@ -37,6 +37,8 @@ def get_validator(
     adapter_config_name,
     feature_layer,
 ):
+    if validator_name is None:
+        return None, None
     adapter_saver = savers.AdapterSaver(folder=model_save_path)
     saver = savers.Saver(adapter_saver=adapter_saver, folder=stats_save_path)
 
