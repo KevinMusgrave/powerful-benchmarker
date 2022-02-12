@@ -42,27 +42,6 @@ from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
 
-def evaluate(cfg, exp_path, adapter, datasets, validator, saver):
-    main_utils.set_validator_required_data_mapping_for_eval(
-        validator, cfg.evaluate_validator, cfg.evaluate
-    )
-    adapter.dist_init()
-    dataloader_creator = main_utils.get_dataloader_creator(
-        cfg.batch_size, cfg.num_workers
-    )
-    score = adapter.evaluate_best_model(
-        datasets, validator, saver, 0, dataloader_creator=dataloader_creator
-    )
-    print(validator)
-    target_domains = "_".join(k for k in cfg.evaluate_target_domains)
-    filename = os.path.join(
-        exp_path,
-        f"{cfg.evaluate_validator}_{target_domains}_{cfg.evaluate}_score.txt",
-    )
-    with open(filename, "w") as fd:
-        fd.write(str(score))
-
-
 def get_adapter_datasets_etc(
     cfg,
     exp_path,
@@ -209,19 +188,6 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     if best_score is None:
         return float("nan")
 
-    scores_csv_filename = main_utils.get_scores_csv_filename(
-        root_exp_path, reproduce_iter
-    )
-    print("***best score***", best_score)
-    accuracies = main_utils.get_accuracies_of_best_model(
-        adapter, datasets, saver, dataloader_creator, num_classes
-    )
-    main_utils.write_scores_to_csv(
-        scores_csv_filename,
-        best_score,
-        accuracies,
-        trial_name,
-    )
     return best_score
 
 
@@ -243,7 +209,7 @@ def main(cfg):
             cfg, exp_path, cfg.evaluate_validator, cfg.evaluate_target_domains
         )
         adapter = framework(adapter)
-        evaluate(cfg, exp_path, adapter, datasets, validator, saver)
+        main_utils.evaluate(cfg, exp_path, adapter, datasets, validator, saver)
     else:
         optuna.logging.set_verbosity(optuna.logging.WARNING)
         study_path = os.path.join(exp_path, "study.pkl")

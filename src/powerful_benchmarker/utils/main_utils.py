@@ -32,24 +32,8 @@ def save_argparse(cfg, folder):
             json.dump(cfg.__dict__, f, indent=2)
 
 
-def keys_vals_str(x, correct_header):
-    keys = ",".join(str(k) for k in x.keys())
-    vals = ",".join(str(k) for k in x.values())
-    return keys, vals
-
-
-def scores_csv_filename(exp_path):
-    return os.path.join(exp_path, "score_vs_test_accuracy.csv")
-
-
 def reproductions_filename(exp_path):
     return os.path.join(exp_path, "reproduction_score_vs_test_accuracy.csv")
-
-
-def get_scores_csv_filename(exp_path, reproduce_iter=None):
-    if reproduce_iter is None:
-        return scores_csv_filename(exp_path)
-    return reproductions_filename(exp_path)
 
 
 def num_reproductions_complete(exp_path):
@@ -59,24 +43,6 @@ def num_reproductions_complete(exp_path):
     with open(log_path, "r") as f:
         # subtract 1 for header
         return sum(1 for line in f) - 1
-
-
-def write_scores_to_csv(log_path, best_score, accuracies, trial):
-    trial_header = "trial,validation_score"
-    src_header = "src_train_acc_class_avg,src_train_acc_global,src_val_acc_class_avg,src_val_acc_global"
-    target_header = "target_train_acc_class_avg,target_train_acc_global,target_val_acc_class_avg,target_val_acc_global"
-    correct_header = f"{trial_header},{src_header},{target_header}"
-
-    keys, vals = keys_vals_str(accuracies, correct_header)
-    header = f"{trial_header},{keys}"
-    assert header == correct_header
-    assert len(header.split(",")) == (2 + len(vals.split(",")))
-
-    write_string = f"{trial},{best_score},{vals}\n"
-    if not os.path.isfile(log_path):
-        write_string = f"{header}\n{write_string}"
-    with open(log_path, "a") as fd:
-        fd.write(write_string)
 
 
 def get_dataloader_creator(batch_size, num_workers):
@@ -168,6 +134,12 @@ def get_datasets(
     )
     if pretrain_on_src:
         datasets["train"] = datasets["train"].source_dataset
+        if not is_evaluation:
+            datasets = {
+                k: v
+                for k, v in datasets.items()
+                if k in ["train", "src_train", "src_val"]
+            }
     c_f.LOGGER.info(datasets)
     return datasets
 
@@ -223,36 +195,6 @@ def delete_suboptimal_models(exp_path):
     return return_func
 
 
-def get_accuracies_of_best_model(
-    adapter, datasets, saver, dataloader_creator, num_classes
-):
-    validators = {}
-    for domain in ["src", "target"]:
-        if domain == "src":
-            v_fn = get_validator.src_accuracy
-        elif domain == "target":
-            v_fn = get_validator.target_accuracy
-        else:
-            raise ValueError
-        for split in ["train", "val"]:
-            for average in ["macro", "micro"]:
-                # use fresh validator
-                validator = v_fn(num_classes, average=average, split=split)
-                key = f"{domain}_{split}_acc_"
-                key += "class_avg" if average == "macro" else "global"
-                validators[key] = validator
-
-    validator = MultipleValidators(validators=validators, return_sub_scores=True)
-    _, sub_scores = adapter.evaluate_best_model(
-        datasets,
-        validator,
-        saver,
-        dataloader_creator=dataloader_creator,
-    )
-
-    return sub_scores
-
-
 def set_validator_required_data_mapping_for_eval(validator, validator_name, split_name):
     replace_target_train = {split_name: "target_train"}
     if validator_name in ["oracle", "oracle_micro"]:
@@ -260,6 +202,25 @@ def set_validator_required_data_mapping_for_eval(validator, validator_name, spli
     elif validator_name == "entropy_diversity":
         validator.validators["entropy"].key_map = replace_target_train
         validator.validators["diversity"].key_map = replace_target_train
+
+
+def evaluate(cfg, exp_path, adapter, datasets, validator, saver):
+    set_validator_required_data_mapping_for_eval(
+        validator, cfg.evaluate_validator, cfg.evaluate
+    )
+    adapter.dist_init()
+    dataloader_creator = get_dataloader_creator(cfg.batch_size, cfg.num_workers)
+    score = adapter.evaluate_best_model(
+        datasets, validator, saver, 0, dataloader_creator=dataloader_creator
+    )
+    print(validator)
+    target_domains = "_".join(k for k in cfg.evaluate_target_domains)
+    filename = os.path.join(
+        exp_path,
+        f"{cfg.evaluate_validator}_{target_domains}_{cfg.evaluate}_score.txt",
+    )
+    with open(filename, "w") as fd:
+        fd.write(str(score))
 
 
 def num_classes(dataset_name):
