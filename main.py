@@ -42,13 +42,41 @@ from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
 
+def evaluate_best_model(cfg, exp_path):
+    assert cfg.validator in ["oracle", "oracle_micro"]
+    with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "r") as f:
+        best_trial = json.load(f)
+
+    exp_path = os.path.join(exp_path, best_trial["number"])
+    with open(os.path.join(exp_path, "configs", "commandline_args.json"), "r") as f:
+        original_cfg = json.load(f)
+
+    for k in ["dataset", "src_domains", "adapter", "feature_layer"]:
+        setattr(cfg, k, getattr(original_cfg, k))
+
+    # (
+    #     framework,
+    #     adapter,
+    #     datasets,
+    #     dataloader_creator,
+    #     validator,
+    #     saver,
+    #     _,
+    #     _,
+    #     _,
+    # ) = get_adapter_datasets_etc(
+    #     cfg, exp_path, cfg.validator, cfg.target_domains
+    # )
+    # adapter = framework(adapter)
+    # main_utils.evaluate(cfg, exp_path, adapter, datasets, validator, saver, dataloader_creator)
+
+
 def get_adapter_datasets_etc(
     cfg,
     exp_path,
     validator_name,
     target_domains,
     trial=None,
-    config_path=None,
     num_fixed_params=0,
 ):
     model_save_path = os.path.join(exp_path, "models")
@@ -74,6 +102,11 @@ def get_adapter_datasets_etc(
         cfg.dataset_folder,
         cfg.download_datasets,
         is_evaluation,
+    )
+
+    dataloader_creator = main_utils.get_dataloader_creator(
+        cfg.batch_size,
+        cfg.num_workers,
     )
 
     models, framework = configerer.get_models(
@@ -114,6 +147,7 @@ def get_adapter_datasets_etc(
         framework,
         adapter,
         datasets,
+        dataloader_creator,
         validator,
         saver,
         logger,
@@ -136,6 +170,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         framework,
         adapter,
         datasets,
+        dataloader_creator,
         validator,
         saver,
         logger,
@@ -147,13 +182,9 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         cfg.validator,
         cfg.target_domains,
         trial,
-        config_path,
         num_fixed_params,
     )
-    dataloader_creator = main_utils.get_dataloader_creator(
-        cfg.batch_size,
-        cfg.num_workers,
-    )
+
     stat_getter = main_utils.get_stat_getter(num_classes, cfg.pretrain_on_src)
 
     configerer.save(config_path)
@@ -191,101 +222,86 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     return best_score
 
 
+def hyperparam_search(cfg, exp_path):
+    optuna.logging.set_verbosity(optuna.logging.WARNING)
+    study_path = os.path.join(exp_path, "study.pkl")
+    plot_path = os.path.join(exp_path, "plots")
+    log_path = os.path.join(exp_path, "trials.csv")
+
+    if os.path.isdir(exp_path) and os.path.isfile(study_path):
+        study = joblib.load(study_path)
+    else:
+        c_f.makedir_if_not_there(exp_path)
+        c_f.makedir_if_not_there(plot_path)
+        pruner = optuna.pruners.NopPruner()
+        study = optuna.create_study(
+            direction="maximize",
+            pruner=pruner,
+            sampler=TPESampler(n_startup_trials=cfg.n_startup_trials),
+        )
+
+    num_fixed_params = 0
+    if cfg.fixed_param_source:
+        fp_source_path = cfg.fixed_param_source
+        fp_source_best_trial_json = os.path.join(fp_source_path, BEST_TRIAL_FILENAME)
+        if not os.path.isfile(fp_source_best_trial_json):
+            FileNotFoundError(
+                "Fixed param source needs to be complete to use its best params"
+            )
+        fp_source_path = os.path.join(fp_source_path, "study.pkl")
+        fp_source_study = joblib.load(fp_source_path)
+        study.sampler = PartialFixedSampler(fp_source_study.best_params, study.sampler)
+        num_fixed_params = len(fp_source_study.best_params)
+
+    i = len([st for st in study.trials if st.value is not None])
+
+    study.sampler.reseed_rng()
+
+    while i < cfg.num_trials:
+        study.optimize(
+            lambda trial: objective(
+                cfg, exp_path, trial, num_fixed_params=num_fixed_params
+            ),
+            n_trials=1,
+            timeout=None,
+            callbacks=[
+                main_utils.save_study(study_path),
+                main_utils.plot_visualizations(plot_path),
+                main_utils.save_dataframe(log_path),
+                main_utils.delete_suboptimal_models(exp_path),
+            ],
+            gc_after_trial=True,
+        )
+        if study.trials[-1].value is not None:
+            i += 1
+
+    i = main_utils.num_reproductions_complete(exp_path)
+    print("num_reproduce_complete", i)
+    while i < cfg.num_reproduce:
+        result = objective(
+            cfg,
+            exp_path,
+            optuna.trial.FixedTrial(study.best_trial.params),
+            i,
+            num_fixed_params=num_fixed_params,
+        )
+        if not np.isnan(result):
+            i += 1
+
+    best_json = {
+        field: str(getattr(study.best_trial, field))
+        for field in study.best_trial._ordered_fields
+    }
+    with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "w") as f:
+        json.dump(best_json, f, indent=2)
+
+
 def main(cfg):
     exp_path = os.path.join(cfg.exp_folder, cfg.exp_name)
     if cfg.evaluate:
-        assert cfg.evaluate in ["target_train_with_labels", "target_val_with_labels"]
-        exp_path = os.path.join(exp_path, cfg.evaluate_trial)
-        (
-            framework,
-            adapter,
-            datasets,
-            validator,
-            saver,
-            _,
-            _,
-            _,
-        ) = get_adapter_datasets_etc(
-            cfg, exp_path, cfg.evaluate_validator, cfg.evaluate_target_domains
-        )
-        adapter = framework(adapter)
-        main_utils.evaluate(cfg, exp_path, adapter, datasets, validator, saver)
+        evaluate_best_model(cfg, exp_path)
     else:
-        optuna.logging.set_verbosity(optuna.logging.WARNING)
-        study_path = os.path.join(exp_path, "study.pkl")
-        plot_path = os.path.join(exp_path, "plots")
-        log_path = os.path.join(exp_path, "trials.csv")
-
-        if os.path.isdir(exp_path) and os.path.isfile(study_path):
-            study = joblib.load(study_path)
-        else:
-            c_f.makedir_if_not_there(exp_path)
-            c_f.makedir_if_not_there(plot_path)
-            pruner = optuna.pruners.NopPruner()
-            study = optuna.create_study(
-                direction="maximize",
-                pruner=pruner,
-                sampler=TPESampler(n_startup_trials=cfg.n_startup_trials),
-            )
-
-        num_fixed_params = 0
-        if cfg.fixed_param_source:
-            fp_source_path = cfg.fixed_param_source
-            fp_source_best_trial_json = os.path.join(
-                fp_source_path, BEST_TRIAL_FILENAME
-            )
-            if not os.path.isfile(fp_source_best_trial_json):
-                FileNotFoundError(
-                    "Fixed param source needs to be complete to use its best params"
-                )
-            fp_source_path = os.path.join(fp_source_path, "study.pkl")
-            fp_source_study = joblib.load(fp_source_path)
-            study.sampler = PartialFixedSampler(
-                fp_source_study.best_params, study.sampler
-            )
-            num_fixed_params = len(fp_source_study.best_params)
-
-        i = len([st for st in study.trials if st.value is not None])
-
-        study.sampler.reseed_rng()
-
-        while i < cfg.num_trials:
-            study.optimize(
-                lambda trial: objective(
-                    cfg, exp_path, trial, num_fixed_params=num_fixed_params
-                ),
-                n_trials=1,
-                timeout=None,
-                callbacks=[
-                    main_utils.save_study(study_path),
-                    main_utils.plot_visualizations(plot_path),
-                    main_utils.save_dataframe(log_path),
-                    main_utils.delete_suboptimal_models(exp_path),
-                ],
-                gc_after_trial=True,
-            )
-            if study.trials[-1].value is not None:
-                i += 1
-
-        i = main_utils.num_reproductions_complete(exp_path)
-        print("num_reproduce_complete", i)
-        while i < cfg.num_reproduce:
-            result = objective(
-                cfg,
-                exp_path,
-                optuna.trial.FixedTrial(study.best_trial.params),
-                i,
-                num_fixed_params=num_fixed_params,
-            )
-            if not np.isnan(result):
-                i += 1
-
-        best_json = {
-            field: str(getattr(study.best_trial, field))
-            for field in study.best_trial._ordered_fields
-        }
-        with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "w") as f:
-            json.dump(best_json, f, indent=2)
+        hyperparam_search(cfg, exp_path)
 
 
 if __name__ == "__main__":
@@ -295,7 +311,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--src_domains", nargs="+", required=True)
     parser.add_argument("--target_domains", nargs="+", required=True)
-    parser.add_argument("--adapter", type=str, required=True)
+    parser.add_argument("--adapter", type=str)
     parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--patience", type=int, default=10)
@@ -307,10 +323,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_with_pretrained", action="store_true")
     parser.add_argument("--validator", type=str, default=None)
     parser.add_argument("--pretrain_on_src", action="store_true")
-    parser.add_argument("--evaluate", type=str, default=None)
-    parser.add_argument("--evaluate_trial", type=str, default=None)
-    parser.add_argument("--evaluate_validator", type=str, default=None)
-    parser.add_argument("--evaluate_target_domains", nargs="+", default=None)
+    parser.add_argument("--evaluate", action="store_true")
     parser.add_argument("--num_reproduce", type=int, default=0)
     parser.add_argument("--feature_layer", type=int, default=0)
     parser.add_argument("--optimizer", type=str, default="SGD")

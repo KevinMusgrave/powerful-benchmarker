@@ -195,23 +195,10 @@ def delete_suboptimal_models(exp_path):
     return return_func
 
 
-def set_validator_required_data_mapping_for_eval(validator, validator_name, split_name):
-    replace_target_train = {split_name: "target_train"}
-    if validator_name in ["oracle", "oracle_micro"]:
-        validator.key_map = {split_name: "src_val"}
-    elif validator_name == "entropy_diversity":
-        validator.validators["entropy"].key_map = replace_target_train
-        validator.validators["diversity"].key_map = replace_target_train
-
-
-def evaluate(cfg, exp_path, adapter, datasets, validator, saver):
-    set_validator_required_data_mapping_for_eval(
-        validator, cfg.evaluate_validator, cfg.evaluate
-    )
-    adapter.dist_init()
-    dataloader_creator = get_dataloader_creator(cfg.batch_size, cfg.num_workers)
+def evaluate(cfg, exp_path, adapter, datasets, validator, saver, dataloader_creator):
+    validator.key_map = {cfg.evaluate: "target_train"}
     score = adapter.evaluate_best_model(
-        datasets, validator, saver, 0, dataloader_creator=dataloader_creator
+        datasets, validator, saver, dataloader_creator=dataloader_creator
     )
     print(validator)
     target_domains = "_".join(k for k in cfg.evaluate_target_domains)
