@@ -8,4 +8,4 @@
 # --download_datasets --save_features --num_trials 3 \
 # --max_epochs 3 --pretrain_on_src --validator src_accuracy
 
-python main.py --exp_name test_experiment --target_domains mnistm --evaluate --validator oracle
+python main.py --exp_name test_experiment --target_domains mnist mnistm --evaluate --validator oracle
