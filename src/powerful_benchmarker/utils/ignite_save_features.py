@@ -5,58 +5,39 @@ import numpy as np
 from pytorch_adapt.utils import common_functions as c_f
 
 
-def get_val_data_hook(cfg, folder, trial_name):
+def get_val_data_hook(folder, trial_name, logger):
     folder = os.path.join(folder, "features")
     c_f.makedir_if_not_there(folder)
-    components = os.path.normpath(folder).split(os.path.sep)
 
     def save_features(engine, collected_data):
         epoch = engine.state.epoch
         if epoch == 0:
             return
 
-        all_data = {
-            k: getattr(cfg, k)
-            for k in [
-                "dataset",
-                "src_domains",
-                "target_domains",
-                "adapter",
-                "exp_name",
-                "optimizer",
-                "max_epochs",
-                "patience",
-                "validation_interval",
-                "batch_size",
-                "start_with_pretrained",
-                "feature_layer",
-                "lr_multiplier",
-            ]
-        }
-
-        all_data.update(
-            {
-                "trial_name": trial_name,
-                "epoch": epoch,
-            }
-        )
-
         for k, v in collected_data.items():
             curr_k = k.replace("_with_labels", "")
-            all_data.update(
-                {
-                    f"{curr_k}_{name}": v[name].cpu().numpy()
+            inference_dict = {
+                curr_k: {
+                    name: v[name].cpu().numpy()
                     for name in ["features", "logits", "labels"]
                     if name in v
                 }
-            )
+            }
+
+        losses_dict = logger.get_losses()
 
         with h5py.File(os.path.join(folder, "features.hdf5"), "a") as hf:
-            grp = hf.create_group(f"{epoch}")
-            for k, v in all_data.items():
-                kwargs = (
-                    {"compression": "gzip"} if isinstance(v, (np.ndarray, list)) else {}
-                )
-                grp.create_dataset(k, data=v, **kwargs)
+            write_nested_dict(hf, inference_dict, epoch, "inference")
+            write_nested_dict(hf, losses_dict, epoch, "losses")
 
     return save_features
+
+
+def write_nested_dict(hf, d, epoch, series_name):
+    for k1, v1 in d.items():
+        grp = hf.create_group(f"{epoch}/{series_name}/{k1}")
+        for k2, v2 in v1.items():
+            kwargs = (
+                {"compression": "gzip"} if isinstance(v2, (np.ndarray, list)) else {}
+            )
+            grp.create_dataset(k2, data=v2, **kwargs)

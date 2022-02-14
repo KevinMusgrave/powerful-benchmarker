@@ -28,9 +28,11 @@ import joblib
 import numpy as np
 import optuna
 import pytorch_adapt
+import record_keeper
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
-from pytorch_adapt.frameworks.ignite import Ignite, IgniteRecordKeeperLogger
+from pytorch_adapt.frameworks.ignite import Ignite
+from pytorch_adapt.frameworks.ignite.loggers import BasicLossLogger
 from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
@@ -40,6 +42,7 @@ from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
+print("record_keeper.__version__", record_keeper.__version__)
 
 
 def evaluate_best_model(cfg, exp_path):
@@ -143,8 +146,7 @@ def get_adapter_datasets_etc(
         cfg.lr_multiplier,
         datasets=datasets,
     )
-    logger_path = os.path.join(exp_path, "logs")
-    logger = IgniteRecordKeeperLogger(folder=logger_path)
+    logger = BasicLossLogger()
     if framework is None:
         framework = Ignite
 
@@ -201,7 +203,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
 
     val_data_hook = None
     if cfg.save_features:
-        val_data_hook = get_val_data_hook(cfg, exp_path, trial_name)
+        val_data_hook = get_val_data_hook(exp_path, trial_name, logger)
 
     adapter = framework(
         adapter,
