@@ -52,7 +52,7 @@ def evaluate_best_model(cfg, exp_path):
     with open(os.path.join(exp_path, "configs", "commandline_args.json"), "r") as f:
         original_cfg = json.load(f)
 
-    for k in ["dataset", "src_domains", "adapter", "feature_layer"]:
+    for k in ["dataset", "adapter", "feature_layer"]:
         setattr(cfg, k, original_cfg[k])
 
     scores = {}
@@ -91,7 +91,6 @@ def get_adapter_datasets_etc(
         assert cfg.feature_layer == 0
     model_save_path = os.path.join(exp_path, "models")
     stats_save_path = os.path.join(exp_path, "stats")
-    is_evaluation = cfg.evaluate is not None
     num_classes = main_utils.num_classes(cfg.dataset)
 
     validator, saver = get_validator(
@@ -111,7 +110,6 @@ def get_adapter_datasets_etc(
         cfg.pretrain_on_src,
         cfg.dataset_folder,
         cfg.download_datasets,
-        is_evaluation,
     )
 
     dataloader_creator = main_utils.get_dataloader_creator(
@@ -319,8 +317,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "dataset_folder"])
     parser.add_argument("--dataset", type=str)
-    parser.add_argument("--src_domains", nargs="+")
-    parser.add_argument("--target_domains", nargs="+")
+    parser.add_argument("--src_domains", nargs="+", default=[])
+    parser.add_argument("--target_domains", nargs="+", default=[])
     parser.add_argument("--adapter", type=str)
     parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)

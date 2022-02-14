@@ -62,13 +62,13 @@ class BaseConfig:
         num_classes,
         feature_layer,
     ):
-        src_domains = main_utils.domain_len_assertion(src_domains)
         self.num_classes = num_classes
 
         kwargs = {"pretrained": start_with_pretrained}
         G = getattr(pretrained_module, f"{dataset}G")(**kwargs)
 
-        if dataset != "mnist":
+        if start_with_pretrained and dataset != "mnist":
+            src_domains = main_utils.domain_len_assertion(src_domains)
             kwargs["domain"] = src_domains[0]
         C = getattr(pretrained_module, f"{dataset}C")(**kwargs)
 

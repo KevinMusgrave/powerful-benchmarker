@@ -113,9 +113,10 @@ def get_datasets(
     pretrain_on_src,
     folder,
     download,
-    is_evaluation=False,
 ):
-    if (not is_evaluation) and (not set(src_domains).isdisjoint(target_domains)):
+    if pretrain_on_src and len(target_domains) > 0:
+        raise ValueError("target_domain must be [] if pretrain_on_src is True")
+    if not set(src_domains).isdisjoint(target_domains):
         raise ValueError(
             f"src_domains {src_domains} and target_domains {target_domains} cannot have any overlap"
         )
@@ -132,14 +133,6 @@ def get_datasets(
         return_target_with_labels=True,
         download=download,
     )
-    if pretrain_on_src:
-        datasets["train"] = datasets["train"].source_dataset
-        if not is_evaluation:
-            datasets = {
-                k: v
-                for k, v in datasets.items()
-                if k in ["train", "src_train", "src_val"]
-            }
     c_f.LOGGER.info(datasets)
     return datasets
 
