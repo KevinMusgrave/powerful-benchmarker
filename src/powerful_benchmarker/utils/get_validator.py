@@ -1,7 +1,7 @@
 import os
 
 import torch
-from pytorch_adapt.frameworks.ignite import savers
+from pytorch_adapt.frameworks.ignite import CheckpointFnCreator
 from pytorch_adapt.layers import NLLLoss
 from pytorch_adapt.validators import (
     AccuracyValidator,
@@ -32,15 +32,12 @@ def target_accuracy(num_classes, average="macro", split="train"):
 def get_validator(
     num_classes,
     validator_name,
-    model_save_path,
-    stats_save_path,
-    adapter_config_name,
+    checkpoint_path,
     feature_layer,
 ):
+    checkpoint_fn = CheckpointFnCreator(dirname=checkpoint_path, require_empty=False)
     if validator_name is None:
-        return None, None
-    adapter_saver = savers.AdapterSaver(folder=model_save_path)
-    saver = savers.Saver(adapter_saver=adapter_saver, folder=stats_save_path)
+        return None, checkpoint_fn
 
     if validator_name == "oracle":
         validator = target_accuracy(num_classes)
@@ -58,18 +55,14 @@ def get_validator(
         )
     elif validator_name == "SND":
         validator = SNDValidator()
-    elif validator_name in ["DEV", "DEV_binary"]:
-        if validator_name == "DEV":
-            if feature_layer == 8:
-                error_fn = NLLLoss(reduction="none")
-                error_layer = "preds"
-            else:
-                error_fn = torch.nn.CrossEntropyLoss(reduction="none")
-                error_layer = "logits"
-        elif validator_name == "DEV_binary":
-            error_fn = dev_binary_fn
+    elif validator_name in ["DEV"]:
+        if feature_layer == 8:
+            error_fn = NLLLoss(reduction="none")
+            error_layer = "preds"
+        else:
+            error_fn = torch.nn.CrossEntropyLoss(reduction="none")
             error_layer = "logits"
-        temp_folder = os.path.join(model_save_path, "val_temp_folder")
+        temp_folder = os.path.join(checkpoint_path, "val_temp_folder")
         validator = DeepEmbeddedValidator(
             temp_folder=temp_folder,
             num_workers=0,
@@ -77,13 +70,6 @@ def get_validator(
             error_fn=error_fn,
             error_layer=error_layer,
         )
-    # elif validator_name == "KNN":
-    #     validator = KNNValidator()
 
     validator = ScoreHistory(validator, ignore_epoch=0)
-    return validator, saver
-
-
-def dev_binary_fn(preds, labels):
-    preds = torch.argmax(preds, dim=1)
-    return (preds != labels).float()
+    return validator, checkpoint_fn

@@ -39,7 +39,7 @@ python main.py --exp_name mcc_experiment --dataset officehome \
 python main.py --exp_name bnm_experiment --dataset office31 \
 --src_domains dslr --target_domains amazon --adapter BNMConfig \
 --batch_size 32 --max_epochs 500 --patience 15 \
---validation_interval 5 --num_workers 4 --num_trials 100 --n_startup_trials 100 \
+--val_interval 5 --num_workers 4 --num_trials 100 --n_startup_trials 100 \
 --validator entropy_diversity --optimizer Adam \
 --download_datasets --start_with_pretrained
 ```

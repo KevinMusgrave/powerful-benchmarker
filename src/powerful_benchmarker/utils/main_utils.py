@@ -12,10 +12,12 @@ from pytorch_adapt.datasets.getters import (
     get_office31,
     get_officehome,
 )
+from pytorch_adapt.frameworks.ignite import IgniteValHookWrapper
 from pytorch_adapt.utils import common_functions as c_f
 from pytorch_adapt.validators import MultipleValidators, ScoreHistories
 
 from . import get_validator
+from .ignite_save_features import SaveFeatures
 
 
 def save_this_file(file_in, folder):
@@ -74,28 +76,24 @@ def get_dataloader_creator(batch_size, num_workers):
 
 def get_stat_getter(num_classes, pretrain_on_src):
     validators = {
-        "src_train_acc_class_avg": get_validator.src_accuracy(
-            num_classes, split="train"
-        ),
-        "src_train_acc_global": get_validator.src_accuracy(
+        "src_train_macro": get_validator.src_accuracy(num_classes, split="train"),
+        "src_train_micro": get_validator.src_accuracy(
             num_classes, average="micro", split="train"
         ),
-        "src_val_acc_class_avg": get_validator.src_accuracy(num_classes),
-        "src_val_acc_global": get_validator.src_accuracy(num_classes, average="micro"),
+        "src_val_macro": get_validator.src_accuracy(num_classes),
+        "src_val_micro": get_validator.src_accuracy(num_classes, average="micro"),
     }
     if not pretrain_on_src:
         validators.update(
             {
-                "target_train_acc_class_avg": get_validator.target_accuracy(
-                    num_classes
-                ),
-                "target_train_acc_global": get_validator.target_accuracy(
+                "target_train_macro": get_validator.target_accuracy(num_classes),
+                "target_train_micro": get_validator.target_accuracy(
                     num_classes, average="micro"
                 ),
-                "target_val_acc_class_avg": get_validator.target_accuracy(
+                "target_val_macro": get_validator.target_accuracy(
                     num_classes, split="val"
                 ),
-                "target_val_acc_global": get_validator.target_accuracy(
+                "target_val_micro": get_validator.target_accuracy(
                     num_classes, average="micro", split="val"
                 ),
             }
@@ -104,6 +102,16 @@ def get_stat_getter(num_classes, pretrain_on_src):
         assert len(v.required_data) == 1
         assert k.startswith(v.required_data[0].replace("with_labels", ""))
     return ScoreHistories(MultipleValidators(validators=validators))
+
+
+def get_val_hooks(cfg, folder, logger, num_classes, pretrain_on_src):
+    hooks = []
+    if cfg.use_stat_getter:
+        stat_getter = get_stat_getter(num_classes, pretrain_on_src)
+        hooks.append(IgniteValHookWrapper(stat_getter, logger=logger))
+    if cfg.save_features:
+        hooks.append(SaveFeatures(folder, logger))
+    return hooks
 
 
 def get_datasets(
@@ -180,7 +188,7 @@ def delete_suboptimal_models(exp_path):
             if os.path.isdir(x):
                 trial_name = os.path.basename(x)
                 if trial_name.isdigit() and trial_name != keep:
-                    model_folder = os.path.join(x, "models")
+                    model_folder = os.path.join(x, "checkpoints")
                     if os.path.isdir(model_folder):
                         print(f"deleting {model_folder}")
                         shutil.rmtree(model_folder)

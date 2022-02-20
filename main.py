@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
+sys.path.insert(0, "../pytorch-adapt/src")
 sys.path.insert(0, "src")
 import argparse
 import logging
@@ -39,7 +40,6 @@ from powerful_benchmarker import configs
 from powerful_benchmarker.utils import main_utils
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
 from powerful_benchmarker.utils.get_validator import get_validator
-from powerful_benchmarker.utils.ignite_save_features import get_val_data_hook
 
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 print("record_keeper.__version__", record_keeper.__version__)
@@ -66,12 +66,12 @@ def evaluate_best_model(cfg, exp_path):
             datasets,
             dataloader_creator,
             validator,
-            saver,
+            checkpoint_fn,
             _,
             _,
             _,
         ) = get_adapter_datasets_etc(cfg, exp_path, cfg.validator, [d])
-        adapter = framework(adapter, saver=saver)
+        adapter = framework(adapter, checkpoint_fn=checkpoint_fn)
         validator = validator.validator  # don't need ScoreHistory
         scores[d] = main_utils.evaluate(
             adapter, datasets, validator, dataloader_creator
@@ -92,16 +92,13 @@ def get_adapter_datasets_etc(
 ):
     if cfg.pretrain_on_src:
         assert cfg.feature_layer == 0
-    model_save_path = os.path.join(exp_path, "models")
-    stats_save_path = os.path.join(exp_path, "stats")
+    checkpoint_path = os.path.join(exp_path, "checkpoints")
     num_classes = main_utils.num_classes(cfg.dataset)
 
-    validator, saver = get_validator(
+    validator, checkpoint_fn = get_validator(
         num_classes,
         validator_name,
-        model_save_path,
-        stats_save_path,
-        cfg.adapter,
+        checkpoint_path,
         cfg.feature_layer,
     )
 
@@ -159,7 +156,7 @@ def get_adapter_datasets_etc(
         datasets,
         dataloader_creator,
         validator,
-        saver,
+        checkpoint_fn,
         logger,
         configerer,
         num_classes,
@@ -182,7 +179,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         datasets,
         dataloader_creator,
         validator,
-        saver,
+        checkpoint_fn,
         logger,
         configerer,
         num_classes,
@@ -195,31 +192,32 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         num_fixed_params,
     )
 
-    stat_getter = main_utils.get_stat_getter(num_classes, cfg.pretrain_on_src)
+    val_hooks = main_utils.get_val_hooks(
+        cfg, exp_path, logger, num_classes, cfg.pretrain_on_src
+    )
+
+    adapter = framework(
+        adapter,
+        validator=validator,
+        val_hooks=val_hooks,
+        checkpoint_fn=checkpoint_fn,
+        logger=logger,
+    )
 
     configerer.save(config_path)
     main_utils.save_argparse(cfg, config_path)
     main_utils.save_this_file(__file__, config_path)
 
-    val_data_hook = None
-    if cfg.save_features:
-        val_data_hook = get_val_data_hook(exp_path, trial_name, logger)
-
-    adapter = framework(
-        adapter,
-        validator=validator,
-        stat_getter=stat_getter,
-        saver=saver,
-        logger=logger,
-        val_data_hook=val_data_hook,
-    )
+    early_stopper_kwargs = None
+    if cfg.patience:
+        early_stopper_kwargs = {"patience": cfg.patience}
 
     best_score, best_epoch = adapter.run(
         datasets=datasets,
         dataloader_creator=dataloader_creator,
         max_epochs=cfg.max_epochs,
-        patience=cfg.patience,
-        validation_interval=cfg.validation_interval,
+        early_stopper_kwargs=early_stopper_kwargs,
+        val_interval=cfg.val_interval,
         check_initial_score=True,
     )
 
@@ -325,7 +323,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)
     parser.add_argument("--patience", type=int, default=10)
-    parser.add_argument("--validation_interval", type=int, default=1)
+    parser.add_argument("--val_interval", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--num_trials", type=int, default=10)
@@ -342,5 +340,6 @@ if __name__ == "__main__":
     parser.add_argument("--fixed_param_source", type=str, default=None)
     parser.add_argument("--save_features", action="store_true")
     parser.add_argument("--download_datasets", action="store_true")
+    parser.add_argument("--use_stat_getter", action="store_true")
     args = parser.parse_args()
     main(args)

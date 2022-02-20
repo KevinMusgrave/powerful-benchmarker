@@ -5,12 +5,14 @@ import numpy as np
 from pytorch_adapt.utils import common_functions as c_f
 
 
-def get_val_data_hook(folder, trial_name, logger):
-    folder = os.path.join(folder, "features")
-    c_f.makedir_if_not_there(folder)
+class SaveFeatures:
+    def __init__(self, folder, logger):
+        self.folder = os.path.join(folder, "features")
+        c_f.makedir_if_not_there(self.folder)
+        self.logger = logger
+        self.required_data = ["src_train", "src_val", "target_train", "target_val"]
 
-    def save_features(engine, collected_data):
-        epoch = engine.state.epoch
+    def __call__(self, epoch, **collected_data):
         if epoch == 0:
             return
 
@@ -19,18 +21,16 @@ def get_val_data_hook(folder, trial_name, logger):
             inference_dict = {
                 curr_k: {
                     name: v[name].cpu().numpy()
-                    for name in ["features", "logits", "labels"]
+                    for name in ["features", "logits", "labels", "d_logits"]
                     if name in v
                 }
             }
 
-        losses_dict = logger.get_losses()
+        losses_dict = self.logger.get_losses()
 
-        with h5py.File(os.path.join(folder, "features.hdf5"), "a") as hf:
+        with h5py.File(os.path.join(self.folder, "features.hdf5"), "a") as hf:
             write_nested_dict(hf, inference_dict, epoch, "inference")
             write_nested_dict(hf, losses_dict, epoch, "losses")
-
-    return save_features
 
 
 def write_nested_dict(hf, d, epoch, series_name):

@@ -2,6 +2,6 @@ dataset: mnist
 src_domains: mnist
 target_domains: mnistm
 max_epochs: 100
-validation_interval: 2
+val_interval: 2
 patience: 5
 num_workers: 2

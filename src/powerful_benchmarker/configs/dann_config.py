@@ -24,6 +24,15 @@ from .base_config import BaseConfig
 from .cdan_config import CDANConfig
 
 
+def dann_full_inference(cls):
+    def fn(x, domain):
+        outputs = cls.inference_default(x, domain)
+        outputs["d_logits"] = cls.models["D"](outputs["features"])
+        return outputs
+
+    return fn
+
+
 class DANNConfig(BaseConfig):
     def get_adapter_kwargs(
         self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
@@ -48,6 +57,7 @@ class DANNConfig(BaseConfig):
             "misc": None,
             "before_training_starts": before_training_starts,
             "hook_kwargs": hook_kwargs,
+            "inference": dann_full_inference,
         }
 
     def get_new_adapter(self, *args, **kwargs):
