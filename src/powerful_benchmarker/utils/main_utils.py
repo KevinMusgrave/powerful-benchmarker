@@ -34,17 +34,23 @@ def save_argparse(cfg, folder):
             json.dump(cfg.__dict__, f, indent=2)
 
 
-def reproductions_filename(exp_path):
-    return os.path.join(exp_path, "reproduction_score_vs_test_accuracy.csv")
+def update_repro_file(exp_path):
+    x, filepath = num_repro_complete(exp_path, return_filepath=True)
+    x += 1
+    with open(filepath, "w") as f:
+        json.dump({"num_repro": x}, f, indent=2)
 
 
-def num_reproductions_complete(exp_path):
-    log_path = reproductions_filename(exp_path)
-    if not os.path.isfile(log_path):
-        return 0
-    with open(log_path, "r") as f:
-        # subtract 1 for header
-        return sum(1 for line in f) - 1
+def num_repro_complete(exp_path, return_filepath=False):
+    filepath = os.path.join(exp_path, "num_repro_complete.json")
+    if os.path.isfile(filepath):
+        with open(filepath, "r") as f:
+            x = json.load(f)["num_repro"]
+    else:
+        x = 0
+    if return_filepath:
+        return x, filepath
+    return x
 
 
 def get_dataloader_creator(batch_size, num_workers):

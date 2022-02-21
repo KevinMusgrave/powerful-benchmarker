@@ -284,7 +284,7 @@ def hyperparam_search(cfg, exp_path):
         if study.trials[-1].value is not None:
             i += 1
 
-    i = main_utils.num_reproductions_complete(exp_path)
+    i = main_utils.num_repro_complete(exp_path)
     print("num_reproduce_complete", i)
     while i < cfg.num_reproduce:
         result = objective(
@@ -295,6 +295,7 @@ def hyperparam_search(cfg, exp_path):
             num_fixed_params=num_fixed_params,
         )
         if not np.isnan(result):
+            main_utils.update_repro_file(exp_path)
             i += 1
 
     best_json = {
