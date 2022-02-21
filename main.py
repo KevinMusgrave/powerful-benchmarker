@@ -219,7 +219,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         max_epochs=cfg.max_epochs,
         early_stopper_kwargs=early_stopper_kwargs,
         val_interval=cfg.val_interval,
-        check_initial_score=True,
+        check_initial_score=cfg.check_initial_score,
     )
 
     if validator is None:
@@ -342,5 +342,6 @@ if __name__ == "__main__":
     parser.add_argument("--save_features", action="store_true")
     parser.add_argument("--download_datasets", action="store_true")
     parser.add_argument("--use_stat_getter", action="store_true")
+    parser.add_argument("--check_initial_score", action="store_true")
     args = parser.parse_args()
     main(args)

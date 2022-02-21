@@ -10,20 +10,24 @@ class SaveFeatures:
         self.folder = os.path.join(folder, "features")
         c_f.makedir_if_not_there(self.folder)
         self.logger = logger
-        self.required_data = ["src_train", "src_val", "target_train", "target_val"]
+        self.required_data = [
+            "src_train",
+            "src_val",
+            "target_train_with_labels",
+            "target_val_with_labels",
+        ]
 
     def __call__(self, epoch, **collected_data):
         if epoch == 0:
             return
 
+        inference_dict = {}
         for k, v in collected_data.items():
             curr_k = k.replace("_with_labels", "")
-            inference_dict = {
-                curr_k: {
-                    name: v[name].cpu().numpy()
-                    for name in ["features", "logits", "labels", "d_logits"]
-                    if name in v
-                }
+            inference_dict[curr_k] = {
+                name: v[name].cpu().numpy()
+                for name in v.keys()
+                if name not in discard_keys()
             }
 
         losses_dict = self.logger.get_losses()
@@ -41,3 +45,7 @@ def write_nested_dict(hf, d, epoch, series_name):
                 {"compression": "gzip"} if isinstance(v2, (np.ndarray, list)) else {}
             )
             grp.create_dataset(k2, data=v2, **kwargs)
+
+
+def discard_keys():
+    return ["imgs", "domain", "preds"]
