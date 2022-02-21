@@ -33,13 +33,13 @@ import record_keeper
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from pytorch_adapt.frameworks.ignite import Ignite
-from pytorch_adapt.frameworks.ignite.loggers import BasicLossLogger
 from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
 from powerful_benchmarker.utils import main_utils
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
 from powerful_benchmarker.utils.get_validator import get_validator
+from powerful_benchmarker.utils.logger import Logger
 
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 print("record_keeper.__version__", record_keeper.__version__)
@@ -143,7 +143,7 @@ def get_adapter_datasets_etc(
         cfg.lr_multiplier,
         datasets=datasets,
     )
-    logger = BasicLossLogger()
+    logger = Logger(os.path.join(exp_path, "logs"))
     if framework is None:
         framework = Ignite
 
@@ -202,6 +202,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         val_hooks=val_hooks,
         checkpoint_fn=checkpoint_fn,
         logger=logger,
+        log_freq=1,
     )
 
     configerer.save(config_path)
@@ -322,7 +323,7 @@ if __name__ == "__main__":
     parser.add_argument("--adapter", type=str)
     parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)
-    parser.add_argument("--patience", type=int, default=10)
+    parser.add_argument("--patience", type=int, default=None)
     parser.add_argument("--val_interval", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--num_workers", type=int, default=8)

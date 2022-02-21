@@ -1,7 +1,8 @@
 python main.py --exp_name test_experiment0 --dataset mnist \
 --src_domains mnist --adapter PretrainerConfig \
---download_datasets --num_trials 3 \
---max_epochs 3 --pretrain_on_src --validator src_accuracy
+--download_datasets --num_trials 2 \
+--max_epochs 20 --pretrain_on_src --validator src_accuracy \
+--use_stat_getter
 
 python main.py --exp_name test_experiment0 --target_domains mnist mnistm --evaluate --validator oracle
 
