@@ -49,7 +49,9 @@ def evaluate_best_model(cfg, exp_path):
         best_trial = json.load(f)
 
     exp_path = os.path.join(exp_path, best_trial["number"])
-    with open(os.path.join(exp_path, "configs", "commandline_args.json"), "r") as f:
+    with open(
+        os.path.join(exp_path, "configs", "args_and_trial_params.json"), "r"
+    ) as f:
         original_cfg = json.load(f)
 
     for k in ["dataset", "adapter", "feature_layer"]:
@@ -208,7 +210,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     )
 
     configerer.save(config_path)
-    main_utils.save_argparse(cfg, config_path)
+    main_utils.save_argparse_and_trial_params(cfg, trial, config_path)
     main_utils.save_this_file(__file__, config_path)
 
     early_stopper_kwargs = None

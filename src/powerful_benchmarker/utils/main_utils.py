@@ -26,11 +26,11 @@ def save_this_file(file_in, folder):
         shutil.copyfile(src, os.path.join(folder, os.path.basename(src)))
 
 
-def save_argparse(cfg, folder):
+def save_argparse_and_trial_params(cfg, trial, folder):
     if folder is not None:
         c_f.makedir_if_not_there(folder)
-        with open(os.path.join(folder, "commandline_args.json"), "w") as f:
-            json.dump(cfg.__dict__, f, indent=2)
+        with open(os.path.join(folder, "args_and_trial_params.json"), "w") as f:
+            json.dump({**cfg.__dict__, "trial_params": trial.params}, f, indent=2)
 
 
 def update_repro_file(exp_path):
