@@ -36,7 +36,7 @@ from pytorch_adapt.frameworks.ignite import Ignite
 from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
-from powerful_benchmarker.utils import main_utils
+from powerful_benchmarker.utils import ignite_save_features, main_utils
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
 from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.logger import Logger
@@ -193,8 +193,12 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         num_fixed_params,
     )
 
+    save_features_cls = ignite_save_features.SaveFeatures
+    if cfg.adapter == "ATDOCConfig":
+        save_features_cls = ignite_save_features.save_features_atdoc(configerer.atdoc)
+
     val_hooks = main_utils.get_val_hooks(
-        cfg, exp_path, logger, num_classes, cfg.pretrain_on_src
+        cfg, exp_path, logger, num_classes, cfg.pretrain_on_src, save_features_cls
     )
 
     adapter = framework(

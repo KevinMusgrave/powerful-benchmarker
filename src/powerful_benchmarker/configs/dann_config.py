@@ -181,6 +181,6 @@ class DANNFL8Config(DANNConfig):
         all_kwargs["hook_kwargs"]["c_hook"] = CLossHook(
             loss_fn=NLLLoss(reduction="none")
         )
-        if kwargs["inference_fn"]:
+        if kwargs["use_full_inference"]:
             all_kwargs["inference_fn"] = default_with_d_logits_layer
         return all_kwargs

@@ -17,7 +17,6 @@ from pytorch_adapt.utils import common_functions as c_f
 from pytorch_adapt.validators import MultipleValidators, ScoreHistories
 
 from . import get_validator
-from .ignite_save_features import SaveFeatures
 
 
 def save_this_file(file_in, folder):
@@ -110,13 +109,13 @@ def get_stat_getter(num_classes, pretrain_on_src):
     return ScoreHistories(MultipleValidators(validators=validators))
 
 
-def get_val_hooks(cfg, folder, logger, num_classes, pretrain_on_src):
+def get_val_hooks(cfg, folder, logger, num_classes, pretrain_on_src, save_features_cls):
     hooks = []
     if cfg.use_stat_getter:
         stat_getter = get_stat_getter(num_classes, pretrain_on_src)
         hooks.append(IgniteValHookWrapper(stat_getter, logger=logger))
     if cfg.save_features:
-        hooks.append(SaveFeatures(folder, logger))
+        hooks.append(save_features_cls(folder, logger))
     return hooks
 
 
