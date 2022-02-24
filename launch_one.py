@@ -84,6 +84,19 @@ def exp_launcher(cfg, exp_folder, exp_names, gcfg):
     subprocess.run(full_command)
 
 
+def create_exp_group_name(gcfg):
+    # catch the 0.1 case in a safe way
+    if (gcfg["lr_multiplier"] - 1) < -0.5:
+        lr_str = f"{gcfg['lr_multiplier']:.1f}"
+    else:
+        lr_str = f"{int(gcfg['lr_multiplier'])}"
+    exp_group_name = f"{gcfg['dataset']}_{gcfg['src_domains']}_{gcfg['target_domains']}"
+    if "validator" in gcfg:
+        exp_group_name += f"_{gcfg['validator']}"
+    exp_group_name += f"_fl{gcfg['feature_layer']}_{gcfg['optimizer']}_lr{lr_str}"
+    return exp_group_name
+
+
 def main(cfg, slurm_args):
     exp_names = [
         ("cdan", "CDANConfig"),
@@ -108,14 +121,7 @@ def main(cfg, slurm_args):
         assert len(set(x[i] for x in exp_names)) == len(exp_names)
 
     gcfg = get_group_config(cfg)
-
-    # catch the 0.1 case in a safe way
-    if (gcfg["lr_multiplier"] - 1) < -0.5:
-        lr_str = f"{gcfg['lr_multiplier']:.1f}"
-    else:
-        lr_str = f"{int(gcfg['lr_multiplier'])}"
-
-    exp_group_name = f"{gcfg['dataset']}_{gcfg['src_domains']}_{gcfg['target_domains']}_{gcfg['validator']}_fl{gcfg['feature_layer']}_{gcfg['optimizer']}_lr{lr_str}"
+    exp_group_name = create_exp_group_name(gcfg)
     exp_folder = os.path.join(cfg.exp_folder, exp_group_name)
 
     if already_done(exp_folder, cfg.config_names):
