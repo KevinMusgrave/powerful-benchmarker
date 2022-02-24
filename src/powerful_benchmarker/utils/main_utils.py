@@ -146,7 +146,7 @@ def get_datasets(
         return_target_with_labels=True,
         download=download,
     )
-    c_f.LOGGER.info(datasets)
+    c_f.LOGGER.debug(datasets)
     return datasets
 
 

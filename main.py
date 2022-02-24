@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
-sys.path.insert(0, "../pytorch-adapt/src")
 sys.path.insert(0, "src")
 import argparse
 import logging
@@ -29,7 +28,6 @@ import joblib
 import numpy as np
 import optuna
 import pytorch_adapt
-import record_keeper
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from pytorch_adapt.frameworks.ignite import Ignite
@@ -42,7 +40,6 @@ from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.logger import Logger
 
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
-print("record_keeper.__version__", record_keeper.__version__)
 
 
 def evaluate_best_model(cfg, exp_path):
