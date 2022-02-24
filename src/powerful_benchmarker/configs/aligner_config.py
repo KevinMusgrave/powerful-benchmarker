@@ -16,7 +16,13 @@ class AlignerConfig(BaseConfig):
         return models, framework
 
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(optimizers, multipliers={"C": lr_multiplier})

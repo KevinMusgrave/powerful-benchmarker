@@ -1,5 +1,6 @@
 from pytorch_adapt.adapters import VADA
 from pytorch_adapt.containers import Models, Optimizers
+from pytorch_adapt.inference import default_with_d
 from pytorch_adapt.layers import VATLoss
 from pytorch_adapt.weighters import MeanWeighter
 
@@ -9,7 +10,13 @@ from .base_config import BaseConfig
 
 class VADAConfig(BaseConfig):
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(optimizers, multipliers={"D": lr_multiplier})
@@ -36,11 +43,14 @@ class VADAConfig(BaseConfig):
             "vat_loss_fn": vat_loss_fn,
         }
 
+        inference_fn = default_with_d if use_full_inference else None
+
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": None,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 

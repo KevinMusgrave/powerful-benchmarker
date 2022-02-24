@@ -141,6 +141,7 @@ def get_adapter_datasets_etc(
         optimizers,
         before_training_starts,
         cfg.lr_multiplier,
+        cfg.use_full_inference,
         datasets=datasets,
     )
     logger = Logger(os.path.join(exp_path, "logs"))
@@ -344,5 +345,6 @@ if __name__ == "__main__":
     parser.add_argument("--download_datasets", action="store_true")
     parser.add_argument("--use_stat_getter", action="store_true")
     parser.add_argument("--check_initial_score", action="store_true")
+    parser.add_argument("--use_full_inference", action="store_true")
     args = parser.parse_args()
     main(args)

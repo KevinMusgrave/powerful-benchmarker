@@ -1,6 +1,7 @@
 import torch
 from pytorch_adapt.adapters import GVB, GVBE
 from pytorch_adapt.containers import Models, Optimizers
+from pytorch_adapt.inference import gvb_full_fn
 from pytorch_adapt.layers import ModelWithBridge
 from pytorch_adapt.models import Discriminator
 from pytorch_adapt.weighters import MeanWeighter
@@ -31,7 +32,13 @@ class GVBConfig(BaseConfig):
         return models, framework
 
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(
@@ -57,12 +64,14 @@ class GVBConfig(BaseConfig):
 
         grl_weight = self.optuna_trial.suggest_float("grl_weight", 0.1, 10, log=True)
         hook_kwargs = {"weighter": weighter, "gradient_reversal_weight": grl_weight}
+        inference_fn = gvb_full_fn if use_full_inference else None
 
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": None,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 

@@ -1,6 +1,7 @@
 import torch
 from pytorch_adapt.adapters import RTN
 from pytorch_adapt.containers import Misc, Models, Optimizers
+from pytorch_adapt.inference import rtn_full_fn
 from pytorch_adapt.layers import MMDLoss, PlusResidual, RandomizedDotProduct
 from pytorch_adapt.layers.utils import get_kernel_scales
 from pytorch_adapt.weighters import MeanWeighter
@@ -27,7 +28,13 @@ class RTNConfig(BaseConfig):
         return models, framework
 
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         feature_combiner = models.pop("feature_combiner")
         models = Models(models)
@@ -58,11 +65,14 @@ class RTNConfig(BaseConfig):
             "aligner_loss_fn": MMDLoss(kernel_scales=kernel_scales),
         }
 
+        inference_fn = rtn_full_fn if use_full_inference else None
+
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": misc,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 

@@ -1,5 +1,6 @@
 from pytorch_adapt.adapters import SymNets
 from pytorch_adapt.containers import Models, Optimizers
+from pytorch_adapt.inference import symnets_full_fn
 from pytorch_adapt.weighters import MeanWeighter
 
 from ..utils import main_utils
@@ -8,7 +9,13 @@ from .mcd_config import MCDConfig
 
 class SymNetsConfig(MCDConfig):
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(
@@ -38,11 +45,14 @@ class SymNetsConfig(MCDConfig):
 
         hook_kwargs = {"c_weighter": c_weighter, "g_weighter": g_weighter}
 
+        inference_fn = symnets_full_fn if use_full_inference else None
+
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": None,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 

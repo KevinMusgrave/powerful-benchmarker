@@ -1,5 +1,6 @@
 from pytorch_adapt.adapters import ADDA
 from pytorch_adapt.containers import Models, Optimizers
+from pytorch_adapt.inference import adda_full_fn
 from pytorch_adapt.weighters import MeanWeighter
 
 from ..utils import main_utils
@@ -8,7 +9,13 @@ from .base_config import BaseConfig
 
 class ADDAConfig(BaseConfig):
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(
@@ -27,11 +34,14 @@ class ADDAConfig(BaseConfig):
             "d_weighter": d_weighter,
             "g_weighter": g_weighter,
         }
+        inference_fn = adda_full_fn if use_full_inference else None
+
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": None,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 

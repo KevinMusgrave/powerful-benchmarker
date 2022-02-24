@@ -20,7 +20,13 @@ from .base_config import BaseConfig
 
 class PretrainerConfig(BaseConfig):
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         del models["D"]
         models = Models(models)

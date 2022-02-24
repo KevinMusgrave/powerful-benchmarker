@@ -1,6 +1,7 @@
 from pytorch_adapt.adapters import GAN, GANE, DomainConfusion
 from pytorch_adapt.containers import Models, Optimizers
 from pytorch_adapt.hooks import CLossHook, TargetDiversityHook, TargetEntropyHook
+from pytorch_adapt.inference import default_with_d, default_with_d_logits_layer
 from pytorch_adapt.layers import NLLLoss
 from pytorch_adapt.models import Discriminator
 from pytorch_adapt.weighters import MeanWeighter
@@ -11,7 +12,13 @@ from .base_config import BaseConfig
 
 class GANConfig(BaseConfig):
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(optimizers, multipliers={"D": lr_multiplier})
@@ -29,6 +36,7 @@ class GANConfig(BaseConfig):
         )
 
         hook_kwargs = {"d_weighter": d_loss_weighter, "g_weighter": g_loss_weighter}
+        inference_fn = default_with_d if use_full_inference else None
 
         return {
             "models": models,
@@ -98,4 +106,6 @@ class GANFL8Config(GANConfig):
         all_kwargs["hook_kwargs"]["c_hook"] = CLossHook(
             loss_fn=NLLLoss(reduction="none")
         )
+        if all_kwargs["inference_fn"]:
+            all_kwargs["inference_fn"] = default_with_d_logits_layer
         return all_kwargs

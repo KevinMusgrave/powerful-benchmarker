@@ -2,6 +2,7 @@ import copy
 
 from pytorch_adapt.adapters import MCD
 from pytorch_adapt.containers import Models, Optimizers
+from pytorch_adapt.inference import mcd_full_fn
 from pytorch_adapt.layers import (
     MCDLoss,
     MultipleModels,
@@ -24,7 +25,13 @@ class MCDConfig(BaseConfig):
         return models, framework
 
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(
@@ -52,6 +59,7 @@ class MCDConfig(BaseConfig):
             "y_weighter": y_weighter,
             "z_weighter": z_weighter,
         }
+        inference_fn = mcd_full_fn if use_full_inference else None
 
         return {
             "models": models,
@@ -59,6 +67,7 @@ class MCDConfig(BaseConfig):
             "misc": None,
             "before_training_starts": before_training_starts,
             "hook_kwargs": hook_kwargs,
+            "inference_fn": inference_fn,
         }
 
     def get_new_adapter(self, *args, **kwargs):

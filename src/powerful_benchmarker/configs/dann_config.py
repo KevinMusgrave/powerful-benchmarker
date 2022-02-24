@@ -11,6 +11,7 @@ from pytorch_adapt.hooks import (
     TargetDiversityHook,
     TargetEntropyHook,
 )
+from pytorch_adapt.inference import default_with_d, default_with_d_logits_layer
 from pytorch_adapt.layers import (
     AdaptiveFeatureNorm,
     L2PreservedDropout,
@@ -24,18 +25,15 @@ from .base_config import BaseConfig
 from .cdan_config import CDANConfig
 
 
-def dann_full_inference(cls):
-    def fn(x, domain):
-        outputs = cls.inference_default(x, domain)
-        outputs["d_logits"] = cls.models["D"](outputs["features"])
-        return outputs
-
-    return fn
-
-
 class DANNConfig(BaseConfig):
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         models = Models(models)
         optimizers = Optimizers(optimizers, multipliers={"D": lr_multiplier})
@@ -50,14 +48,15 @@ class DANNConfig(BaseConfig):
         )
         grl_weight = self.optuna_trial.suggest_float("grl_weight", 0.1, 10, log=True)
         hook_kwargs = {"weighter": weighter, "gradient_reversal_weight": grl_weight}
+        inference_fn = default_with_d if use_full_inference else None
 
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": None,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
-            "inference": dann_full_inference,
         }
 
     def get_new_adapter(self, *args, **kwargs):
@@ -182,4 +181,6 @@ class DANNFL8Config(DANNConfig):
         all_kwargs["hook_kwargs"]["c_hook"] = CLossHook(
             loss_fn=NLLLoss(reduction="none")
         )
+        if all_kwargs["inference_fn"]:
+            all_kwargs["inference_fn"] = default_with_d_logits_layer
         return all_kwargs

@@ -1,5 +1,6 @@
 from pytorch_adapt.adapters import CDAN, CDANE
 from pytorch_adapt.containers import Misc, Models, Optimizers
+from pytorch_adapt.inference import cdan_full_fn
 from pytorch_adapt.layers import RandomizedDotProduct
 from pytorch_adapt.weighters import MeanWeighter
 
@@ -17,7 +18,13 @@ class CDANConfig(BaseConfig):
         return models, framework
 
     def get_adapter_kwargs(
-        self, models, optimizers, before_training_starts, lr_multiplier, **kwargs
+        self,
+        models,
+        optimizers,
+        before_training_starts,
+        lr_multiplier,
+        use_full_inference,
+        **kwargs
     ):
         feature_combiner = models.pop("feature_combiner")
         models = Models(models)
@@ -40,11 +47,13 @@ class CDANConfig(BaseConfig):
             "d_weighter": d_weighter,
             "g_weighter": g_weighter,
         }
+        inference_fn = cdan_full_fn if use_full_inference else None
         return {
             "models": models,
             "optimizers": optimizers,
             "misc": misc,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 
