@@ -1,0 +1,28 @@
+common: &common --group_configs default fl6_adam_lr1 mnist
+A: &A --config_names dann mcc
+B: &B --config_names atdoc bsp
+C: &C --config_names cdan im
+D: &D --config_names bnm gvb
+E: &E --config_names mcd mmd
+
+
+commands:
+- - python launch_one.py
+  - *A
+  - *common
+  
+- - python launch_one.py
+  - *B
+  - *common
+
+- - python launch_one.py
+  - *C
+  - *common
+
+- - python launch_one.py
+  - *D
+  - *common
+
+- - python launch_one.py
+  - *E
+  - *common
