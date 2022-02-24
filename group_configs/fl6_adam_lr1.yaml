@@ -1,4 +1,3 @@
-validator: oracle
 feature_layer: 6
 optimizer: Adam
 lr_multiplier: 1
