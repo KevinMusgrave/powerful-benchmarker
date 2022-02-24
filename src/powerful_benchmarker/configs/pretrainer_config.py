@@ -131,7 +131,8 @@ class ATDOCConfig(ClassifierConfig):
         hook = ATDOCHook(dataset_size, self.feature_size, self.num_classes, k=k)
         hook.labeler.to(torch.device("cuda"))
         all_kwargs["hook_kwargs"]["post"] = [hook]
-        all_kwargs["inference_fn"] = atdoc_inference_fn(hook)
+        if kwargs["inference_fn"]:
+            all_kwargs["inference_fn"] = atdoc_inference_fn(hook)
         return all_kwargs
 
 
