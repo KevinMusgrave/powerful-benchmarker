@@ -11,6 +11,7 @@ from pytorch_adapt.hooks import (
     TargetDiversityHook,
     TargetEntropyHook,
 )
+from pytorch_adapt.inference import default_fn
 from pytorch_adapt.layers import AdaptiveFeatureNorm, L2PreservedDropout, MCCLoss
 from pytorch_adapt.weighters import MeanWeighter
 
@@ -112,6 +113,14 @@ class AFNConfig(ClassifierConfig):
         return all_kwargs
 
 
+def atdoc_inference_fn(atdoc_hook):
+    def fn(**kwargs):
+        output = default_fn(**kwargs)
+        output["feat_memory"] = atdoc_hook.labeler.feat_memory
+        output["pred_memory"] = atdoc_hook.labeler.pred_memory
+        return output
+
+
 class ATDOCConfig(ClassifierConfig):
     def get_adapter_kwargs(self, *args, **kwargs):
         all_kwargs = super().get_adapter_kwargs(*args, **kwargs)
@@ -122,6 +131,7 @@ class ATDOCConfig(ClassifierConfig):
         hook = ATDOCHook(dataset_size, self.feature_size, self.num_classes, k=k)
         hook.labeler.to(torch.device("cuda"))
         all_kwargs["hook_kwargs"]["post"] = [hook]
+        all_kwargs["inference_fn"] = atdoc_inference_fn(hook)
         return all_kwargs
 
 

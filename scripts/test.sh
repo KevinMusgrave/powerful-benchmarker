@@ -11,11 +11,11 @@
 # --download_datasets --start_with_pretrained \
 # --feature_layer 6 --max_epochs 3 --num_trials 2
 
-python main.py --exp_name test_experiment2 --dataset mnist \
---src_domains mnist --target_domains mnistm --adapter DANNConfig \
---download_datasets --start_with_pretrained \
---feature_layer 6 --max_epochs 3 --num_trials 2 --validator oracle \
---num_reproduce 2
+# python main.py --exp_name test_experiment2 --dataset mnist \
+# --src_domains mnist --target_domains mnistm --adapter DANNConfig \
+# --download_datasets --start_with_pretrained \
+# --feature_layer 6 --max_epochs 3 --num_trials 2 --validator oracle \
+# --num_reproduce 2
 
 # python main.py --exp_name test_experiment3 --dataset mnist \
 # --src_domains mnist --target_domains mnistm --adapter DANNConfig \
@@ -31,3 +31,11 @@ python main.py --exp_name test_experiment2 --dataset mnist \
 # --src_domains mnist --target_domains mnistm --adapter DANNConfig \
 # --download_datasets --start_with_pretrained \
 # --feature_layer 6 --max_epochs 3 --num_trials 2 --save_features
+
+
+
+python main.py --exp_name test_experiment2 --dataset mnist \
+--src_domains mnist --target_domains mnistm --adapter DANNConfig \
+--download_datasets --start_with_pretrained \
+--feature_layer 6 --max_epochs 3 --num_trials 2 --validator oracle \
+--num_reproduce 2
