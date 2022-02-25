@@ -83,7 +83,7 @@ def exp_launcher(cfg, exp_folder, exp_names, gcfg):
     gpu_list = list(range(num_gpus))
     use_devices = ",".join([str(x) for x in rotate(gpu_list, local_rank)])
     command = base_command(cfg.dataset_folder, exp_folder, exp_name, config_name, gcfg)
-    full_command = f"bash -i ./scripts/{cfg.script_wrapper} {exp_name} {str(cfg.script_wrapper_timeout)} {exp_folder} {cfg.conda_env} {use_devices} {BEST_TRIAL_FILENAME}".split(
+    full_command = f"bash -i ./scripts/script_wrapper.sh {exp_name} {str(cfg.script_wrapper_timeout)} {exp_folder} {cfg.conda_env} {use_devices} {BEST_TRIAL_FILENAME}".split(
         " "
     )
     full_command += [command]
@@ -155,7 +155,6 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder", "dataset_folder", "conda_env"])
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
-    parser.add_argument("--script_wrapper", type=str, default="script_wrapper.sh")
     parser.add_argument("--slurm_config", type=str, required=True)
     parser.add_argument("--group_configs", nargs="+", type=str, required=True)
 
