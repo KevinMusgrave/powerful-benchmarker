@@ -17,6 +17,10 @@ def get_group_config(args):
         config_file = os.path.join("group_configs", f"{g}.yaml")
         with open(config_file, "r") as f:
             x.update(yaml.safe_load(f))
+    for k in ["src_domains", "target_domains"]:
+        if k not in x:
+            x[k] = getattr(args, k)
+        assert x[k]
     return x
 
 
@@ -152,6 +156,10 @@ if __name__ == "__main__":
     parser.add_argument("--script_wrapper", type=str, default="script_wrapper.sh")
     parser.add_argument("--slurm_config", type=str, required=True)
     parser.add_argument("--group_configs", nargs="+", type=str, required=True)
+
+    # can be specified in group config or here
+    parser.add_argument("--src_domains", nargs="+", type=str)
+    parser.add_argument("--target_domains", nargs="+", type=str)
     args, unknown_args = parser.parse_known_args()
 
     slurm_args = create_slurm_args(args, unknown_args)

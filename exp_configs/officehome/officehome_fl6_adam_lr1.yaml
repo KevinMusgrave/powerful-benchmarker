@@ -1,0 +1,108 @@
+common: &common --group_configs default fl6_adam_lr1 officehome
+A: &A --config_names dann mcc
+B: &B --config_names atdoc bsp
+C: &C --config_names cdan im
+D: &D --config_names bnm gvb
+E: &E --config_names mcd mmd
+
+
+commands:
+- - python launch_one.py --src_domains art --target_domains clipart
+  - *A
+  - *common
+- - python launch_one.py --src_domains art --target_domains product
+  - *A
+  - *common
+- - python launch_one.py --src_domains art --target_domains real
+  - *A
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains art
+  - *A
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains product
+  - *A
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains real
+  - *A
+  - *common
+- - python launch_one.py --src_domains product --target_domains art
+  - *A
+  - *common
+- - python launch_one.py --src_domains product --target_domains clipart
+  - *A
+  - *common
+- - python launch_one.py --src_domains product --target_domains real
+  - *A
+  - *common
+- - python launch_one.py --src_domains real --target_domains art
+  - *A
+  - *common
+- - python launch_one.py --src_domains real --target_domains product
+  - *A
+  - *common
+- - python launch_one.py --src_domains real --target_domains clipart
+  - *A
+  - *common
+
+
+- - python launch_one.py --src_domains art --target_domains clipart
+  - *B
+  - *common
+- - python launch_one.py --src_domains art --target_domains product
+  - *B
+  - *common
+- - python launch_one.py --src_domains art --target_domains real
+  - *B
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains art
+  - *B
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains product
+  - *B
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains real
+  - *B
+  - *common
+- - python launch_one.py --src_domains product --target_domains art
+  - *B
+  - *common
+- - python launch_one.py --src_domains product --target_domains clipart
+  - *B
+  - *common
+- - python launch_one.py --src_domains product --target_domains real
+  - *B
+  - *common
+- - python launch_one.py --src_domains real --target_domains art
+  - *B
+  - *common
+- - python launch_one.py --src_domains real --target_domains product
+  - *B
+  - *common
+- - python launch_one.py --src_domains real --target_domains clipart
+  - *B
+  - *common
+
+
+- - python launch_one.py --src_domains art --target_domains clipart
+  - *C
+  - *common
+- - python launch_one.py --src_domains art --target_domains product
+  - *C
+  - *common
+- - python launch_one.py --src_domains art --target_domains real
+  - *C
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains art
+  - *C
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains product
+  - *C
+  - *common
+- - python launch_one.py --src_domains clipart --target_domains real
+  - *C
+  - *common
+- - python launch_one.py --src_domains product --target_domains art
+  - *C
+  - *common
+- - python launch_one.py --src_domains product --target_domains clipart
+  - *C

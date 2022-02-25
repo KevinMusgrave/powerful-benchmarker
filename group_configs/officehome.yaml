@@ -1,0 +1,4 @@
+dataset: officehome
+max_epochs: 200
+val_interval: 10
+num_workers: 5
