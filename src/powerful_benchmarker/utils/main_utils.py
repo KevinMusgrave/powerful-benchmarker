@@ -30,7 +30,12 @@ def save_argparse_and_trial_params(cfg, trial, folder):
     if folder is not None:
         c_f.makedir_if_not_there(folder)
         with open(os.path.join(folder, "args_and_trial_params.json"), "w") as f:
-            json.dump({**cfg.__dict__, "trial_params": trial.params}, f, indent=2)
+            dict_to_save = {
+                **cfg.__dict__,
+                "trial_params": trial.params,
+                "trial_num": trial.number,
+            }
+            json.dump(dict_to_save, f, indent=2)
 
 
 def update_repro_file(exp_path):
