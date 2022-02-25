@@ -14,7 +14,7 @@ from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_defaul
 def get_group_config(args):
     x = {}
     for g in args.group_configs:
-        config_file = os.path.join("group_configs", f"{g}.yaml")
+        config_file = os.path.join("configs", "group_configs", f"{g}.yaml")
         with open(config_file, "r") as f:
             x.update(yaml.safe_load(f))
     for k in ["src_domains", "target_domains"]:
@@ -35,7 +35,9 @@ def get_group_config_str(exp_folder, cfg):
 
 
 def create_slurm_args(args, other_args):
-    slurm_config_file = os.path.join("slurm_configs", f"{args.slurm_config}.yaml")
+    slurm_config_file = os.path.join(
+        "configs", "slurm_configs", f"{args.slurm_config}.yaml"
+    )
 
     with open(slurm_config_file, "r") as f:
         slurm_args = yaml.safe_load(f)

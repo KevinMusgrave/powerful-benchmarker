@@ -6,7 +6,7 @@ import yaml
 
 
 def main(cfg, other_args):
-    exp_config_file = os.path.join("exp_configs", f"{cfg.exp_config}.yaml")
+    exp_config_file = os.path.join("configs", "exp_configs", f"{cfg.exp_config}.yaml")
 
     with open(exp_config_file, "r") as f:
         commands = yaml.safe_load(f)["commands"]
