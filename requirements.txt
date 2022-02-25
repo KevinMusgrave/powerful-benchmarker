@@ -4,7 +4,7 @@ matplotlib
 optuna
 pandas
 plotly
-pytorch-adapt
+pytorch-adapt==0.0.42
 pytorch-ignite
 pytorch-metric-learning
 PyYAML
