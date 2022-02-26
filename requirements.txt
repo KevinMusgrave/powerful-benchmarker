@@ -1,22 +1,14 @@
 black
 flake8
+h5py==3.6.0
 isort
-matplotlib
 nbqa
 optuna
-pandas
-plotly
-pytorch-adapt
-pytorch-ignite
-pytorch-metric-learning
+pytorch-adapt[ignite,record-keeper]==0.0.50
 PyYAML
-record-keeper
-scikit-learn
-scipy
+seaborn
 submitit
-tensorboard
 timm
-torchmetrics
 tqdm
 
 --find-links https://download.pytorch.org/whl/cu113/torch_stable.html
