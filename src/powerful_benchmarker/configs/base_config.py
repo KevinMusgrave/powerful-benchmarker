@@ -68,8 +68,7 @@ class BaseConfig:
         G = getattr(pretrained_module, f"{dataset}G")(**kwargs)
 
         if start_with_pretrained and dataset != "mnist":
-            src_domains = main_utils.domain_len_assertion(src_domains)
-            kwargs["domain"] = src_domains[0]
+            kwargs["domain"] = main_utils.domain_len_assertion(src_domains)
         C = getattr(pretrained_module, f"{dataset}C")(**kwargs)
 
         models = {"G": G, "C": C}
