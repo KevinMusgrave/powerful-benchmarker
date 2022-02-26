@@ -30,6 +30,7 @@ import optuna
 import pytorch_adapt
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
+from optuna.trial import TrialState
 from pytorch_adapt.frameworks.ignite import Ignite
 from pytorch_adapt.utils import common_functions as c_f
 
@@ -266,7 +267,8 @@ def hyperparam_search(cfg, exp_path):
         study.sampler = PartialFixedSampler(fp_source_study.best_params, study.sampler)
         num_fixed_params = len(fp_source_study.best_params)
 
-    i = len([st for st in study.trials if st.value is not None])
+    i = len([st for st in study.trials if st.state == TrialState.COMPLETE])
+    print(f"{i} trials already complete")
 
     study.sampler.reseed_rng()
 
@@ -282,10 +284,12 @@ def hyperparam_search(cfg, exp_path):
                 main_utils.plot_visualizations(plot_path),
                 main_utils.save_dataframe(log_path),
                 main_utils.delete_suboptimal_models(exp_path),
+                main_utils.delete_failed_features(exp_path),
             ],
             gc_after_trial=True,
         )
-        if study.trials[-1].value is not None:
+        if study.trials[-1].state == TrialState.COMPLETE:
+            print("trial completed successfully, incrementing counter")
             i += 1
 
     i = main_utils.num_repro_complete(exp_path)

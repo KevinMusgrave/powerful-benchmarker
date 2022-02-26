@@ -6,6 +6,7 @@ from pathlib import Path
 
 import joblib
 import optuna
+from optuna.trial import TrialState
 from pytorch_adapt.datasets import DataloaderCreator
 from pytorch_adapt.datasets.getters import (
     get_mnist_mnistm,
@@ -202,6 +203,20 @@ def delete_suboptimal_models(exp_path):
                     if os.path.isdir(model_folder):
                         print(f"deleting {model_folder}")
                         shutil.rmtree(model_folder)
+
+    return return_func
+
+
+def delete_failed_features(exp_path):
+    def return_func(study, frozen_trial):
+        print("delete_failed_features")
+        for st in study.trials:
+            if st.state == TrialState.COMPLETE:
+                continue
+            features_folder = os.path.join(exp_path, str(st.number), "features")
+            if os.path.isdir(features_folder):
+                print(f"deleting {features_folder}")
+                shutil.rmtree(features_folder)
 
     return return_func
 
