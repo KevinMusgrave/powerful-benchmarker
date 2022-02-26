@@ -20,7 +20,7 @@ def get_group_config(args):
     for k in ["src_domains", "target_domains"]:
         if k not in x:
             x[k] = getattr(args, k)
-        assert x[k]
+        assert isinstance(x[k], list) and len(x[k]) > 0
     return x
 
 
@@ -29,6 +29,9 @@ def get_group_config_str(exp_folder, cfg):
     for k, v in cfg.items():
         if k == "fixed_param_source":
             x += f" --{k} {os.path.join(exp_folder, v)}"
+        elif k in ["src_domains", "target_domains"]:
+            list_str = " ".join(v)
+            x += f" --{k} {list_str}"
         else:
             x += f" --{k}" if v is True else f" --{k} {v}"
     return x
@@ -96,7 +99,9 @@ def create_exp_group_name(gcfg):
         lr_str = f"{gcfg['lr_multiplier']:.1f}"
     else:
         lr_str = f"{int(gcfg['lr_multiplier'])}"
-    exp_group_name = f"{gcfg['dataset']}_{gcfg['src_domains']}_{gcfg['target_domains']}"
+    src_domains = "_".join(gcfg["src_domains"])
+    target_domains = "_".join(gcfg["target_domains"])
+    exp_group_name = f"{gcfg['dataset']}_{src_domains}_{target_domains}"
     if "validator" in gcfg:
         exp_group_name += f"_{gcfg['validator']}"
     exp_group_name += f"_fl{gcfg['feature_layer']}_{gcfg['optimizer']}_lr{lr_str}"
