@@ -192,6 +192,7 @@ def delete_suboptimal_models(exp_path):
         try:
             bt = study.best_trial
         except ValueError:
+            print("no best_trial yet")
             return
         keep = str(bt.number)
         all_paths = sorted(glob.glob(f"{exp_path}/*"))

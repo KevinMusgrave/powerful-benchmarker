@@ -32,6 +32,7 @@ import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from optuna.trial import TrialState
 from pytorch_adapt.frameworks.ignite import Ignite
+from pytorch_adapt.frameworks.ignite import utils as ignite_utils
 from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker import configs
@@ -228,6 +229,8 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     )
 
     if validator is None:
+        if not ignite_utils.is_done(adapter.trainer, cfg.max_epochs):
+            return float("nan")
         return 0
 
     if best_score is None:
