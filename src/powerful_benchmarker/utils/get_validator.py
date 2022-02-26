@@ -35,9 +35,8 @@ def get_validator(
     checkpoint_path,
     feature_layer,
 ):
-    checkpoint_fn = CheckpointFnCreator(dirname=checkpoint_path, require_empty=False)
     if validator_name is None:
-        return None, checkpoint_fn
+        return None, None
 
     if validator_name == "oracle":
         validator = target_accuracy(num_classes)
@@ -72,4 +71,5 @@ def get_validator(
         )
 
     validator = ScoreHistory(validator, ignore_epoch=0)
+    checkpoint_fn = CheckpointFnCreator(dirname=checkpoint_path, require_empty=False)
     return validator, checkpoint_fn
