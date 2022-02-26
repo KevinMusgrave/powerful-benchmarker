@@ -8,6 +8,7 @@ pytorch-adapt[ignite,record-keeper]==0.0.50
 PyYAML
 seaborn
 submitit
+tensorboard
 timm
 tqdm
 
