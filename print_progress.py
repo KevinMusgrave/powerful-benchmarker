@@ -28,6 +28,8 @@ def print_folder_progress(cfg, exps):
     output = {}
     for e in exps:
         e = os.path.normpath(e)
+        if os.path.basename(e) == cfg.slurm_folder:
+            continue
         contents = glob.glob(f"{e}/*")
         num_folders = count_exp_folders(contents)
         output_str = f"{num_folders}"
@@ -55,7 +57,7 @@ def main(cfg):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    add_default_args(parser, ["exp_folder"])
+    add_default_args(parser, ["exp_folder", "slurm_folder"])
     parser.add_argument(
         "--save_to_file",
         type=str,

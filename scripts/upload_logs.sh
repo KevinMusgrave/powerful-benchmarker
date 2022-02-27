@@ -3,7 +3,7 @@ while :
 do
     cd "$5"
     echo "Getting progress"
-    python print_progress.py --root_experiment_folder "$1" --save_to_file progress.txt
+    python print_progress.py --exp_folder "$1" --save_to_file progress.txt
     progress_fail=$?
     if [ "$progress_fail" = "1" ];
         then
@@ -15,7 +15,7 @@ do
             echo "Removing existing zip"
             rm all_logs.zip csvs.zip
             echo "Zipping files"
-            find -maxdepth 4 -name *.err -newermt '5 hours ago' -o -name *.out -newermt '5 hours ago' | zip -qr all_logs -@
+            find -maxdepth 4 -name *.err -o -name *.out | zip -qr all_logs -@
             find -maxdepth 4 -name trials.csv | zip -qr csvs -@
             zip -qu csvs.zip progress.txt
             echo "Deleting existing files"
