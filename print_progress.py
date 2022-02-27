@@ -4,6 +4,8 @@ import json
 import os
 import sys
 
+import pandas as pd
+
 sys.path.insert(0, "src")
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
 
@@ -11,6 +13,15 @@ from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_defaul
 def is_done(e):
     best_trial_file = os.path.join(e, BEST_TRIAL_FILENAME)
     return os.path.isfile(best_trial_file)
+
+
+def read_trials_csv(e):
+    filepath = os.path.join(e, "trials.csv")
+    if os.path.isfile(filepath):
+        trials = pd.read_csv(filepath)
+        num_success = len(trials[trials["state"] == "COMPLETE"])
+        return f"{num_success} / {len(trials)}"
+    return "0 / 0"
 
 
 def count_exp_folders(contents):
@@ -32,9 +43,10 @@ def print_folder_progress(cfg, exps):
             continue
         contents = glob.glob(f"{e}/*")
         num_folders = count_exp_folders(contents)
-        output_str = f"{num_folders}"
+        num_success_str = read_trials_csv(e)
+        output_str = f"{num_folders} folders:   {num_success_str}"
         if not is_done(e):
-            output_str += ", In Progress"
+            output_str += "    In Progress"
         output[os.path.basename(e)] = output_str
     return output
 
