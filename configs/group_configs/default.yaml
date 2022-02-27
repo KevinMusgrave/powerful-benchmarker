@@ -3,6 +3,5 @@ n_startup_trials: 100
 batch_size: 64
 
 save_features: true
-download_datasets: true
 start_with_pretrained: true
 use_full_inference: true
