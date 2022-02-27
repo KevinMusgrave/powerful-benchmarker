@@ -26,6 +26,6 @@ if __name__ == "__main__":
     add_default_args(
         parser, ["exp_folder", "slurm_folder", "conda_env", "gdrive_folder"]
     )
-    parser.add_argument("--sleep_time", type=str, default="240m")
+    parser.add_argument("--sleep_time", type=str, default="120m")
     args = parser.parse_args()
     main(args)
