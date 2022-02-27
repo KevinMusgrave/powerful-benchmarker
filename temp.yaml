@@ -1,12 +1,4 @@
-common: &common --group_configs default fl6_adam_lr1 officehome
-A: &A --config_names dann mcc
-B: &B --config_names atdoc bsp
-C: &C --config_names cdan im
-D: &D --config_names bnm gvb
-E: &E --config_names mcd mmd
 
-
-commands:
 - - python launch_one.py --src_domains art --target_domains clipart
   - *A
   - *common
