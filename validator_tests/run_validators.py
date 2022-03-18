@@ -8,7 +8,7 @@ import submitit
 import torch
 
 from powerful_benchmarker.utils.constants import add_default_args
-from powerful_benchmarker.utils.utils import create_slurm_args
+from powerful_benchmarker.utils.utils import create_slurm_args, rotate
 
 from . import flags as flags_module
 
@@ -22,10 +22,6 @@ def get_trial_range(to_run, trials_per_exp, exp_per_slurm_job):
             y = f"{min(y)} {max(y)+1}"
             output.append(f"{x} --trial_range {y}")
     return np.array_split(np.array(output), math.ceil(len(output) / exp_per_slurm_job))
-
-
-def rotate(l, n):
-    return l[n:] + l[:n]
 
 
 def exp_launcher(args, commands):

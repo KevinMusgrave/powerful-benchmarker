@@ -10,5 +10,5 @@ plots_big/
 progress.txt
 notebooks/*.pkl
 .ipynb_checkpoints
-/local_scripts
+powerful_benchmarker/local_scripts/
 /plots

@@ -18,3 +18,7 @@ def create_slurm_args(args, other_args, folder):
         slurm_args[k.lstrip("--")] = v
 
     return slurm_args
+
+
+def rotate(l, n):
+    return l[n:] + l[:n]

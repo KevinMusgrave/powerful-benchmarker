@@ -7,7 +7,7 @@ import torch
 import yaml
 
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
-from powerful_benchmarker.utils.utils import create_slurm_args
+from powerful_benchmarker.utils.utils import create_slurm_args, rotate
 
 
 def get_group_config(args):
@@ -47,10 +47,6 @@ def already_done(exp_folder, config_names):
             all_done = False
             break
     return all_done
-
-
-def rotate(l, n):
-    return l[n:] + l[:n]
 
 
 def base_command(dataset_folder, exp_folder, exp_name, adapter, gcfg):
