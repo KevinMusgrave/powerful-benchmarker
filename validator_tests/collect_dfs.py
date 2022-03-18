@@ -1,15 +1,13 @@
 import argparse
 import glob
 import os
-import sys
 
 import pandas as pd
 import tqdm
 
-sys.path.insert(0, "src")
-sys.path.insert(0, "validator_tests/src")
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests import utils
+
+from .utils import utils
 
 
 def main(args):
