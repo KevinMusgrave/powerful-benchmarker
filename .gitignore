@@ -11,3 +11,4 @@ progress.txt
 notebooks/*.pkl
 .ipynb_checkpoints
 /local_scripts
+/plots
