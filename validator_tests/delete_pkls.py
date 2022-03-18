@@ -1,11 +1,9 @@
 import argparse
 import os
-import sys
 
-sys.path.insert(0, "src")
-sys.path.insert(0, "validator_tests/src")
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests import utils
+
+from .utils import utils
 
 
 def delete_fn(pkls):
