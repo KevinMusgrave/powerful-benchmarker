@@ -2,7 +2,7 @@ import argparse
 import os
 import subprocess
 
-from powerful_benchmarker.utils.constants import add_default_args
+from .utils.constants import add_default_args
 
 
 def main(cfg):

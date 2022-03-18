@@ -22,3 +22,11 @@ def create_slurm_args(args, other_args, folder):
 
 def rotate(l, n):
     return l[n:] + l[:n]
+
+
+def get_yaml_config_folder():
+    return os.path.join("powerful_benchmarker", "yaml_configs")
+
+
+def get_yaml_config_path(category, name):
+    return os.path.join(get_yaml_config_folder(), category, f"{name}.yaml")

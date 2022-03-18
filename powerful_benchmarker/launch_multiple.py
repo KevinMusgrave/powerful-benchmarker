@@ -1,14 +1,13 @@
 import argparse
-import os
 import subprocess
 
 import yaml
 
+from .utils.utils import get_yaml_config_path
+
 
 def main(cfg, other_args):
-    exp_config_file = os.path.join(
-        "powerful_benchmarker", "yaml_configs", "exp_configs", f"{cfg.exp_config}.yaml"
-    )
+    exp_config_file = get_yaml_config_path("exp_configs", cfg.exp_config)
 
     with open(exp_config_file, "r") as f:
         commands = yaml.safe_load(f)["commands"]

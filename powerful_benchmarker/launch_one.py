@@ -6,16 +6,19 @@ import submitit
 import torch
 import yaml
 
-from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
-from powerful_benchmarker.utils.utils import create_slurm_args, rotate
+from .utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from .utils.utils import (
+    create_slurm_args,
+    get_yaml_config_folder,
+    get_yaml_config_path,
+    rotate,
+)
 
 
 def get_group_config(args):
     x = {}
     for g in args.group_configs:
-        config_file = os.path.join(
-            "powerful_benchmarker", "yaml_configs", "group_configs", f"{g}.yaml"
-        )
+        config_file = get_yaml_config_path("group_configs", g)
         with open(config_file, "r") as f:
             x.update(yaml.safe_load(f))
     for k in ["src_domains", "target_domains"]:
@@ -149,7 +152,5 @@ if __name__ == "__main__":
     parser.add_argument("--target_domains", nargs="+", type=str)
     args, unknown_args = parser.parse_known_args()
 
-    slurm_args = create_slurm_args(
-        args, unknown_args, "powerful_benchmarker/yaml_configs"
-    )
+    slurm_args = create_slurm_args(args, unknown_args, get_yaml_config_folder())
     main(args, slurm_args)
