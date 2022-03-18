@@ -37,7 +37,7 @@ do
 	do
 			sleep 1m
 			if [ -d "$full_path" ]; then
-				is_running=$(bash ./scripts/process_checker.sh ${full_path} ${timeout})
+				is_running=$(bash ./powerful_benchmarker/scripts/process_checker.sh ${full_path} ${timeout})
 			fi
 	done
 	pkill -9 -P ${curr_pid}
