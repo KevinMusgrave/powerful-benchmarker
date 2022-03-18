@@ -1,14 +1,12 @@
 import json
 import os
 import shutil
-import sys
 from functools import partialmethod
 
 from tqdm import tqdm
 
 tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
-sys.path.insert(0, "src")
 import argparse
 import logging
 

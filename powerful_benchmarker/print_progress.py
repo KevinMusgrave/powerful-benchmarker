@@ -2,12 +2,10 @@ import argparse
 import glob
 import json
 import os
-import sys
 
 import pandas as pd
 
-sys.path.insert(0, "src")
-from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from .utils.constants import BEST_TRIAL_FILENAME, add_default_args
 
 
 def is_done(e):

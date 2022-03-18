@@ -1,9 +1,7 @@
 import argparse
 import os
 import subprocess
-import sys
 
-sys.path.insert(0, "src")
 from powerful_benchmarker.utils.constants import add_default_args
 
 
