@@ -1,0 +1,198 @@
+common: &common --group_configs default fl6_adam_lr1 officehome
+A: &A --config_names dann mcc
+B: &B --config_names atdoc bsp
+C: &C --config_names cdan im
+D: &D --config_names bnm gvb
+E: &E --config_names mcd mmd
+
+
+commands:
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains clipart
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains product
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains real
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains art
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains product
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains real
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains art
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains clipart
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains real
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains art
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains product
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains clipart
+  - *A
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains clipart
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains product
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains real
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains art
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains product
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains real
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains art
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains clipart
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains real
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains art
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains product
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains clipart
+  - *B
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains clipart
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains product
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains real
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains art
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains product
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains real
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains art
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains clipart
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains real
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains art
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains product
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains clipart
+  - *C
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains clipart
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains product
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains real
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains art
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains product
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains real
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains art
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains clipart
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains real
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains art
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains product
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains clipart
+  - *D
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains clipart
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains product
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains art --target_domains real
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains art
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains product
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains clipart --target_domains real
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains art
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains clipart
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains product --target_domains real
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains art
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains product
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains real --target_domains clipart
+  - *E
+  - *common
+

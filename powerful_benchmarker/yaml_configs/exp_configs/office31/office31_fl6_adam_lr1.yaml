@@ -1,0 +1,78 @@
+common: &common --group_configs default fl6_adam_lr1 office31
+A: &A --config_names dann mcc
+B: &B --config_names atdoc bsp
+C: &C --config_names cdan im
+D: &D --config_names bnm gvb
+E: &E --config_names mcd mmd
+
+
+commands:
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+  - *A
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+  - *A
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+  - *B
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+  - *B
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+  - *C
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+  - *C
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+  - *D
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+  - *D
+  - *common
+
+
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+  - *E
+  - *common
+- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+  - *E
+  - *common
+

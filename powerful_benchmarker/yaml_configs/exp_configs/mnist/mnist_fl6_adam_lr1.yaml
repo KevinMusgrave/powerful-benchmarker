@@ -7,18 +7,18 @@ E: &E --config_names mcd mmd
 
 
 commands:
-- - python launch_one.py
+- - python -m powerful_benchmarker.launch_one
   - *A
   - *common
-- - python launch_one.py
+- - python -m powerful_benchmarker.launch_one
   - *B
   - *common
-- - python launch_one.py
+- - python -m powerful_benchmarker.launch_one
   - *C
   - *common
-- - python launch_one.py
+- - python -m powerful_benchmarker.launch_one
   - *D
   - *common
-- - python launch_one.py
+- - python -m powerful_benchmarker.launch_one
   - *E
   - *common

@@ -13,7 +13,9 @@ from powerful_benchmarker.utils.utils import create_slurm_args
 def get_group_config(args):
     x = {}
     for g in args.group_configs:
-        config_file = os.path.join("configs", "group_configs", f"{g}.yaml")
+        config_file = os.path.join(
+            "powerful_benchmarker", "yaml_configs", "group_configs", f"{g}.yaml"
+        )
         with open(config_file, "r") as f:
             x.update(yaml.safe_load(f))
     for k in ["src_domains", "target_domains"]:
@@ -52,7 +54,7 @@ def rotate(l, n):
 
 
 def base_command(dataset_folder, exp_folder, exp_name, adapter, gcfg):
-    x = f"python main.py --exp_folder {exp_folder} --exp_name {exp_name} --adapter {adapter} --dataset_folder {dataset_folder}"
+    x = f"python -m powerful_benchmarker.main --exp_folder {exp_folder} --exp_name {exp_name} --adapter {adapter} --dataset_folder {dataset_folder}"
     gcfg_str = get_group_config_str(exp_folder, gcfg)
     x += gcfg_str
     return x
@@ -68,8 +70,9 @@ def exp_launcher(cfg, exp_folder, exp_names, gcfg):
     gpu_list = list(range(num_gpus))
     use_devices = ",".join([str(x) for x in rotate(gpu_list, local_rank)])
     command = base_command(cfg.dataset_folder, exp_folder, exp_name, config_name, gcfg)
-    full_command = f"bash -i ./scripts/script_wrapper.sh {exp_name} {str(cfg.script_wrapper_timeout)} {exp_folder} {cfg.conda_env} {use_devices} {BEST_TRIAL_FILENAME}".split(
-        " "
+    args = f"{exp_name} {str(cfg.script_wrapper_timeout)} {exp_folder} {cfg.conda_env} {use_devices} {BEST_TRIAL_FILENAME}"
+    full_command = (
+        f"bash -i ./powerful_benchmarker/scripts/script_wrapper.sh {args}".split(" ")
     )
     full_command += [command]
     subprocess.run(full_command)
@@ -151,6 +154,6 @@ if __name__ == "__main__":
     args, unknown_args = parser.parse_known_args()
 
     slurm_args = create_slurm_args(
-        args, unknown_args, "powerful_benchmarker/meta_configs"
+        args, unknown_args, "powerful_benchmarker/yaml_configs"
     )
     main(args, slurm_args)

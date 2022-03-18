@@ -4,10 +4,10 @@ import string
 
 def main(cfg):
     base_string = """
-- - python launch_one.py --src_domains dslr --target_domains amazon
+- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains amazon
   - *A
   - *common
-- - python launch_one.py --src_domains webcam --target_domains amazon
+- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains amazon
   - *A
   - *common
 """
