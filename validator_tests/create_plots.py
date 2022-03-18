@@ -1,15 +1,17 @@
 import argparse
+import sys
 
 import pandas as pd
 
-from .utils.corr_utils import (
+sys.path.insert(0, ".")
+from validator_tests.utils.corr_utils import (
     get_corr_per_task,
     get_corr_per_task_per_adapter,
     get_per_threshold,
 )
-from .utils.plot_corr_vs_src import plot_corr_vs_X
-from .utils.plot_val_vs_acc import plot_val_vs_acc
-from .utils.utils import (
+from validator_tests.utils.plot_corr_vs_src import plot_corr_vs_X
+from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
+from validator_tests.utils.utils import (
     assert_acc_rows_are_correct,
     convert_list_to_tuple,
     exp_specific_columns,
