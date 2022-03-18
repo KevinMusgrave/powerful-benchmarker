@@ -1,6 +1,7 @@
 import yaml
 
 BEST_TRIAL_FILENAME = "best_trial.json"
+JOBIDS_FILENAME = "all_jobids.txt"
 
 
 def get_user_constants(constants_path):

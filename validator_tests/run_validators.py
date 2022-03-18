@@ -10,8 +10,13 @@ import torch
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
-from powerful_benchmarker.utils.utils import create_slurm_args, rotate
+from powerful_benchmarker.utils.utils import (
+    append_jobid_to_file,
+    create_slurm_args,
+    rotate,
+)
 from validator_tests import flags as flags_module
+from validator_tests.utils.constants import JOBIDS_FILENAME
 
 
 def get_trial_range(to_run, trials_per_exp, exp_per_slurm_job):
@@ -53,10 +58,8 @@ def run_slurm_job(args, slurm_args, commands):
     )
     job = executor.submit(exp_launcher, args, commands)
     jobid = job.job_id
-    print(f"running job_id = {jobid}")
-    all_jobids_filename = os.path.join(args.exp_folder, "all_jobids.txt")
-    with open(all_jobids_filename, "a") as fd:
-        fd.write(f"{jobid}\n")
+    all_jobids_filename = os.path.join(args.exp_folder, JOBIDS_FILENAME)
+    append_jobid_to_file(jobid, all_jobids_filename)
 
 
 def main(args, slurm_args):
