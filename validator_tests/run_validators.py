@@ -61,7 +61,7 @@ def run_slurm_job(args, slurm_args, commands):
 def main(args, slurm_args):
     to_run = []
     for exp_name in args.exp_names:
-        base_command = f"python -m validator_tests.main --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
+        base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
         flags = getattr(flags_module, args.flags)()
         commands = [f"{base_command} {x}" for x in flags]
         to_run.extend(commands)

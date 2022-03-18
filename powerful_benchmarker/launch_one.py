@@ -1,13 +1,15 @@
 import argparse
 import os
 import subprocess
+import sys
 
 import submitit
 import torch
 import yaml
 
-from .utils.constants import BEST_TRIAL_FILENAME, add_default_args
-from .utils.utils import (
+sys.path.insert(0, ".")
+from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from powerful_benchmarker.utils.utils import (
     create_slurm_args,
     get_yaml_config_folder,
     get_yaml_config_path,
@@ -53,7 +55,7 @@ def already_done(exp_folder, config_names):
 
 
 def base_command(dataset_folder, exp_folder, exp_name, adapter, gcfg):
-    x = f"python -m powerful_benchmarker.main --exp_folder {exp_folder} --exp_name {exp_name} --adapter {adapter} --dataset_folder {dataset_folder}"
+    x = f"python powerful_benchmarker/main.py --exp_folder {exp_folder} --exp_name {exp_name} --adapter {adapter} --dataset_folder {dataset_folder}"
     gcfg_str = get_group_config_str(exp_folder, gcfg)
     x += gcfg_str
     return x

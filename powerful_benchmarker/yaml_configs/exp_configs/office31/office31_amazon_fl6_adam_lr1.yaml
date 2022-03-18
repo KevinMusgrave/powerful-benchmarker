@@ -7,41 +7,41 @@ E: &E --config_names mcd mmd
 
 
 commands:
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
   - *A
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
   - *A
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
   - *B
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
   - *B
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
   - *C
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
   - *C
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
   - *D
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
   - *D
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
   - *E
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
   - *E
   - *common

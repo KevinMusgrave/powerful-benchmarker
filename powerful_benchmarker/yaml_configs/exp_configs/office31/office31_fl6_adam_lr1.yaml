@@ -7,72 +7,72 @@ E: &E --config_names mcd mmd
 
 
 commands:
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
   - *A
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
   - *A
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
   - *A
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
   - *A
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
   - *B
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
   - *B
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
   - *B
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
   - *B
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
   - *C
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
   - *C
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
   - *C
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
   - *C
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
   - *D
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
   - *D
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
   - *D
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
   - *D
   - *common
 
 
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
   - *E
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains amazon --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
   - *E
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains dslr --target_domains webcam
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
   - *E
   - *common
-- - python -m powerful_benchmarker.launch_one --src_domains webcam --target_domains dslr
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
   - *E
   - *common
 

@@ -1,8 +1,10 @@
 import argparse
 import os
 import subprocess
+import sys
 
-from .utils.constants import add_default_args
+sys.path.insert(0, ".")
+from powerful_benchmarker.utils.constants import add_default_args
 
 
 def main(cfg):

@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import sys
 from functools import partialmethod
 
 from tqdm import tqdm
@@ -33,11 +34,12 @@ from pytorch_adapt.frameworks.ignite import Ignite
 from pytorch_adapt.frameworks.ignite import utils as ignite_utils
 from pytorch_adapt.utils import common_functions as c_f
 
-from . import configs
-from .utils import ignite_save_features, main_utils
-from .utils.constants import BEST_TRIAL_FILENAME, add_default_args
-from .utils.get_validator import get_validator
-from .utils.logger import Logger
+sys.path.insert(0, ".")
+from powerful_benchmarker import configs
+from powerful_benchmarker.utils import ignite_save_features, main_utils
+from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from powerful_benchmarker.utils.get_validator import get_validator
+from powerful_benchmarker.utils.logger import Logger
 
 print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
