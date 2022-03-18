@@ -62,14 +62,15 @@ def get_and_save_scores(validator_name, validator, validator_args_str, all_score
 
 
 def get_condition_fn(validator_name, validator_args_str, trial_range):
-    if trial_range:
+    trial_range_specified = trial_range != []
+    if trial_range_specified:
         trial_range = np.arange(*trial_range)
 
     def fn(iteration, folder):
         filepath = utils.get_df_filepath(folder, validator_name, validator_args_str)
         if os.path.isfile(filepath):
             return False
-        if trial_range and iteration not in trial_range:
+        if trial_range_specified and iteration not in trial_range:
             return False
         return True
 

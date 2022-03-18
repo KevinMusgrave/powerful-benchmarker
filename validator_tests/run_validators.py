@@ -2,32 +2,15 @@ import argparse
 import math
 import os
 import subprocess
-import sys
 
 import numpy as np
 import submitit
 import torch
-import yaml
 
-sys.path.insert(0, "src")
 from powerful_benchmarker.utils.constants import add_default_args
+from powerful_benchmarker.utils.utils import create_slurm_args
 
 from . import flags as flags_module
-
-
-def create_slurm_args(args, other_args):
-    slurm_config_file = os.path.join("slurm_configs", f"{args.slurm_config}.yaml")
-
-    with open(slurm_config_file, "r") as f:
-        slurm_args = yaml.safe_load(f)
-
-    for s in unknown_args:
-        if s == "":
-            continue
-        k, v = s.split("=")
-        slurm_args[k.lstrip("--")] = v
-
-    return slurm_args
 
 
 def get_trial_range(to_run, trials_per_exp, exp_per_slurm_job):
@@ -54,8 +37,8 @@ def exp_launcher(args, commands):
     use_devices = ",".join([str(x) for x in rotate(gpu_list, local_rank)])
     job_env = submitit.JobEnvironment()
     command = commands[job_env.local_rank]
-    full_command = (
-        f"bash -i ./scripts/script_wrapper.sh {args.conda_env} {use_devices}".split(" ")
+    full_command = f"bash -i ./validator_tests/scripts/script_wrapper.sh {args.conda_env} {use_devices}".split(
+        " "
     )
     full_command += [command]
     subprocess.run(full_command)
@@ -82,7 +65,7 @@ def run_slurm_job(args, slurm_args, commands):
 def main(args, slurm_args):
     to_run = []
     for exp_name in args.exp_names:
-        base_command = f"python main.py --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
+        base_command = f"python -m validator_tests.main --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
         flags = getattr(flags_module, args.flags)()
         commands = [f"{base_command} {x}" for x in flags]
         to_run.extend(commands)
@@ -106,5 +89,5 @@ if __name__ == "__main__":
     parser.add_argument("--slurm_config", type=str, required=True)
     parser.add_argument("--run", action="store_true")
     args, unknown_args = parser.parse_known_args()
-    slurm_args = create_slurm_args(args, unknown_args)
+    slurm_args = create_slurm_args(args, unknown_args, "validator_tests")
     main(args, slurm_args)

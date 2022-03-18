@@ -7,6 +7,7 @@ import torch
 import yaml
 
 from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from powerful_benchmarker.utils.utils import create_slurm_args
 
 
 def get_group_config(args):
@@ -33,23 +34,6 @@ def get_group_config_str(exp_folder, cfg):
         else:
             x += f" --{k}" if v is True else f" --{k} {v}"
     return x
-
-
-def create_slurm_args(args, other_args):
-    slurm_config_file = os.path.join(
-        "configs", "slurm_configs", f"{args.slurm_config}.yaml"
-    )
-
-    with open(slurm_config_file, "r") as f:
-        slurm_args = yaml.safe_load(f)
-
-    for s in unknown_args:
-        if s == "":
-            continue
-        k, v = s.split("=")
-        slurm_args[k.lstrip("--")] = v
-
-    return slurm_args
 
 
 def already_done(exp_folder, config_names):
@@ -166,5 +150,7 @@ if __name__ == "__main__":
     parser.add_argument("--target_domains", nargs="+", type=str)
     args, unknown_args = parser.parse_known_args()
 
-    slurm_args = create_slurm_args(args, unknown_args)
+    slurm_args = create_slurm_args(
+        args, unknown_args, "powerful_benchmarker/meta_configs"
+    )
     main(args, slurm_args)
