@@ -5,10 +5,8 @@ build/
 dist/
 *.egg-info/
 site/
-plots/
-plots_big/
 progress.txt
 notebooks/*.pkl
 .ipynb_checkpoints
 powerful_benchmarker/local_scripts/
-/plots
+plots/
