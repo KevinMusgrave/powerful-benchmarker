@@ -2,6 +2,7 @@ import argparse
 import copy
 import os
 import shutil
+import sys
 from functools import partialmethod
 
 import numpy as np
@@ -9,10 +10,10 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
-
-from . import configs
-from .utils import utils
+from validator_tests import configs
+from validator_tests.utils import utils
 
 tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 

@@ -2,15 +2,16 @@ import argparse
 import math
 import os
 import subprocess
+import sys
 
 import numpy as np
 import submitit
 import torch
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from powerful_benchmarker.utils.utils import create_slurm_args, rotate
-
-from . import flags as flags_module
+from validator_tests import flags as flags_module
 
 
 def get_trial_range(to_run, trials_per_exp, exp_per_slurm_job):

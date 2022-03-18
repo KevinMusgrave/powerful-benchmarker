@@ -1,9 +1,10 @@
 import argparse
 import os
+import sys
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
-
-from .utils import utils
+from validator_tests.utils import utils
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
