@@ -1,5 +1,6 @@
 import argparse
 import copy
+import glob
 import math
 import os
 import subprocess
@@ -48,9 +49,9 @@ def exp_launcher(args, commands):
     subprocess.run(full_command)
 
 
-def run_slurm_job(args, slurm_args, commands):
+def run_slurm_job(args, slurm_args, exp_group, commands):
     executor = submitit.AutoExecutor(
-        folder=os.path.join(args.exp_folder, args.exp_group, "slurm_logs")
+        folder=os.path.join(args.exp_folder, exp_group, "slurm_logs")
     )
     slurm_args["job_name"] = f"{args.flags}_validator_tests"
     executor.update_parameters(
@@ -105,15 +106,16 @@ def remove_completed_flags(flags, trial_ranges, exp_folder, exp_group, exp_name)
     return keep_flags
 
 
-def main(args, slurm_args):
+def main_per_exp_group(args, slurm_args, exp_group):
     to_run = []
+    assert len(args.exp_names) == len(set(args.exp_names))
     for exp_name in args.exp_names:
-        print(f"creating flags for {args.exp_group}/{exp_name}/{args.flags}")
-        base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
+        print(f"creating flags for {exp_group}/{exp_name}/{args.flags}")
+        base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {exp_group} --exp_name {exp_name}"
         flags = getattr(flags_module, args.flags)()
         trial_ranges = get_trial_ranges(args.trials_per_exp)
         flags = remove_completed_flags(
-            flags, trial_ranges, args.exp_folder, args.exp_group, exp_name
+            flags, trial_ranges, args.exp_folder, exp_group, exp_name
         )
         flags = flags_to_strs(flags)
         commands = [f"{base_command} {x}" for x in flags]
@@ -128,13 +130,31 @@ def main(args, slurm_args):
     for commands in to_run:
         print(f"{len(commands)} exps in this job")
         if len(commands) > 1 and args.run:
-            run_slurm_job(args, slurm_args, commands)
+            run_slurm_job(args, slurm_args, exp_group, commands)
+
+
+def main(args, slurm_args):
+    if args.exp_groups:
+        exp_groups = args.exp_groups
+    elif args.exp_group_prefix:
+        all_folders = glob.glob(os.path.join(args.exp_folder, "*"))
+        exp_groups = []
+        for f in all_folders:
+            basename = os.path.basename(f)
+            if os.path.isdir(f) and basename.startswith(args.exp_group_prefix):
+                exp_groups.append(basename)
+    else:
+        raise ValueError("exp_groups or exp_group_prefix must be specified")
+
+    for e in exp_groups:
+        main_per_exp_group(args, slurm_args, e)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "conda_env"])
-    parser.add_argument("--exp_group", type=str, required=True)
+    parser.add_argument("--exp_groups", nargs="+", type=str)
+    parser.add_argument("--exp_group_prefix", type=str)
     parser.add_argument("--exp_names", nargs="+", type=str, required=True)
     parser.add_argument("--flags", type=str, required=True)
     parser.add_argument("--trials_per_exp", type=int, required=True)

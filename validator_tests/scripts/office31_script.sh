@@ -1,0 +1,6 @@
+python validator_tests/run_validators.py --exp_group_prefix office31_ --exp_names atdoc bnm bsp cdan dann gvb im mcc mcd mmd --flags Accuracy --slurm_config a100 --exp_per_slurm_job 40 --trials_per_exp 100 --run
+python validator_tests/run_validators.py --exp_group_prefix office31_ --exp_names atdoc bnm bsp cdan dann gvb im mcc mcd mmd --flags Entropy --slurm_config a100 --exp_per_slurm_job 40 --trials_per_exp 100 --run
+python validator_tests/run_validators.py --exp_group_prefix office31_ --exp_names atdoc bnm bsp cdan dann gvb im mcc mcd mmd --flags Diversity --slurm_config a100 --exp_per_slurm_job 40 --trials_per_exp 100 --run
+python validator_tests/run_validators.py --exp_group_prefix office31_ --exp_names atdoc bnm bsp cdan dann gvb im mcc mcd mmd --flags DEV --slurm_config a100 --exp_per_slurm_job 40 --trials_per_exp 100 --run
+python validator_tests/run_validators.py --exp_group_prefix office31_ --exp_names atdoc bnm bsp cdan dann gvb im mcc mcd mmd --flags SND --slurm_config a100 --exp_per_slurm_job 30 --trials_per_exp 100 --run
+python validator_tests/run_validators.py --exp_group_prefix office31_ --exp_names atdoc bnm bsp cdan dann gvb im mcc mcd mmd --flags KNN --slurm_config a100 --exp_per_slurm_job 40 --trials_per_exp 100 --run
