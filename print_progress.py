@@ -90,11 +90,17 @@ def main(cfg):
             folder_progress, validator_progress, validator_progress_details = progress(
                 cfg, exps
             )
-            all_folders[os.path.basename(p)] = {
+            curr_dict = {
                 "folder_progress": folder_progress,
-                "validator_progress": validator_progress,
-                "validator_progress_details": validator_progress_details,
             }
+            if cfg.with_validator_progress:
+                curr_dict.update(
+                    {
+                        "validator_progress": validator_progress,
+                        "validator_progress_details": validator_progress_details,
+                    }
+                )
+            all_folders[os.path.basename(p)] = curr_dict
 
     out_string = json.dumps(all_folders, indent=4, sort_keys=True)
     if cfg.save_to_file:
@@ -112,5 +118,6 @@ if __name__ == "__main__":
         type=str,
         default=None,
     )
+    parser.add_argument("--with_validator_progress", action="store_true")
     args = parser.parse_args()
     main(args)
