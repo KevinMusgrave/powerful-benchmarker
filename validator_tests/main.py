@@ -63,17 +63,33 @@ def get_and_save_scores(validator_name, validator, validator_args_str, all_score
     return fn
 
 
-def main(args, validator_args):
-    validator = getattr(configs, args.validator)(validator_args)
+def get_validator_and_condition_fn(
+    validator_name, validator_args, trial_range, exp_folder, exp_group, exp_name
+):
+    validator = getattr(configs, validator_name)(validator_args)
     validator_args_str = utils.dict_to_str(validator.validator_args)
-    exp_folders = utils.get_exp_folders(
-        os.path.join(args.exp_folder, args.exp_group), args.exp_name
-    )
-
-    all_scores = []
+    exp_folders = utils.get_exp_folders(os.path.join(exp_folder, exp_group), exp_name)
     condition_fn = utils.get_condition_fn(
-        args.validator, validator_args_str, args.trial_range
+        validator_name, validator_args_str, trial_range
     )
+    return validator, validator_args_str, exp_folders, condition_fn
+
+
+def main(args, validator_args):
+    (
+        validator,
+        validator_args_str,
+        exp_folders,
+        condition_fn,
+    ) = get_validator_and_condition_fn(
+        args.validator,
+        validator_args,
+        args.trial_range,
+        args.exp_folder,
+        args.exp_group,
+        args.exp_name,
+    )
+    all_scores = []
     fn = get_and_save_scores(args.validator, validator, validator_args_str, all_scores)
     end_fn = save_df(args.validator, validator_args_str, all_scores)
     utils.apply_to_data(exp_folders, condition_fn, fn, end_fn)

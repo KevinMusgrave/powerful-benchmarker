@@ -1,4 +1,5 @@
 import argparse
+import copy
 import math
 import os
 import subprocess
@@ -16,18 +17,19 @@ from powerful_benchmarker.utils.utils import (
     rotate,
 )
 from validator_tests import flags as flags_module
+from validator_tests.main import get_validator_and_condition_fn
 from validator_tests.utils.constants import JOBIDS_FILENAME
+from validator_tests.utils.utils import apply_to_data
 
 
-def get_trial_range(to_run, trials_per_exp, exp_per_slurm_job):
-    output = []
+def split_into_batches(to_run, exp_per_slurm_job):
+    return np.array_split(np.array(to_run), math.ceil(len(to_run) / exp_per_slurm_job))
+
+
+def get_trial_ranges(trials_per_exp):
     num_trials = 100
     trial_nums = np.array_split(np.arange(num_trials), int(100 / trials_per_exp))
-    for x in to_run:
-        for y in trial_nums:
-            y = f"{min(y)} {max(y)+1}"
-            output.append(f"{x} --trial_range {y}")
-    return np.array_split(np.array(output), math.ceil(len(output) / exp_per_slurm_job))
+    return [(min(y), max(y) + 1) for y in trial_nums]
 
 
 def exp_launcher(args, commands):
@@ -62,15 +64,61 @@ def run_slurm_job(args, slurm_args, commands):
     append_jobid_to_file(jobid, all_jobids_filename)
 
 
+def flags_to_strs(flags):
+    output = []
+    for f in flags:
+        trial_range = f.pop("trial_range")
+        x = " ".join([f"--{k}={v}" for k, v in f.items()])
+        x += f" --trial_range {trial_range[0]} {trial_range[1]}"
+        output.append(x)
+    return output
+
+
+def get_count_fn(x):
+    def fn(*args, **kwargs):
+        x.append(True)
+
+    return fn
+
+
+def remove_completed_flags(flags, trial_ranges, exp_folder, exp_group, exp_name):
+    print("removing completed flags")
+    all_flags = []
+    for f in flags:
+        for t in trial_ranges:
+            all_flags.append({**f, "trial_range": t})
+
+    keep_flags = []
+    for f in all_flags:
+        f_copy = copy.deepcopy(f)
+        validator_name = f_copy.pop("validator")
+        trial_range = f_copy.pop("trial_range")
+        validator, _, exp_folders, condition_fn = get_validator_and_condition_fn(
+            validator_name, f_copy, trial_range, exp_folder, exp_group, exp_name
+        )
+        count_list = []
+        end_fn = get_count_fn(count_list)
+        apply_to_data(exp_folders, condition_fn, end_fn=end_fn)
+        if len(count_list) > 0:
+            keep_flags.append(f)
+    return keep_flags
+
+
 def main(args, slurm_args):
     to_run = []
     for exp_name in args.exp_names:
+        print(f"creating flags for {exp_name}")
         base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
         flags = getattr(flags_module, args.flags)()
+        trial_ranges = get_trial_ranges(args.trials_per_exp)
+        flags = remove_completed_flags(
+            flags, trial_ranges, args.exp_folder, args.exp_group, exp_name
+        )
+        flags = flags_to_strs(flags)
         commands = [f"{base_command} {x}" for x in flags]
         to_run.extend(commands)
 
-    to_run = get_trial_range(to_run, args.trials_per_exp, args.exp_per_slurm_job)
+    to_run = split_into_batches(to_run, args.exp_per_slurm_job)
     print(f"{len(to_run)} slurm jobs")
     for commands in to_run:
         print(f"{len(commands)} exps in this job")

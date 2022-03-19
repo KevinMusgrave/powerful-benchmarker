@@ -67,17 +67,19 @@ def read_exp_config_file(folder):
     return exp_config
 
 
-def apply_to_data(exp_folders, condition, fn, end_fn):
+def apply_to_data(exp_folders, condition, fn=None, end_fn=None):
     for i, e in enumerate(exp_folders):
         if not condition(i, e):
             continue
-        print(e)
-        exp_config = read_exp_config_file(e)
-        features_file = os.path.join(e, "features", "features.hdf5")
-        with h5py.File(features_file, "r") as data:
-            for k in tqdm.tqdm(data.keys()):
-                fn(k, data[k], exp_config, e)
-        end_fn(e)
+        if fn:
+            print(e)
+            exp_config = read_exp_config_file(e)
+            features_file = os.path.join(e, "features", "features.hdf5")
+            with h5py.File(features_file, "r") as data:
+                for k in tqdm.tqdm(data.keys()):
+                    fn(k, data[k], exp_config, e)
+        if end_fn:
+            end_fn(e)
 
 
 def process_from_hdf5(x):

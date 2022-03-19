@@ -1,2 +1,2 @@
 def Entropy():
-    return [f"--validator Entropy --split=target_train"]
+    return [{"validator": "Entropy", "split": "target_train"}]

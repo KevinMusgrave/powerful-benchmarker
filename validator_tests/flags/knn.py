@@ -8,6 +8,12 @@ def KNN():
                 if layer == "preds" and l2_normalize == 1:
                     continue
                 flags.append(
-                    f"--validator KNN --split=train --layer={layer} --k={k} --l2_normalize={l2_normalize}"
+                    {
+                        "validator": "KNN",
+                        "split": "train",
+                        "layer": layer,
+                        "k": str(k),
+                        "l2_normalize": str(l2_normalize),
+                    }
                 )
     return flags
