@@ -101,13 +101,14 @@ def remove_completed_flags(flags, trial_ranges, exp_folder, exp_group, exp_name)
         apply_to_data(exp_folders, condition_fn, end_fn=end_fn)
         if len(count_list) > 0:
             keep_flags.append(f)
+    print(f"kept {len(keep_flags)} flags")
     return keep_flags
 
 
 def main(args, slurm_args):
     to_run = []
     for exp_name in args.exp_names:
-        print(f"creating flags for {exp_name}")
+        print(f"creating flags for {args.exp_group}/{exp_name}/{args.flags}")
         base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {args.exp_group} --exp_name {exp_name}"
         flags = getattr(flags_module, args.flags)()
         trial_ranges = get_trial_ranges(args.trials_per_exp)
@@ -117,6 +118,10 @@ def main(args, slurm_args):
         flags = flags_to_strs(flags)
         commands = [f"{base_command} {x}" for x in flags]
         to_run.extend(commands)
+
+    if len(to_run) == 0:
+        print("Jobs are already done. Exiting.")
+        return
 
     to_run = split_into_batches(to_run, args.exp_per_slurm_job)
     print(f"{len(to_run)} slurm jobs")
