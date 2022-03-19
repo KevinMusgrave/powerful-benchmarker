@@ -14,6 +14,7 @@ sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests import configs
 from validator_tests.utils import utils
+from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER
 
 tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
@@ -40,7 +41,7 @@ def get_and_save_scores(validator_name, validator, validator_args_str, all_score
     def fn(epoch, x, exp_config, exp_folder):
         if isinstance(validator, configs.DEV):
             temp_folder = os.path.join(
-                exp_folder, utils.VALIDATOR_TESTS_FOLDER, f"DEV_{validator.layer}"
+                exp_folder, VALIDATOR_TESTS_FOLDER, f"DEV_{validator.layer}"
             )
             validator.validator.temp_folder = temp_folder
             if os.path.isdir(temp_folder):

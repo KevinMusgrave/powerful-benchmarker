@@ -8,9 +8,10 @@ import pandas as pd
 import tqdm
 from pytorch_adapt.utils import common_functions as c_f
 
+from .constants import VALIDATOR_TESTS_FOLDER
+
 SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
 AVERAGE_NAMES = ["micro", "macro"]
-VALIDATOR_TESTS_FOLDER = "validator_tests"
 
 
 def get_df_filepath(folder, validator_name, validator_args_str):

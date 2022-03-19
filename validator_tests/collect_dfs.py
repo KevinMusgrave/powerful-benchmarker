@@ -9,6 +9,7 @@ import tqdm
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
+from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER
 
 
 def main(args):
@@ -20,9 +21,7 @@ def main(args):
         exp_folders = utils.get_exp_folders(exp_folder, e)
         for ef in exp_folders:
             print(ef)
-            df_files = glob.glob(
-                os.path.join(ef, utils.VALIDATOR_TESTS_FOLDER, "*.pkl")
-            )
+            df_files = glob.glob(os.path.join(ef, VALIDATOR_TESTS_FOLDER, "*.pkl"))
             for dff in tqdm.tqdm(df_files):
                 df.append(pd.read_pickle(dff))
 

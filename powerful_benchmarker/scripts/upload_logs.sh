@@ -3,7 +3,7 @@ while :
 do
     cd "$5"
     echo "Getting progress"
-    python powerful_benchmarker/print_progress.py --exp_folder "$1" --save_to_file progress.txt
+    python print_progress.py --exp_folder "$1" --save_to_file progress.txt
     progress_fail=$?
     if [ "$progress_fail" = "1" ];
         then
