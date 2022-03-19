@@ -14,6 +14,28 @@ SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
 AVERAGE_NAMES = ["micro", "macro"]
 
 
+def get_condition_fn(validator_name, validator_args_str, trial_range):
+    trial_range_specified = trial_range != []
+    if trial_range_specified:
+        trial_range = np.arange(*trial_range)
+
+    def fn(iteration, folder):
+        filepath = get_df_filepath(folder, validator_name, validator_args_str)
+        if os.path.isfile(filepath):
+            try:
+                df = pd.read_pickle(filepath)
+                if len(df) > 0:
+                    return False
+                return True
+            except:  # in case it's corrupted or something
+                return True
+        if trial_range_specified and iteration not in trial_range:
+            return False
+        return True
+
+    return fn
+
+
 def get_df_filepath(folder, validator_name, validator_args_str):
     filename = os.path.join(folder, VALIDATOR_TESTS_FOLDER)
     c_f.makedir_if_not_there(filename)
@@ -68,16 +90,6 @@ def process_from_hdf5(x):
 
 def is_not_features(k):
     return all(not k.startswith(f"{x}_") for x in SPLIT_NAMES)
-
-
-def create_validator_args(unknown_args):
-    args = {}
-    for s in unknown_args:
-        if s == "":
-            continue
-        k, v = s.split("=")
-        args[k.lstrip("--")] = v
-    return args
 
 
 def exp_specific_columns(df):

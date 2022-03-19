@@ -5,13 +5,13 @@ import shutil
 import sys
 from functools import partialmethod
 
-import numpy as np
 import pandas as pd
 import torch
 from tqdm import tqdm
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
+from powerful_benchmarker.utils.utils import convert_unknown_args
 from validator_tests import configs
 from validator_tests.utils import utils
 from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER
@@ -63,28 +63,6 @@ def get_and_save_scores(validator_name, validator, validator_args_str, all_score
     return fn
 
 
-def get_condition_fn(validator_name, validator_args_str, trial_range):
-    trial_range_specified = trial_range != []
-    if trial_range_specified:
-        trial_range = np.arange(*trial_range)
-
-    def fn(iteration, folder):
-        filepath = utils.get_df_filepath(folder, validator_name, validator_args_str)
-        if os.path.isfile(filepath):
-            try:
-                df = pd.read_pickle(filepath)
-                if len(df) > 0:
-                    return False
-                return True
-            except:  # in case it's corrupted or something
-                return True
-        if trial_range_specified and iteration not in trial_range:
-            return False
-        return True
-
-    return fn
-
-
 def main(args, validator_args):
     validator = getattr(configs, args.validator)(validator_args)
     validator_args_str = utils.dict_to_str(validator.validator_args)
@@ -93,7 +71,7 @@ def main(args, validator_args):
     )
 
     all_scores = []
-    condition_fn = get_condition_fn(
+    condition_fn = utils.get_condition_fn(
         args.validator, validator_args_str, args.trial_range
     )
     fn = get_and_save_scores(args.validator, validator, validator_args_str, all_scores)
@@ -109,5 +87,5 @@ if __name__ == "__main__":
     parser.add_argument("--validator", type=str, required=True)
     parser.add_argument("--trial_range", nargs="+", type=int, default=[])
     args, unknown_args = parser.parse_known_args()
-    validator_args = utils.create_validator_args(unknown_args)
+    validator_args = convert_unknown_args(unknown_args)
     main(args, validator_args)
