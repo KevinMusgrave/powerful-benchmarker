@@ -71,7 +71,13 @@ def get_condition_fn(validator_name, validator_args_str, trial_range):
     def fn(iteration, folder):
         filepath = utils.get_df_filepath(folder, validator_name, validator_args_str)
         if os.path.isfile(filepath):
-            return False
+            try:
+                df = pd.read_pickle(filepath)
+                if len(df) > 0:
+                    return False
+                return True
+            except:  # in case it's corrupted or something
+                return True
         if trial_range_specified and iteration not in trial_range:
             return False
         return True
