@@ -106,20 +106,26 @@ def remove_completed_flags(flags, trial_ranges, exp_folder, exp_group, exp_name)
     return keep_flags
 
 
-def main_per_exp_group(args, slurm_args, exp_group):
+def no_duplicates(x):
+    return len(x) == len(set(x))
+
+
+def launcher(args, slurm_args, exp_groups):
     to_run = []
-    assert len(args.exp_names) == len(set(args.exp_names))
-    for exp_name in args.exp_names:
-        print(f"creating flags for {exp_group}/{exp_name}/{args.flags}")
-        base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {exp_group} --exp_name {exp_name}"
-        flags = getattr(flags_module, args.flags)()
-        trial_ranges = get_trial_ranges(args.trials_per_exp)
-        flags = remove_completed_flags(
-            flags, trial_ranges, args.exp_folder, exp_group, exp_name
-        )
-        flags = flags_to_strs(flags)
-        commands = [f"{base_command} {x}" for x in flags]
-        to_run.extend(commands)
+    assert no_duplicates(exp_groups)
+    assert no_duplicates(args.exp_names)
+    for exp_group in exp_groups:
+        for exp_name in args.exp_names:
+            print(f"creating flags for {exp_group}/{exp_name}/{args.flags}")
+            base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {exp_group} --exp_name {exp_name}"
+            flags = getattr(flags_module, args.flags)()
+            trial_ranges = get_trial_ranges(args.trials_per_exp)
+            flags = remove_completed_flags(
+                flags, trial_ranges, args.exp_folder, exp_group, exp_name
+            )
+            flags = flags_to_strs(flags)
+            commands = [f"{base_command} {x}" for x in flags]
+            to_run.extend(commands)
 
     if len(to_run) == 0:
         print("Jobs are already done. Exiting.")
@@ -146,8 +152,7 @@ def main(args, slurm_args):
     else:
         raise ValueError("exp_groups or exp_group_prefix must be specified")
 
-    for e in exp_groups:
-        main_per_exp_group(args, slurm_args, e)
+    launcher(args, slurm_args, exp_groups)
 
 
 if __name__ == "__main__":
