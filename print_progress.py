@@ -75,9 +75,10 @@ def progress(cfg, exps):
         if not is_done(e):
             output_str += "    In Progress"
         folder_progress[exp_name] = output_str
-        update_validator_progress_dicts(
-            exp_name, contents, validator_progress, validator_progress_details
-        )
+        if cfg.with_validator_progress:
+            update_validator_progress_dicts(
+                exp_name, contents, validator_progress, validator_progress_details
+            )
     return folder_progress, validator_progress, validator_progress_details
 
 
