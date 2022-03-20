@@ -1,2 +1,5 @@
 JOBIDS_FILENAME = "all_validator_jobids.txt"
 VALIDATOR_TESTS_FOLDER = "validator_tests"
+ALL_DFS_FILENAME = "all_dfs.pkl"
+PER_SRC_FILENAME = "per_src_threshold.pkl"
+PER_TARGET_FILENAME = "per_target_threshold.pkl"

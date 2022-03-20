@@ -9,7 +9,7 @@ import tqdm
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
-from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER
+from validator_tests.utils.constants import ALL_DFS_FILENAME, VALIDATOR_TESTS_FOLDER
 
 
 def main(args):
@@ -26,7 +26,7 @@ def main(args):
                 df.append(pd.read_pickle(dff))
 
     df = pd.concat(df, axis=0, ignore_index=True)
-    filename = os.path.join(exp_folder, "all_dfs.pkl")
+    filename = os.path.join(exp_folder, ALL_DFS_FILENAME)
     print(df)
     df.to_pickle(filename)
 
