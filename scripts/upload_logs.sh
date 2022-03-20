@@ -3,7 +3,7 @@ while :
 do
     cd "$5"
     echo "Getting progress"
-    python print_progress.py --exp_folder "$1" --save_to_file progress.txt
+    python print_progress.py --exp_folder "$1" --save_to_file progress.txt --with_validator_progress
     progress_fail=$?
     if [ "$progress_fail" = "1" ];
         then

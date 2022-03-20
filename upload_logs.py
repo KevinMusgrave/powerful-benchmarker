@@ -3,12 +3,12 @@ import os
 import subprocess
 import sys
 
-sys.path.insert(0, "src")
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 
 
 def main(cfg):
-    curr_dir = os.path.abspath(os.path.dirname(__file__))
+    curr_dir = os.getcwd()
 
     command = "bash -i ./scripts/upload_logs.sh {0} {1} {2} {3} {4} {5}".format(
         cfg.exp_folder,
