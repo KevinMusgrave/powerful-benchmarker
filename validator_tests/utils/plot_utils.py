@@ -2,7 +2,8 @@ import os
 
 import tqdm
 
-from .utils import domains_str, maybe_per_adapter, validator_args_str
+from .df_utils import domains_str, maybe_per_adapter
+from .utils import validator_args_str
 
 
 def create_name(filters, components):
