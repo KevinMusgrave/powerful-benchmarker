@@ -1,5 +1,4 @@
 black
-faiss-gpu
 flake8
 h5py==3.6.0
 isort
