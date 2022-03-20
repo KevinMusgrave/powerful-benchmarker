@@ -1,12 +1,12 @@
 import subprocess
 
 components = [
-    {"flags": "Accuracy", "exp_per_slurm_job": "40", "trials_per_exp": "100"},
-    {"flags": "Entropy", "exp_per_slurm_job": "40", "trials_per_exp": "100"},
-    {"flags": "Diversity", "exp_per_slurm_job": "40", "trials_per_exp": "100"},
-    {"flags": "DEV", "exp_per_slurm_job": "40", "trials_per_exp": "100"},
-    {"flags": "SND", "exp_per_slurm_job": "30", "trials_per_exp": "100"},
-    {"flags": "KNN", "exp_per_slurm_job": "40", "trials_per_exp": "100"},
+    {"flags": "Accuracy", "exp_per_slurm_job": "20", "trials_per_exp": "100"},
+    {"flags": "Entropy", "exp_per_slurm_job": "20", "trials_per_exp": "100"},
+    {"flags": "Diversity", "exp_per_slurm_job": "20", "trials_per_exp": "100"},
+    {"flags": "DEV", "exp_per_slurm_job": "20", "trials_per_exp": "100"},
+    {"flags": "SND", "exp_per_slurm_job": "15", "trials_per_exp": "100"},
+    {"flags": "KNN", "exp_per_slurm_job": "20", "trials_per_exp": "100"},
 ]
 
 exp_names = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]

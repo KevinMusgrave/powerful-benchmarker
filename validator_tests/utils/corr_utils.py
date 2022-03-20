@@ -8,7 +8,7 @@ from powerful_benchmarker.utils.score_utils import (
 )
 
 BASE_GROUP_BY = ["validator", "validator_args"]
-TARGET_ACCURACY = "target_val_macro"
+TARGET_ACCURACY = "target_train_macro"
 
 
 def filter_by_acc(df, min_acc, domain_type):

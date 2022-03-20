@@ -5,7 +5,6 @@ import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 
 from .plot_utils import plot_loop
-from .utils import unify_validator_columns
 
 
 def multiplot(
@@ -49,7 +48,6 @@ def multiplot(
 
 def per_validator_args(threshold_type):
     def fn(curr_plots_folder, curr_df, filename):
-        curr_df = unify_validator_columns(curr_df)
         multiplot(
             curr_plots_folder,
             curr_df,
@@ -57,7 +55,7 @@ def per_validator_args(threshold_type):
             "correlation",
             filename,
             sns.lineplot,
-            "validator",
+            "validator_args",
         )
 
     return fn
@@ -67,7 +65,7 @@ def plot_corr_vs_X(threshold_type, per_adapter):
     def fn(df, plots_folder):
         plots_folder = os.path.join(plots_folder, f"corr_vs_{threshold_type}")
 
-        filter_by = ["adapter"] if per_adapter else []
+        filter_by = ["adapter", "validator"] if per_adapter else ["validator"]
 
         plot_loop(
             df,
@@ -76,7 +74,6 @@ def plot_corr_vs_X(threshold_type, per_adapter):
             filter_by=filter_by,
             sub_folder_components=[],
             filename_components=filter_by,
-            filename=f"corr_vs_{threshold_type}",
             per_adapter=per_adapter,
         )
 
