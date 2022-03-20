@@ -9,7 +9,7 @@ components = [
     {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
 ]
 
-exp_names = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mmd"]
+exp_names = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]
 exp_names = " ".join(exp_names)
 
 for x in components:

@@ -135,7 +135,7 @@ def launcher(args, slurm_args, exp_groups):
     print(f"{len(to_run)} slurm jobs")
     for commands in to_run:
         print(f"{len(commands)} exps in this job")
-        if len(commands) > 1 and args.run:
+        if len(commands) > 0 and args.run:
             run_slurm_job(args, slurm_args, exp_group, commands)
 
 
