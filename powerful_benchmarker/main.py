@@ -37,7 +37,11 @@ from pytorch_adapt.utils import common_functions as c_f
 sys.path.insert(0, ".")
 from powerful_benchmarker import configs
 from powerful_benchmarker.utils import ignite_save_features, main_utils
-from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from powerful_benchmarker.utils.constants import (
+    BEST_TRIAL_FILENAME,
+    TRIALS_FILENAME,
+    add_default_args,
+)
 from powerful_benchmarker.utils.get_validator import get_validator
 from powerful_benchmarker.utils.logger import Logger
 
@@ -243,7 +247,7 @@ def hyperparam_search(cfg, exp_path):
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     study_path = os.path.join(exp_path, "study.pkl")
     plot_path = os.path.join(exp_path, "plots")
-    log_path = os.path.join(exp_path, "trials.csv")
+    log_path = os.path.join(exp_path, TRIALS_FILENAME)
 
     if os.path.isdir(exp_path) and os.path.isfile(study_path):
         study = joblib.load(study_path)

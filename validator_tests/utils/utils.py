@@ -8,6 +8,8 @@ import pandas as pd
 import tqdm
 from pytorch_adapt.utils import common_functions as c_f
 
+from powerful_benchmarker.utils.constants import TRIALS_FILENAME
+
 from .constants import VALIDATOR_TESTS_FOLDER
 
 
@@ -48,7 +50,7 @@ def get_exp_folders(folder, name):
     exp_path = os.path.join(folder, name)
     if not os.path.isdir(exp_path):
         return []
-    trials_filename = os.path.join(exp_path, "trials.csv")
+    trials_filename = os.path.join(exp_path, TRIALS_FILENAME)
     with open(trials_filename, "r") as f:
         trials_info = pd.read_csv(f)
     trials_info = trials_info[trials_info["state"] == "COMPLETE"]

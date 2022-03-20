@@ -9,7 +9,11 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, ".")
-from powerful_benchmarker.utils.constants import BEST_TRIAL_FILENAME, add_default_args
+from powerful_benchmarker.utils.constants import (
+    BEST_TRIAL_FILENAME,
+    TRIALS_FILENAME,
+    add_default_args,
+)
 from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER
 
 
@@ -40,7 +44,7 @@ def is_done(e):
 
 
 def read_trials_csv(e):
-    filepath = os.path.join(e, "trials.csv")
+    filepath = os.path.join(e, TRIALS_FILENAME)
     if os.path.isfile(filepath):
         trials = pd.read_csv(filepath)
         num_success = len(trials[trials["state"] == "COMPLETE"])
