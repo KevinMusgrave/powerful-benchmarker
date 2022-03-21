@@ -9,13 +9,17 @@ class KNN(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
         self.validator_args["k"] = int(self.validator_args["k"])
+        self.validator_args["p"] = float(self.validator_args["p"])
         self.validator_args["normalize"] = bool(int(self.validator_args["normalize"]))
         self.layer = self.validator_args["layer"]
         self.src_split_name = get_full_split_name("src", self.split)
         self.target_split_name = get_full_split_name("target", self.split)
 
         knn_func = CustomKNN(
-            LpDistance(normalize_embeddings=self.validator_args["normalize"], p=2),
+            LpDistance(
+                normalize_embeddings=self.validator_args["normalize"],
+                p=self.validator_args["p"],
+            ),
             batch_size=512,
         )
 

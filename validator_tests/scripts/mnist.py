@@ -6,7 +6,7 @@ components = [
     {"flags": "Diversity", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "DEV", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "SND", "exp_per_slurm_job": "3", "trials_per_exp": "100"},
-    # {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+    {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
 ]
 
 exp_names = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]
