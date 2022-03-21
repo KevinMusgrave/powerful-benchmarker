@@ -3,7 +3,7 @@ import os
 import tqdm
 
 from .df_utils import domains_str, maybe_per_adapter
-from .utils import validator_args_str
+from .utils import validator_args_underscore_delimited
 
 
 def create_name(filters, components):
@@ -13,7 +13,7 @@ def create_name(filters, components):
         if k in ["src_domains", "target_domains"]:
             x = domains_str(curr_val)
         elif k == "validator_args":
-            x = validator_args_str(curr_val)
+            x = validator_args_underscore_delimited(curr_val)
         else:
             x = curr_val
         s = x if s == "" else f"{s}_{x}"
