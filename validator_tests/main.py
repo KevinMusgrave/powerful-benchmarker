@@ -41,7 +41,9 @@ def get_and_save_scores(validator_name, validator, validator_args_str, all_score
     def fn(epoch, x, exp_config, exp_folder):
         if isinstance(validator, configs.DEV):
             temp_folder = os.path.join(
-                exp_folder, VALIDATOR_TESTS_FOLDER, f"DEV_{validator.layer}"
+                exp_folder,
+                VALIDATOR_TESTS_FOLDER,
+                utils.validator_str(validator_name, validator_args_str),
             )
             validator.validator.temp_folder = temp_folder
             if os.path.isdir(temp_folder):
