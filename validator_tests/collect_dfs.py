@@ -16,7 +16,8 @@ def main(args):
     df = []
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
     exp_names = [os.path.basename(x) for x in glob.glob(os.path.join(exp_folder, "*"))]
-    exp_names.remove(args.slurm_folder)
+    if args.slurm_folder in exp_names:
+        exp_names.remove(args.slurm_folder)
     for e in exp_names:
         exp_folders = utils.get_exp_folders(exp_folder, e)
         for ef in exp_folders:
