@@ -1,5 +1,6 @@
 from pytorch_adapt.layers.utils import get_kernel_scales
 from pytorch_adapt.validators import MMDValidator
+from pytorch_metric_learning.distances import LpDistance
 
 from .base_config import BaseConfig, get_full_split_name, use_src_and_target
 
@@ -16,6 +17,8 @@ class MMD(BaseConfig):
         kernel_scales = get_kernel_scales(
             low=-exponent, high=exponent, num_kernels=num_kernels
         )
+        normalize = bool(int(self.validator_args["normalize"]))
+        dist_func = LpDistance(normalize_embeddings=normalize, p=2, power=2)
 
         self.validator = MMDValidator(
             key_map={
@@ -25,7 +28,7 @@ class MMD(BaseConfig):
             layer=self.validator_args["layer"],
             num_samples=1024,
             num_trials=1000,
-            mmd_kwargs={"kernel_scales": kernel_scales},
+            mmd_kwargs={"kernel_scales": kernel_scales, "dist_func": dist_func},
         )
 
     def score(self, x, exp_config, device):

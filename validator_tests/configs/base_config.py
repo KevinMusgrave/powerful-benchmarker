@@ -31,6 +31,14 @@ def get_target_domain(length, device):
 def use_src_and_target(x, device, validator, src_split_name, target_split_name, layer):
     src = get_split_and_layer(x, src_split_name, layer, device)
     target = get_split_and_layer(x, target_split_name, layer, device)
+    return pass_src_and_target_to_validator(
+        validator, src_split_name, target_split_name, layer, src, target, device
+    )
+
+
+def pass_src_and_target_to_validator(
+    validator, src_split_name, target_split_name, layer, src, target, device
+):
     return validator(
         **{
             src_split_name: {
