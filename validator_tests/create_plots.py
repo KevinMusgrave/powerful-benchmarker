@@ -6,6 +6,7 @@ import pandas as pd
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
+from validator_tests.utils import derive
 from validator_tests.utils.constants import (
     ALL_DFS_FILENAME,
     PER_SRC_FILENAME,
@@ -17,6 +18,7 @@ from validator_tests.utils.corr_utils import (
     get_per_threshold,
 )
 from validator_tests.utils.df_utils import (
+    all_acc_score_column_names,
     assert_acc_rows_are_correct,
     convert_list_to_tuple,
     exp_specific_columns,
@@ -32,11 +34,14 @@ def read_all_dfs(exp_folder):
 
 
 def process_acc_validator(df):
-    convert_list_to_tuple(df)
     accs = get_all_acc(df)
-    df = df.merge(accs, on=exp_specific_columns(df))
+    df = df.merge(accs, on=exp_specific_columns(df, all_acc_score_column_names()))
     assert_acc_rows_are_correct(df)
     return df
+
+
+def add_derived_scores(df):
+    return derive.add_IM(df)
 
 
 def get_per_src_per_target(df, exp_folder, read_existing):
@@ -59,6 +64,8 @@ def get_per_src_per_target(df, exp_folder, read_existing):
 def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
     df = read_all_dfs(exp_folder)
+    convert_list_to_tuple(df)
+    df = add_derived_scores(df)
     df = process_acc_validator(df)
     plot_val_vs_acc(df, args.plots_folder)
 

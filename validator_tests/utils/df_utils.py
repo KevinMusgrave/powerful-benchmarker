@@ -4,8 +4,8 @@ SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
 AVERAGE_NAMES = ["micro", "macro"]
 
 
-def exp_specific_columns(df):
-    exclude = ["score", "validator", "validator_args", *all_acc_score_column_names()]
+def exp_specific_columns(df, additional_exclude):
+    exclude = ["score", "validator", "validator_args", *additional_exclude]
     return [x for x in df.columns.values if x not in exclude]
 
 
@@ -22,9 +22,13 @@ def get_acc_rows(df, split, average):
     return df[(df["validator_args"] == args) & (df["validator"] == "Accuracy")]
 
 
+def drop_validator_cols(df):
+    return df.drop(columns=["validator", "validator_args"])
+
+
 def get_acc_df(df, split, average):
     df = get_acc_rows(df, split, average)
-    df = df.drop(columns=["validator", "validator_args"])
+    df = drop_validator_cols(df)
     return df.rename(columns={"score": acc_score_column_name(split, average)})
 
 
@@ -36,7 +40,9 @@ def get_all_acc(df):
             if output is None:
                 output = curr
             else:
-                output = output.merge(curr, on=exp_specific_columns(output))
+                output = output.merge(
+                    curr, on=exp_specific_columns(output, all_acc_score_column_names())
+                )
     return output
 
 
