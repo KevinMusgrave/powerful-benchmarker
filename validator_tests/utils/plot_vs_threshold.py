@@ -46,13 +46,13 @@ def multiplot(
     fig.clf()
 
 
-def per_validator_args(threshold_type):
+def per_validator_args(x, y):
     def fn(curr_plots_folder, curr_df, filename):
         multiplot(
             curr_plots_folder,
             curr_df,
-            threshold_type,
-            "correlation",
+            x,
+            y,
             filename,
             sns.lineplot,
             "validator_args",
@@ -70,7 +70,28 @@ def plot_corr_vs_X(threshold_type, per_adapter):
         plot_loop(
             df,
             plots_folder,
-            per_validator_args(f"{threshold_type}_threshold"),
+            per_validator_args(f"{threshold_type}_threshold", "correlation"),
+            filter_by=filter_by,
+            sub_folder_components=[],
+            filename_components=filter_by,
+            per_adapter=per_adapter,
+        )
+
+    return fn
+
+
+def plot_predicted_best_acc_vs_X(threshold_type, per_adapter):
+    def fn(df, plots_folder):
+        plots_folder = os.path.join(
+            plots_folder, f"predicted_best_acc_vs_{threshold_type}"
+        )
+
+        filter_by = ["adapter", "validator"] if per_adapter else ["validator"]
+
+        plot_loop(
+            df,
+            plots_folder,
+            per_validator_args(f"{threshold_type}_threshold", "predicted_best_acc"),
             filter_by=filter_by,
             sub_folder_components=[],
             filename_components=filter_by,
