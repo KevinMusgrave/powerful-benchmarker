@@ -96,11 +96,32 @@ def get_corr(group_by):
     return fn
 
 
+def get_predicted_best_acc(group_by):
+    def fn(df):
+        best_score_idx = df.groupby(group_by)["score"].idxmax()
+        df = df.loc[best_score_idx]
+        df["predicted_best_acc"] = df[TARGET_ACCURACY]
+        df = df[group_by + ["predicted_best_acc"]]
+        return df.reset_index()
+
+    return fn
+
+
+def group_by_task():
+    return BASE_GROUP_BY + ["dataset", "src_domains", "target_domains"]
+
+
+def group_by_task_adapter():
+    return group_by_task() + ["adapter"]
+
+
 def get_corr_per_task():
-    return get_corr(BASE_GROUP_BY + ["dataset", "src_domains", "target_domains"])
+    return get_corr(group_by_task())
 
 
 def get_corr_per_task_per_adapter():
-    return get_corr(
-        BASE_GROUP_BY + ["dataset", "src_domains", "target_domains", "adapter"]
-    )
+    return get_corr(group_by_task_adapter())
+
+
+def get_predicted_best_acc_per_task():
+    return get_predicted_best_acc(group_by_task())
