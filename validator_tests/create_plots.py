@@ -39,16 +39,20 @@ def process_acc_validator(df):
     return df
 
 
-def get_per_src_per_target(df, exp_folder):
+def get_per_src_per_target(df, exp_folder, read_existing):
     src_filename = os.path.join(exp_folder, PER_SRC_FILENAME)
     target_filename = os.path.join(exp_folder, PER_TARGET_FILENAME)
-    if (not os.path.isfile(src_filename)) or (not os.path.isfile(target_filename)):
+    if (
+        read_existing
+        and os.path.isfile(src_filename)
+        and os.path.isfile(target_filename)
+    ):
+        per_src = pd.read_pickle(src_filename)
+        per_target = pd.read_pickle(target_filename)
+    else:
         per_src, per_target = get_per_threshold(df, get_corr_per_task())
         per_src.to_pickle(os.path.join(exp_folder, PER_SRC_FILENAME))
         per_target.to_pickle(os.path.join(exp_folder, PER_TARGET_FILENAME))
-    else:
-        per_src = pd.read_pickle(src_filename)
-        per_target = pd.read_pickle(target_filename)
     return per_src, per_target
 
 
@@ -58,7 +62,7 @@ def main(args):
     df = process_acc_validator(df)
     plot_val_vs_acc(df, args.plots_folder)
 
-    per_src, per_target = get_per_src_per_target(df, exp_folder)
+    per_src, per_target = get_per_src_per_target(df, exp_folder, args.read_existing)
     plot_corr_vs_X("src", False)(per_src, args.plots_folder)
     plot_corr_vs_X("target", False)(per_target, args.plots_folder)
 
@@ -72,5 +76,6 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder"])
     parser.add_argument("--exp_group", type=str, required=True)
     parser.add_argument("--plots_folder", type=str, default="plots")
+    parser.add_argument("--read_existing", action="store_true")
     args = parser.parse_args()
     main(args)
