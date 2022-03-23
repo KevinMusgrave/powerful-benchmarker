@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 
-from .corr_utils import TARGET_ACCURACY
 from .plot_utils import plot_loop
+from .threshold_utils import TARGET_ACCURACY
 
 
 def scatter_plot(

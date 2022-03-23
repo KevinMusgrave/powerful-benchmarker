@@ -12,11 +12,6 @@ from validator_tests.utils.constants import (
     PER_SRC_FILENAME,
     PER_TARGET_FILENAME,
 )
-from validator_tests.utils.corr_utils import (
-    get_corr_per_task,
-    get_corr_per_task_per_adapter,
-    get_per_threshold,
-)
 from validator_tests.utils.df_utils import (
     all_acc_score_column_names,
     assert_acc_rows_are_correct,
@@ -26,6 +21,11 @@ from validator_tests.utils.df_utils import (
 )
 from validator_tests.utils.plot_corr_vs_src import plot_corr_vs_X
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
+from validator_tests.utils.threshold_utils import (
+    get_corr_per_task,
+    get_corr_per_task_per_adapter,
+    get_per_threshold,
+)
 
 
 def read_all_dfs(exp_folder):
