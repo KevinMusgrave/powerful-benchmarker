@@ -29,7 +29,7 @@ class MMD(BaseConfig):
                 self.target_split_name: "target_train",
             },
             layer=self.validator_args["layer"],
-            num_samples=4096,
+            num_samples=1024,
             num_trials=1000,
             mmd_kwargs={"kernel_scales": kernel_scales, "dist_func": dist_func},
         )
