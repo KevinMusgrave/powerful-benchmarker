@@ -8,16 +8,19 @@ from .base_config import BaseConfig, get_full_split_name, use_src_and_target
 class MMD(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
+        self.validator_args["exponent"] = int(self.validator_args["exponent"])
+        self.validator_args["normalize"] = bool(int(self.validator_args["normalize"]))
         self.layer = self.validator_args["layer"]
         self.src_split_name = get_full_split_name("src", self.split)
         self.target_split_name = get_full_split_name("target", self.split)
 
-        exponent = int(self.validator_args["exponent"])
+        exponent = self.validator_args["exponent"]
         num_kernels = (exponent * 2) + 1
         kernel_scales = get_kernel_scales(
             low=-exponent, high=exponent, num_kernels=num_kernels
         )
-        normalize = bool(int(self.validator_args["normalize"]))
+
+        normalize = self.validator_args["normalize"]
         dist_func = LpDistance(normalize_embeddings=normalize, p=2, power=2)
 
         self.validator = MMDValidator(
