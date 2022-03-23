@@ -34,4 +34,4 @@ class DLogitsAccuracy(BaseConfig):
             average="macro",
             num_classes=2,
             multiclass=True,
-        )
+        ).item()
