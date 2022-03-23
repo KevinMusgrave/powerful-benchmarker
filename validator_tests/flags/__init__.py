@@ -5,4 +5,5 @@ from .diversity import Diversity
 from .entropy import Entropy
 from .ist import IST
 from .knn import KNN
+from .mmd import MMD
 from .snd import SND
