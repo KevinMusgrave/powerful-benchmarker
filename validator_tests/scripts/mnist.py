@@ -9,12 +9,18 @@ components = [
     {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "AMI", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+    {"flags": "DLogitsAccuracy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
 ]
 
-exp_names = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]
-exp_names = " ".join(exp_names)
+all_exps = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]
+exp_with_d = ["cdan", "dann", "gvb"]
+
 
 for x in components:
+    if x["flags"] in ["DLogitsAccuracy"]:
+        exp_names = " ".join(exp_with_d)
+    else:
+        exp_names = " ".join(all_exps)
     command = "python validator_tests/run_validators.py --exp_groups mnist_mnist_mnistm_fl6_Adam_lr1 --slurm_config mnist --run --time=8:00:00"
     command += f" --exp_names {exp_names} --flags {x['flags']} --exp_per_slurm_job {x['exp_per_slurm_job']} --trials_per_exp {x['trials_per_exp']}"
     subprocess.run(command.split(" "))

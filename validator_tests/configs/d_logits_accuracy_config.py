@@ -20,8 +20,8 @@ class DLogitsAccuracy(BaseConfig):
 
         src_preds = torch.sigmoid(src_logits)
         target_preds = torch.sigmoid(target_logits)
-        src_labels = get_src_domain(len(src_preds))
-        target_labels = get_target_domain(len(target_preds))
+        src_labels = get_src_domain(len(src_preds), device)
+        target_labels = get_target_domain(len(target_preds), device)
 
         preds = torch.cat([src_preds, target_preds], dim=0)
         labels = torch.cat([src_labels, target_labels], dim=0).to(
@@ -31,7 +31,7 @@ class DLogitsAccuracy(BaseConfig):
         return accuracy(
             preds,
             labels,
-            average=self.validator_args["average"],
+            average="macro",
             num_classes=2,
             multiclass=True,
         )
