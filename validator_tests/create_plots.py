@@ -19,13 +19,15 @@ from validator_tests.utils.df_utils import (
     exp_specific_columns,
     get_all_acc,
 )
-from validator_tests.utils.plot_corr_vs_src import plot_corr_vs_X
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
+from validator_tests.utils.plot_vs_threshold import (
+    plot_corr_vs_X,
+    plot_predicted_best_acc_vs_X,
+)
 from validator_tests.utils.threshold_utils import (
-    get_corr_per_task,
-    get_corr_per_task_per_adapter,
+    get_all_per_task,
+    get_all_per_task_per_adapter,
     get_per_threshold,
-    get_predicted_best_acc_per_task,
 )
 
 
@@ -56,7 +58,7 @@ def get_per_src_per_target(df, exp_folder, read_existing):
         per_src = pd.read_pickle(src_filename)
         per_target = pd.read_pickle(target_filename)
     else:
-        per_src, per_target = get_per_threshold(df, get_corr_per_task())
+        per_src, per_target = get_per_threshold(df, get_all_per_task())
         per_src.to_pickle(os.path.join(exp_folder, PER_SRC_FILENAME))
         per_target.to_pickle(os.path.join(exp_folder, PER_TARGET_FILENAME))
     return per_src, per_target
@@ -73,8 +75,10 @@ def main(args):
     per_src, per_target = get_per_src_per_target(df, exp_folder, args.read_existing)
     plot_corr_vs_X("src", False)(per_src, args.plots_folder)
     plot_corr_vs_X("target", False)(per_target, args.plots_folder)
+    plot_predicted_best_acc_vs_X("src", False)(per_src, args.plots_folder)
+    plot_predicted_best_acc_vs_X("target", False)(per_target, args.plots_folder)
 
-    per_src, per_target = get_per_threshold(df, get_corr_per_task_per_adapter())
+    per_src, per_target = get_per_threshold(df, get_all_per_task_per_adapter())
     plot_corr_vs_X("src", True)(per_src, args.plots_folder)
     plot_corr_vs_X("target", True)(per_target, args.plots_folder)
 

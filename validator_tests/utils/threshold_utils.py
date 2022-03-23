@@ -107,6 +107,18 @@ def get_predicted_best_acc(group_by):
     return fn
 
 
+def get_all(group_by):
+    corr_fn = get_corr(group_by)
+    acc_fn = get_predicted_best_acc(group_by)
+
+    def fn(df):
+        df1 = corr_fn(df)
+        df2 = acc_fn(df)
+        return df1.merge(df2, on=group_by)
+
+    return fn
+
+
 def group_by_task():
     return BASE_GROUP_BY + ["dataset", "src_domains", "target_domains"]
 
@@ -115,13 +127,9 @@ def group_by_task_adapter():
     return group_by_task() + ["adapter"]
 
 
-def get_corr_per_task():
-    return get_corr(group_by_task())
+def get_all_per_task():
+    return get_all(group_by_task())
 
 
-def get_corr_per_task_per_adapter():
-    return get_corr(group_by_task_adapter())
-
-
-def get_predicted_best_acc_per_task():
-    return get_predicted_best_acc(group_by_task())
+def get_all_per_task_per_adapter():
+    return get_all(group_by_task_adapter())
