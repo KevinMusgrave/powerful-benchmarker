@@ -22,8 +22,11 @@ def get_acc_rows(df, split, average):
     return df[(df["validator_args"] == args) & (df["validator"] == "Accuracy")]
 
 
-def drop_validator_cols(df):
-    return df.drop(columns=["validator", "validator_args"])
+def drop_validator_cols(df, drop_validator_args=True):
+    cols = ["validator"]
+    if drop_validator_args:
+        cols.append("validator_args")
+    return df.drop(columns=cols)
 
 
 def get_acc_df(df, split, average):

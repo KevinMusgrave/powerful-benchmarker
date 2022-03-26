@@ -77,42 +77,46 @@ def per_adapter_per_validator_args_per_task(curr_plots_folder, curr_df, filename
     )
 
 
-def plot_val_vs_acc(df, plots_folder):
+def plot_val_vs_acc(df, plots_folder, per_adapter):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
 
-    plot_loop(
-        df,
-        plots_folder,
-        per_validator_args_per_task,
-        filter_by=[
-            "dataset",
-            "src_domains",
-            "target_domains",
-            "validator",
-            "validator_args",
-        ],
-        sub_folder_components=["dataset", "src_domains", "target_domains"],
-        filename_components=["validator", "validator_args"],
-    )
+    if not per_adapter:
+        plot_loop(
+            df,
+            plots_folder,
+            per_validator_args_per_task,
+            filter_by=[
+                "dataset",
+                "src_domains",
+                "target_domains",
+                "validator",
+                "validator_args",
+            ],
+            sub_folder_components=["dataset", "src_domains", "target_domains"],
+            filename_components=["validator", "validator_args"],
+            per_adapter=per_adapter,
+        )
 
-    plot_loop(
-        df,
-        plots_folder,
-        per_adapter_per_validator_args_per_task,
-        filter_by=[
-            "adapter",
-            "dataset",
-            "src_domains",
-            "target_domains",
-            "validator",
-            "validator_args",
-        ],
-        sub_folder_components=[
-            "dataset",
-            "src_domains",
-            "target_domains",
-            "validator",
-            "adapter",
-        ],
-        filename_components=["validator_args"],
-    )
+    else:
+        plot_loop(
+            df,
+            plots_folder,
+            per_adapter_per_validator_args_per_task,
+            filter_by=[
+                "adapter",
+                "dataset",
+                "src_domains",
+                "target_domains",
+                "validator",
+                "validator_args",
+            ],
+            sub_folder_components=[
+                "dataset",
+                "src_domains",
+                "target_domains",
+                "validator",
+                "adapter",
+            ],
+            filename_components=["validator_args"],
+            per_adapter=per_adapter,
+        )
