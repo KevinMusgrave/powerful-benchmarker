@@ -22,7 +22,7 @@ from validator_tests.utils.df_utils import (
     exp_specific_columns,
     get_all_acc,
 )
-from validator_tests.utils.plot_heat_map import plot_heat_map
+from validator_tests.utils.plot_heatmap import plot_heatmap
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 from validator_tests.utils.plot_vs_threshold import (
     plot_corr_vs_X,
@@ -104,7 +104,7 @@ def main(args):
     )
     plot_corr_vs_X("src", True)(per_src, args.plots_folder)
     plot_corr_vs_X("target", True)(per_target, args.plots_folder)
-    plot_heat_map(per_src, args.plots_folder)
+    plot_heatmap(per_src, args.plots_folder)
 
 
 if __name__ == "__main__":
