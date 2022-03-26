@@ -29,6 +29,7 @@ from validator_tests.utils.plot_vs_threshold import (
     plot_predicted_best_acc_vs_X,
 )
 from validator_tests.utils.threshold_utils import (
+    convert_predicted_best_acc_to_rel,
     get_all_per_task,
     get_all_per_task_per_adapter,
     get_per_threshold,
@@ -79,6 +80,8 @@ def get_per_x_threshold(df, exp_folder, read_existing, per_adapter=False):
     else:
         fn = get_all_per_task_per_adapter() if per_adapter else get_all_per_task()
         per_src, per_target = get_per_threshold(df, fn)
+        per_src = convert_predicted_best_acc_to_rel(df, per_src, per_adapter)
+        per_target = convert_predicted_best_acc_to_rel(df, per_target, per_adapter)
         per_src.to_pickle(src_filename)
         per_target.to_pickle(target_filename)
     return per_src, per_target

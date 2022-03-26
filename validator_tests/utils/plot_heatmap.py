@@ -82,4 +82,6 @@ def plot_heatmap(df, plots_folder):
         "validator",
         "src_threshold",
         "predicted_best_acc",
+        vmin=0,
+        vmax=1,
     )

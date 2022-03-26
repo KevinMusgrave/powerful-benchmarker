@@ -137,3 +137,23 @@ def get_all_per_task():
 
 def get_all_per_task_per_adapter():
     return get_all(group_by_task_adapter())
+
+
+def get_best_acc_by_group(df, group_by):
+    return df.groupby(group_by)[TARGET_ACCURACY].max()
+
+
+def convert_predicted_best_acc_to_rel(df, per_x, per_adapter):
+    group_by = group_by_task_adapter() if per_adapter else group_by_task()
+    best_acc = get_best_acc_by_group(df, group_by).reset_index(name="best_acc")
+    num_unique = len(best_acc["best_acc"].unique())
+
+    per_x = per_x.merge(best_acc, on=group_by)
+    per_x["predicted_best_acc"] = per_x["predicted_best_acc"] / per_x["best_acc"]
+    return per_x
+
+    # ADD THIS BACK IN ONCE JOBS ARE DONE
+    # if per_adapter:
+    #     assert num_unique == len(best_acc["adapter"].unique())
+    # else:
+    #     assert num_unique == 1
