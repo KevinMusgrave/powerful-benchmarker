@@ -104,7 +104,7 @@ def main(args):
     )
     plot_corr_vs_X("src", True)(per_src, args.plots_folder)
     plot_corr_vs_X("target", True)(per_target, args.plots_folder)
-    plot_heat_map(per_src)
+    plot_heat_map(per_src, args.plots_folder)
 
 
 if __name__ == "__main__":
