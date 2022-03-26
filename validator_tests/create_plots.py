@@ -10,7 +10,9 @@ from validator_tests.utils import derive
 from validator_tests.utils.constants import (
     ALL_DFS_FILENAME,
     PER_SRC_FILENAME,
+    PER_SRC_PER_ADAPTER_FILENAME,
     PER_TARGET_FILENAME,
+    PER_TARGET_PER_ADAPTER_FILENAME,
     PROCESSED_DF_FILENAME,
 )
 from validator_tests.utils.df_utils import (
@@ -62,9 +64,15 @@ def get_processed_df(exp_folder, read_existing):
     return df
 
 
-def get_per_src_per_target(df, exp_folder, read_existing):
-    src_filename = os.path.join(exp_folder, PER_SRC_FILENAME)
-    target_filename = os.path.join(exp_folder, PER_TARGET_FILENAME)
+def get_per_x_threshold(df, exp_folder, read_existing, per_adapter=False):
+    if per_adapter:
+        src_basename = PER_SRC_PER_ADAPTER_FILENAME
+        target_basename = PER_TARGET_PER_ADAPTER_FILENAME
+    else:
+        src_basename = PER_SRC_FILENAME
+        target_basename = PER_TARGET_FILENAME
+    src_filename = os.path.join(exp_folder, src_basename)
+    target_filename = os.path.join(exp_folder, target_basename)
     if (
         read_existing
         and os.path.isfile(src_filename)
@@ -73,7 +81,8 @@ def get_per_src_per_target(df, exp_folder, read_existing):
         per_src = pd.read_pickle(src_filename)
         per_target = pd.read_pickle(target_filename)
     else:
-        per_src, per_target = get_per_threshold(df, get_all_per_task())
+        fn = get_all_per_task_per_adapter() if per_adapter else get_all_per_task()
+        per_src, per_target = get_per_threshold(df, fn)
         per_src.to_pickle(src_filename)
         per_target.to_pickle(target_filename)
     return per_src, per_target
@@ -84,16 +93,18 @@ def main(args):
     df = get_processed_df(exp_folder, args.read_existing)
     plot_val_vs_acc(df, args.plots_folder)
 
-    per_src, per_target = get_per_src_per_target(df, exp_folder, args.read_existing)
-    plot_heat_map(per_src)
+    per_src, per_target = get_per_x_threshold(df, exp_folder, args.read_existing)
     plot_corr_vs_X("src", False)(per_src, args.plots_folder)
     plot_corr_vs_X("target", False)(per_target, args.plots_folder)
     plot_predicted_best_acc_vs_X("src", False)(per_src, args.plots_folder)
     plot_predicted_best_acc_vs_X("target", False)(per_target, args.plots_folder)
 
-    per_src, per_target = get_per_threshold(df, get_all_per_task_per_adapter())
+    per_src, per_target = get_per_x_threshold(
+        df, exp_folder, args.read_existing, per_adapter=True
+    )
     plot_corr_vs_X("src", True)(per_src, args.plots_folder)
     plot_corr_vs_X("target", True)(per_target, args.plots_folder)
+    plot_heat_map(per_src)
 
 
 if __name__ == "__main__":

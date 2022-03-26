@@ -74,8 +74,12 @@ def get_per_threshold(df, fn):
                 )
                 all_per_src.append(per_src)
                 all_per_target.append(per_target)
-    all_per_src = pd.concat(all_per_src, axis=0, ignore_index=True)
-    all_per_target = pd.concat(all_per_target, axis=0, ignore_index=True)
+    all_per_src = pd.concat(all_per_src, axis=0, ignore_index=True).drop(
+        columns=["index"]
+    )
+    all_per_target = pd.concat(all_per_target, axis=0, ignore_index=True).drop(
+        columns=["index"]
+    )
     return all_per_src, all_per_target
 
 
