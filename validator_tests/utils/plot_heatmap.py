@@ -32,16 +32,26 @@ def process_df(df):
 def plot_heatmap_per_adapter(df, plots_folder):
     df = process_df(df)
     print("plot_heatmap_per_adapter")
-    for x in tqdm.tqdm([-0.01, 0.5, 0.9, 0.98, 0.99]):
-        filename = f"heatmap_{x:.2f}.png"
+    for x in tqdm.tqdm([-0.01, 0.5, 0.9, 0.98, 0.99, 1]):
+        curr_df = df[df["src_threshold"] == x]
         plot_fn(
-            df[df["src_threshold"] == x],
+            curr_df,
             plots_folder,
-            filename,
+            f"corr_heatmap_{x:.2f}.png",
             "validator",
             "adapter",
             "correlation",
             vmin=-1,
+            vmax=1,
+        )
+        plot_fn(
+            curr_df,
+            plots_folder,
+            f"predicted_acc_heatmap_{x:.2f}.png",
+            "validator",
+            "adapter",
+            "predicted_best_acc",
+            vmin=0,
             vmax=1,
         )
 
@@ -53,7 +63,7 @@ def plot_heatmap_per_adapter(df, plots_folder):
     plot_fn(
         df,
         plots_folder,
-        "heatmap_avg_correlation.png",
+        "avg_corr_heatmap.png",
         "validator",
         "adapter",
         "correlation",
@@ -67,7 +77,7 @@ def plot_heatmap(df, plots_folder):
     plot_fn(
         df,
         plots_folder,
-        "heatmap_correlation_global.png",
+        "corr_global_heatmap.png",
         "validator",
         "src_threshold",
         "correlation",
@@ -78,7 +88,7 @@ def plot_heatmap(df, plots_folder):
     plot_fn(
         df,
         plots_folder,
-        "heatmap_predicted_best_acc_global.png",
+        "predicted_acc_global_heatmap.png",
         "validator",
         "src_threshold",
         "predicted_best_acc",
