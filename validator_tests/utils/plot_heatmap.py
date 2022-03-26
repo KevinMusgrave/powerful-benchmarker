@@ -7,7 +7,7 @@ from pytorch_adapt.utils import common_functions as c_f
 from .df_utils import unify_validator_columns
 
 
-def plot_fn(df, plots_folder, filename, index, columns, values):
+def plot_fn(df, plots_folder, filename, index, columns, values, **kwargs):
     sns.set(rc={"figure.figsize": (20, 15)})
     plots_folder = os.path.join(plots_folder, "heatmaps")
     c_f.makedir_if_not_there(plots_folder)
@@ -15,7 +15,7 @@ def plot_fn(df, plots_folder, filename, index, columns, values):
     df = df[[index, columns, values]]
     df = df.pivot(index, columns, values)
 
-    plot = sns.heatmap(data=df, mask=df.isnull(), cmap="viridis", vmin=-1, vmax=1)
+    plot = sns.heatmap(data=df, mask=df.isnull(), cmap="viridis", **kwargs)
     fig = plot.get_figure()
     fig.savefig(
         os.path.join(plots_folder, filename),
@@ -41,6 +41,8 @@ def plot_heatmap_per_adapter(df, plots_folder):
             "validator",
             "adapter",
             "correlation",
+            vmin=-1,
+            vmax=1,
         )
 
     df = (
@@ -55,6 +57,8 @@ def plot_heatmap_per_adapter(df, plots_folder):
         "validator",
         "adapter",
         "correlation",
+        vmin=-1,
+        vmax=1,
     )
 
 
@@ -63,8 +67,19 @@ def plot_heatmap(df, plots_folder):
     plot_fn(
         df,
         plots_folder,
-        "heatmap_global.png",
+        "heatmap_correlation_global.png",
         "validator",
         "src_threshold",
         "correlation",
+        vmin=-1,
+        vmax=1,
+    )
+
+    plot_fn(
+        df,
+        plots_folder,
+        "heatmap_predicted_best_acc_global.png",
+        "validator",
+        "src_threshold",
+        "predicted_best_acc",
     )
