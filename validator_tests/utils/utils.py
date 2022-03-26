@@ -88,6 +88,8 @@ def validator_args_underscore_delimited(validator_args_str):
 
 def validator_str(validator_name, validator_args_str):
     v_str = validator_args_underscore_delimited(validator_args_str)
+    if v_str == "":
+        return validator_name
     return f"{validator_name}_{v_str}"
 
 
