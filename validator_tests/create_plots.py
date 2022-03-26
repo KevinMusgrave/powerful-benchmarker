@@ -11,6 +11,7 @@ from validator_tests.utils.constants import (
     ALL_DFS_FILENAME,
     PER_SRC_FILENAME,
     PER_TARGET_FILENAME,
+    PROCESSED_DF_FILENAME,
 )
 from validator_tests.utils.df_utils import (
     all_acc_score_column_names,
@@ -19,6 +20,7 @@ from validator_tests.utils.df_utils import (
     exp_specific_columns,
     get_all_acc,
 )
+from validator_tests.utils.plot_heat_map import plot_heat_map
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 from validator_tests.utils.plot_vs_threshold import (
     plot_corr_vs_X,
@@ -47,6 +49,19 @@ def add_derived_scores(df):
     return derive.add_IM(df)
 
 
+def get_processed_df(exp_folder, read_existing):
+    filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
+    if read_existing and os.path.isfile(filename):
+        df = pd.read_pickle(filename)
+    else:
+        df = read_all_dfs(exp_folder)
+        convert_list_to_tuple(df)
+        df = add_derived_scores(df)
+        df = process_acc_validator(df)
+        df.to_pickle(filename)
+    return df
+
+
 def get_per_src_per_target(df, exp_folder, read_existing):
     src_filename = os.path.join(exp_folder, PER_SRC_FILENAME)
     target_filename = os.path.join(exp_folder, PER_TARGET_FILENAME)
@@ -59,20 +74,18 @@ def get_per_src_per_target(df, exp_folder, read_existing):
         per_target = pd.read_pickle(target_filename)
     else:
         per_src, per_target = get_per_threshold(df, get_all_per_task())
-        per_src.to_pickle(os.path.join(exp_folder, PER_SRC_FILENAME))
-        per_target.to_pickle(os.path.join(exp_folder, PER_TARGET_FILENAME))
+        per_src.to_pickle(src_filename)
+        per_target.to_pickle(target_filename)
     return per_src, per_target
 
 
 def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
-    df = read_all_dfs(exp_folder)
-    convert_list_to_tuple(df)
-    df = add_derived_scores(df)
-    df = process_acc_validator(df)
+    df = get_processed_df(exp_folder, args.read_existing)
     plot_val_vs_acc(df, args.plots_folder)
 
     per_src, per_target = get_per_src_per_target(df, exp_folder, args.read_existing)
+    plot_heat_map(per_src)
     plot_corr_vs_X("src", False)(per_src, args.plots_folder)
     plot_corr_vs_X("target", False)(per_target, args.plots_folder)
     plot_predicted_best_acc_vs_X("src", False)(per_src, args.plots_folder)
