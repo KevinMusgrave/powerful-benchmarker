@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 import pandas as pd
 import tqdm
@@ -155,8 +153,6 @@ def convert_predicted_best_acc_to_rel(df, per_x, per_adapter):
     return per_x
 
     if per_adapter and num_unique != len(best_acc["adapter"].unique()):
-        logging.getLogger(__name__).warning(
-            "num_unique != len(best_acc['adapter'].unique())"
-        )
+        print("WARNING: num_unique != len(best_acc['adapter'].unique())")
     elif (not per_adapter) and num_unique != 1:
-        logging.getLogger(__name__).warning("num_unique != 1")
+        print("WARNING: num_unique != 1")
