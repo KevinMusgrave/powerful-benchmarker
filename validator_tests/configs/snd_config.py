@@ -17,3 +17,6 @@ class SND(BaseConfig):
     def score(self, x, exp_config, device):
         features = get_split_and_layer(x, self.split, self.layer, device)
         return self.validator(**{self.split: {self.layer: features}})
+
+    def expected_keys(self):
+        return {"T", "layer", "split"}

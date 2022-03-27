@@ -5,6 +5,6 @@ from .dev_config import DEV
 from .diversity_config import Diversity
 from .entropy_config import Entropy
 from .ist_config import IST
-from .knn_config import KNN
+from .knn_config import KNN, TargetKNN
 from .mmd_config import MMD, MMDPerClass
 from .snd_config import SND

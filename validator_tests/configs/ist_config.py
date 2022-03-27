@@ -31,3 +31,6 @@ class IST(BaseConfig):
             self.target_split_name,
             self.layer,
         )
+
+    def expected_keys(self):
+        return {"with_ent", "with_div", "layer", "split"}

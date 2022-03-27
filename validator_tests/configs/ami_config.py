@@ -47,3 +47,6 @@ class AMI(BaseConfig):
             self.target_split_name,
             self.layer,
         )
+
+    def expected_keys(self):
+        return {"normalize", "layer", "split"}

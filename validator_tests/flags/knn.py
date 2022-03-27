@@ -15,3 +15,22 @@ def KNN():
                         }
                     )
     return flags
+
+
+def TargetKNN():
+    flags = []
+    for k in [1, 10]:
+        for p in [2]:
+            for normalize in [0, 1]:
+                for T_in_ref in [0, 1]:
+                    flags.append(
+                        {
+                            "validator": "TargetKNN",
+                            "split": "train",
+                            "k": str(k),
+                            "p": str(p),
+                            "normalize": str(normalize),
+                            "T_in_ref": str(T_in_ref),
+                        }
+                    )
+    return flags

@@ -11,6 +11,7 @@ components = [
     {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "DLogitsAccuracy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+    {"flags": "TargetKNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
 ]
 
 all_exps = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]

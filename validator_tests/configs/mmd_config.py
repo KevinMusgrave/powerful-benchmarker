@@ -49,6 +49,9 @@ class MMD(BaseConfig):
             self.layer,
         )
 
+    def expected_keys(self):
+        return {"exponent", "normalize", "layer", "split"}
+
 
 class MMDPerClass(MMD):
     def __init__(self, config):

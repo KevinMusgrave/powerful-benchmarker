@@ -35,3 +35,6 @@ class DLogitsAccuracy(BaseConfig):
             num_classes=2,
             multiclass=True,
         ).item()
+
+    def expected_keys(self):
+        return {"split"}

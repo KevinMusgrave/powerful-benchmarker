@@ -27,3 +27,6 @@ class Accuracy(BaseConfig):
         labels = get_from_hdf5(x, device, f"inference/{self.split}/labels")
         preds = F.softmax(logits, dim=1)
         return self.validator(**{self.split: {"preds": preds, "labels": labels}})
+
+    def expected_keys(self):
+        return {"average", "split"}

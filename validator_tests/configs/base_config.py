@@ -56,4 +56,8 @@ def pass_src_and_target_to_validator(
 class BaseConfig:
     def __init__(self, config):
         self.validator_args = copy.deepcopy(config)
+        if self.validator_args.keys() != self.expected_keys():
+            raise ValueError(
+                f"expected {self.expected_keys()} but got {self.validator_args.keys()}"
+            )
         self.split = self.validator_args.get("split", None)

@@ -28,3 +28,6 @@ class DEV(BaseConfig):
             },
             target_train={self.layer: target_train},
         )
+
+    def expected_keys(self):
+        return {"layer"}
