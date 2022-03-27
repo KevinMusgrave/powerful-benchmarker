@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 import tqdm
@@ -152,8 +154,9 @@ def convert_predicted_best_acc_to_rel(df, per_x, per_adapter):
     per_x["predicted_best_acc"] = per_x["predicted_best_acc"] / per_x["best_acc"]
     return per_x
 
-    # ADD THIS BACK IN ONCE JOBS ARE DONE
-    # if per_adapter:
-    #     assert num_unique == len(best_acc["adapter"].unique())
-    # else:
-    #     assert num_unique == 1
+    if per_adapter and num_unique != len(best_acc["adapter"].unique()):
+        logging.getLogger(__name__).warning(
+            "num_unique != len(best_acc['adapter'].unique())"
+        )
+    elif (not per_adapter) and num_unique != 1:
+        logging.getLogger(__name__).warning("num_unique != 1")
