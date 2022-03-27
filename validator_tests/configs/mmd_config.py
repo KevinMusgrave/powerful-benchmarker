@@ -5,7 +5,7 @@ from pytorch_metric_learning.distances import LpDistance
 from .base_config import (
     BaseConfig,
     get_full_split_name,
-    get_split_and_layer,
+    use_labels_and_logits,
     use_src_and_target,
 )
 
@@ -59,13 +59,11 @@ class MMDPerClass(MMD):
         self.validator = PerClassValidator(self.validator)
 
     def score(self, x, exp_config, device):
-        src = {
-            k: get_split_and_layer(x, self.src_split_name, k, device)
-            for k in [self.layer, "labels"]
-        }
-        target = {
-            k: get_split_and_layer(x, self.src_split_name, k, device)
-            for k in [self.layer, "logits"]
-        }
-        kwargs = {self.src_split_name: src, self.target_split_name: target}
-        return self.validator(**kwargs)
+        return use_labels_and_logits(
+            x,
+            device,
+            self.validator,
+            self.src_split_name,
+            self.target_split_name,
+            self.layer,
+        )

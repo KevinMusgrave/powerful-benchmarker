@@ -53,6 +53,19 @@ def pass_src_and_target_to_validator(
     )
 
 
+def use_labels_and_logits(
+    x, device, validator, src_split_name, target_split_name, layer
+):
+    src = {
+        k: get_split_and_layer(x, src_split_name, k, device) for k in [layer, "labels"]
+    }
+    target = {
+        k: get_split_and_layer(x, src_split_name, k, device) for k in [layer, "logits"]
+    }
+    kwargs = {src_split_name: src, target_split_name: target}
+    return validator(**kwargs)
+
+
 class BaseConfig:
     def __init__(self, config):
         self.validator_args = copy.deepcopy(config)

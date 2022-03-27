@@ -2,7 +2,12 @@ from pytorch_adapt.validators import KNNValidator, TargetKNNValidator
 from pytorch_metric_learning.distances import LpDistance
 from pytorch_metric_learning.utils.inference import CustomKNN
 
-from .base_config import BaseConfig, get_full_split_name, use_src_and_target
+from .base_config import (
+    BaseConfig,
+    get_full_split_name,
+    use_labels_and_logits,
+    use_src_and_target,
+)
 
 
 class KNN(BaseConfig):
@@ -55,6 +60,16 @@ class KNN(BaseConfig):
 
 
 class TargetKNN(KNN):
+    def score(self, x, exp_config, device):
+        return use_labels_and_logits(
+            x,
+            device,
+            self.validator,
+            self.src_split_name,
+            self.target_split_name,
+            self.layer,
+        )
+
     def create_validator(self, knn_func):
         self.validator_args["T_in_ref"] = bool(int(self.validator_args["T_in_ref"]))
         return TargetKNNValidator(
