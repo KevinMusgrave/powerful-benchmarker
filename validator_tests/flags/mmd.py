@@ -16,4 +16,7 @@ def MMD():
 
 
 def MMDPerClass():
-    return MMD()
+    flags = MMD()
+    for f in flags:
+        f["validator"] = "MMDPerClass"
+    return flags
