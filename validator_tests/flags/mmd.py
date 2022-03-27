@@ -13,3 +13,7 @@ def MMD():
                     }
                 )
     return flags
+
+
+def MMDPerClass():
+    return MMD()

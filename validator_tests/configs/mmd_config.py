@@ -1,8 +1,13 @@
 from pytorch_adapt.layers.utils import get_kernel_scales
-from pytorch_adapt.validators import MMDValidator
+from pytorch_adapt.validators import MMDValidator, PerClassValidator
 from pytorch_metric_learning.distances import LpDistance
 
-from .base_config import BaseConfig, get_full_split_name, use_src_and_target
+from .base_config import (
+    BaseConfig,
+    get_full_split_name,
+    get_split_and_layer,
+    use_src_and_target,
+)
 
 
 class MMD(BaseConfig):
@@ -43,3 +48,21 @@ class MMD(BaseConfig):
             self.target_split_name,
             self.layer,
         )
+
+
+class MMDPerClass(MMD):
+    def __init__(self, config):
+        super().__init__(config)
+        self.validator = PerClassValidator(self.validator)
+
+    def score(self, x, exp_config, device):
+        src = {
+            k: get_split_and_layer(x, self.src_split_name, k, device)
+            for k in [self.layer, "labels"]
+        }
+        target = {
+            k: get_split_and_layer(x, self.src_split_name, k, device)
+            for k in [self.layer, "logits"]
+        }
+        kwargs = {self.src_split_name: src, self.target_split_name: target}
+        return self.validator(**kwargs)

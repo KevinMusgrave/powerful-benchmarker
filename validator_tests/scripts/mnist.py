@@ -9,6 +9,7 @@ components = [
     {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "AMI", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+    {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "DLogitsAccuracy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
 ]
 
