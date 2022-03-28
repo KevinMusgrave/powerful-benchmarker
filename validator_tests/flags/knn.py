@@ -19,7 +19,7 @@ def KNN():
 
 def TargetKNN():
     flags = []
-    for k in [1, 10]:
+    for k in [1, 10, 100]:
         for p in [2]:
             for normalize in [0, 1]:
                 for T_in_ref in [0, 1]:
