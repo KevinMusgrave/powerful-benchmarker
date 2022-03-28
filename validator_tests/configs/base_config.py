@@ -60,7 +60,8 @@ def use_labels_and_logits(
         k: get_split_and_layer(x, src_split_name, k, device) for k in [layer, "labels"]
     }
     target = {
-        k: get_split_and_layer(x, src_split_name, k, device) for k in [layer, "logits"]
+        k: get_split_and_layer(x, target_split_name, k, device)
+        for k in [layer, "logits"]
     }
     kwargs = {src_split_name: src, target_split_name: target}
     return validator(**kwargs)
