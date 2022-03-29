@@ -7,10 +7,9 @@ class DEV(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
         self.layer = self.validator_args["layer"]
+        self.min_var = float(self.validator_args["min_var"])
         self.validator = DeepEmbeddedValidator(
-            temp_folder=None,
-            batch_size=256,
-            layer=self.layer,
+            temp_folder=None, batch_size=256, layer=self.layer, min_var=self.min_var
         )
 
     def score(self, x, exp_config, device):
@@ -30,4 +29,4 @@ class DEV(BaseConfig):
         )
 
     def expected_keys(self):
-        return {"layer"}
+        return {"layer", "min_var"}
