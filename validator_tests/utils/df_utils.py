@@ -1,3 +1,5 @@
+import numpy as np
+
 from .utils import dict_to_str, validator_str
 
 SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
@@ -92,3 +94,12 @@ def maybe_per_adapter(df, per_adapter):
     else:
         adapters = [None]
     return adapters
+
+
+def print_validators_with_nan(df):
+    for fn in [np.isnan, np.isinf]:
+        curr_df = df[fn(df["score"])][["validator", "validator_args"]].drop_duplicates()
+        if len(curr_df) > 0:
+            type_str = "NaN" if fn is np.isnan else "inf"
+            print(f"WARNING: the following validator/validator_args have {type_str}")
+            print(curr_df)

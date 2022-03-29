@@ -21,6 +21,7 @@ from validator_tests.utils.df_utils import (
     convert_list_to_tuple,
     exp_specific_columns,
     get_all_acc,
+    print_validators_with_nan,
 )
 from validator_tests.utils.plot_heatmap import plot_heatmap, plot_heatmap_per_adapter
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
@@ -58,6 +59,7 @@ def get_processed_df(exp_folder, read_existing):
         df = derive.add_derived_scores(df)
         df = process_acc_validator(df)
         df.to_pickle(filename)
+    print_validators_with_nan(df)
     return df
 
 
