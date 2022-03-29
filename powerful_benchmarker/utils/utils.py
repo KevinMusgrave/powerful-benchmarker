@@ -55,3 +55,14 @@ def kill_all_jobs(exp_folder, jobids_file):
     subprocess.run(command.split(" "))
     print(f"deleting {jobids_file}")
     os.remove(all_jobids_filename)
+
+
+def jobs_that_are_still_running(exp_folder, jobids_file):
+    x = subprocess.run("squeue --nohead --format %F".split(" "), capture_output=True)
+    jobid_list = x.stdout.decode("utf-8").split("\n")
+
+    all_jobids_filename = os.path.join(exp_folder, jobids_file)
+    with open(all_jobids_filename, "r") as f:
+        y = [line.rstrip("\n") for line in f]
+
+    return set(y).intersection(jobid_list)

@@ -11,10 +11,19 @@ import pandas as pd
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import (
     BEST_TRIAL_FILENAME,
+    JOBIDS_FILENAME,
     TRIALS_FILENAME,
     add_default_args,
 )
+from powerful_benchmarker.utils.utils import jobs_that_are_still_running
+from validator_tests.utils.constants import JOBIDS_FILENAME as V_JOBSID_FILENAME
 from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER
+
+
+def num_jobs_running(exp_folder):
+    x = jobs_that_are_still_running(exp_folder, JOBIDS_FILENAME)
+    y = jobs_that_are_still_running(exp_folder, V_JOBSID_FILENAME)
+    return f"{len(x)} algorithm jobs and {len(y)} validator jobs still running\n"
 
 
 def update_validator_progress_dicts(exp_name, contents, val, val_details):
@@ -107,7 +116,8 @@ def main(cfg):
                 )
             all_folders[os.path.basename(p)] = curr_dict
 
-    out_string = json.dumps(all_folders, indent=4, sort_keys=True)
+    out_string = num_jobs_running(cfg.exp_folder)
+    out_string += json.dumps(all_folders, indent=4, sort_keys=True)
     if cfg.save_to_file:
         with open(cfg.save_to_file, "w") as f:
             f.write(out_string)
