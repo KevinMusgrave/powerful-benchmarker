@@ -25,9 +25,10 @@ def filter_df(df, filter_by, kwargs, finished_list):
     if finished in finished_list:
         return []
     finished_list.append(finished)
+    mask = True
     for k in filter_by:
-        df = df[df[k] == kwargs[k]]
-    return df
+        mask &= df[k] == kwargs[k]
+    return df[mask]
 
 
 def plot_loop(
