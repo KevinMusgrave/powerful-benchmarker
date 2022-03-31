@@ -96,9 +96,12 @@ def maybe_per_adapter(df, per_adapter):
     return adapters
 
 
-def print_validators_with_nan(df):
+def print_validators_with_nan(df, return_df=False):
     for fn in [np.isnan, np.isinf]:
-        curr_df = df[fn(df["score"])][["validator", "validator_args"]].drop_duplicates()
+        curr_df = df[fn(df["score"])]
+        if return_df:
+            return curr_df
+        curr_df = curr_df[["validator", "validator_args"]].drop_duplicates()
         if len(curr_df) > 0:
             type_str = "NaN" if fn is np.isnan else "inf"
             print(f"WARNING: the following validator/validator_args have {type_str}")
