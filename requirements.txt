@@ -4,7 +4,7 @@ h5py==3.6.0
 isort
 nbqa
 optuna
-pytorch-adapt[ignite,record-keeper]==0.0.62.dev6
+pytorch-adapt[ignite,record-keeper]==0.0.62.dev7
 PyYAML
 seaborn
 submitit

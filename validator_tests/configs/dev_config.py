@@ -7,9 +7,13 @@ class DEV(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
         self.layer = self.validator_args["layer"]
-        self.min_var = float(self.validator_args["min_var"])
+        if self.validator_args["normalization"] == "None":
+            self.validator_args["normalization"] = None
         self.validator = DeepEmbeddedValidator(
-            temp_folder=None, batch_size=256, layer=self.layer, min_var=self.min_var
+            temp_folder=None,
+            batch_size=256,
+            layer=self.layer,
+            normalization=self.validator_args["normalization"],
         )
 
     def score(self, x, exp_config, device):

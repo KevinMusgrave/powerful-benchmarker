@@ -19,15 +19,6 @@ class MMD(BaseConfig):
         self.src_split_name = get_full_split_name("src", self.split)
         self.target_split_name = get_full_split_name("target", self.split)
 
-        exponent = self.validator_args["exponent"]
-        num_kernels = (exponent * 2) + 1
-        kernel_scales = get_kernel_scales(
-            low=-exponent, high=exponent, num_kernels=num_kernels
-        )
-
-        normalize = self.validator_args["normalize"]
-        dist_func = LpDistance(normalize_embeddings=normalize, p=2, power=2)
-
         self.validator = MMDValidator(
             key_map={
                 self.src_split_name: "src_train",
@@ -36,7 +27,7 @@ class MMD(BaseConfig):
             layer=self.validator_args["layer"],
             num_samples=1024,
             num_trials=1000,
-            mmd_kwargs={"kernel_scales": kernel_scales, "dist_func": dist_func},
+            mmd_kwargs=self.get_mmd_kwargs(),
         )
 
     def score(self, x, exp_config, device):
@@ -51,6 +42,17 @@ class MMD(BaseConfig):
 
     def expected_keys(self):
         return {"exponent", "normalize", "layer", "split"}
+
+    def get_mmd_kwargs(self):
+        exponent = self.validator_args["exponent"]
+        num_kernels = (exponent * 2) + 1
+        kernel_scales = get_kernel_scales(
+            low=-exponent, high=exponent, num_kernels=num_kernels
+        )
+        dist_func = LpDistance(
+            normalize_embeddings=self.validator_args["normalize"], p=2, power=2
+        )
+        return {"kernel_scales": kernel_scales, "dist_func": dist_func}
 
 
 class MMDPerClass(MMD):
@@ -67,3 +69,17 @@ class MMDPerClass(MMD):
             self.target_split_name,
             self.layer,
         )
+
+
+class MMDFixedB(MMD):
+    def get_mmd_kwargs(self):
+        kwargs = super().get_mmd_kwargs()
+        kwargs["bandwidth"] = 1
+        return kwargs
+
+
+class MMDPerClassFixedB(MMDPerClass):
+    def get_mmd_kwargs(self):
+        kwargs = super().get_mmd_kwargs()
+        kwargs["bandwidth"] = 1
+        return kwargs

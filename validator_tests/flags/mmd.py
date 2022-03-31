@@ -20,3 +20,17 @@ def MMDPerClass():
     for f in flags:
         f["validator"] = "MMDPerClass"
     return flags
+
+
+def MMDFixedB():
+    flags = MMD()
+    for f in flags:
+        f["validator"] = "MMDFixedB"
+    return flags
+
+
+def MMDPerClassFixedB():
+    flags = MMD()
+    for f in flags:
+        f["validator"] = "MMDPerClassFixedB"
+    return flags
