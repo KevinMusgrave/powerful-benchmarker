@@ -33,4 +33,4 @@ class DEV(BaseConfig):
         )
 
     def expected_keys(self):
-        return {"layer", "min_var"}
+        return {"layer", "normalization"}
