@@ -1,7 +1,7 @@
 def MMD():
     flags = []
     for layer in ["features", "logits", "preds"]:
-        for exponent in [0, 8]:
+        for exponent in [0]:
             for normalize in [0, 1]:
                 flags.append(
                     {
