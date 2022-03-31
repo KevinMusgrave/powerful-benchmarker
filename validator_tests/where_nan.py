@@ -8,7 +8,6 @@ import pandas as pd
 import torch
 
 sys.path.insert(0, ".")
-sys.path.insert(0, "../pytorch-adapt/src")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests import configs
 from validator_tests.utils.constants import ALL_DFS_FILENAME
