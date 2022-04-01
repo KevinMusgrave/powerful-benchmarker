@@ -25,8 +25,7 @@ class MMD(BaseConfig):
                 self.target_split_name: "target_train",
             },
             layer=self.validator_args["layer"],
-            num_samples=1024,
-            num_trials=1000,
+            batch_size=512,
             mmd_kwargs=self.get_mmd_kwargs(),
         )
 
@@ -52,7 +51,11 @@ class MMD(BaseConfig):
         dist_func = LpDistance(
             normalize_embeddings=self.validator_args["normalize"], p=2, power=2
         )
-        return {"kernel_scales": kernel_scales, "dist_func": dist_func}
+        return {
+            "kernel_scales": kernel_scales,
+            "dist_func": dist_func,
+            "mmd_type": "quadratic",
+        }
 
 
 class MMDPerClass(MMD):
