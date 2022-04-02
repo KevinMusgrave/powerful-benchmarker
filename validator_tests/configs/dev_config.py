@@ -1,4 +1,5 @@
 from pytorch_adapt.validators import DeepEmbeddedValidator
+from pytorch_adapt.validators.deep_embedded_validator import dev_binary_fn
 
 from .base_config import BaseConfig, get_split_and_layer
 
@@ -34,3 +35,9 @@ class DEV(BaseConfig):
 
     def expected_keys(self):
         return {"layer", "normalization"}
+
+
+class DEVBinary(DEV):
+    def __init__(self, config):
+        super().__init__(config)
+        self.validator.error_fn = dev_binary_fn

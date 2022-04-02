@@ -6,3 +6,10 @@ def DEV():
                 {"validator": "DEV", "layer": layer, "normalization": normalization}
             )
     return flags
+
+
+def DEVBinary():
+    flags = DEV()
+    for f in flags:
+        f["validator"] = "DEVBinary"
+    return flags

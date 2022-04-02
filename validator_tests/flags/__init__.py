@@ -1,6 +1,6 @@
 from .accuracy import Accuracy
 from .ami import AMI
-from .dev import DEV
+from .dev import DEV, DEVBinary
 from .diversity import Diversity
 from .dlogits_accuracy import DLogitsAccuracy
 from .entropy import Entropy
