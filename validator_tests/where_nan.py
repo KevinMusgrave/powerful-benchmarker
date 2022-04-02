@@ -26,7 +26,7 @@ def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
     df = read_all_dfs(exp_folder)
     df = print_validators_with_nan(df, return_df=True)
-    validator_name = "MMDPerClass"
+    validator_name = "MMDPerClassFixedB"
     df = df[df["validator"] == validator_name]
     df = df.iloc[0]
 
@@ -58,3 +58,9 @@ if __name__ == "__main__":
 # DEV NaN is also caused by collapsed embeddings.
 # The softmaxed output of the discriminator end up being entirely for one class
 # so the weights calculation becomes 1/0
+
+# MMDPerClassFixedB NaNs are caused by either the source or target domain
+# having only 1 embedding, i.e. the shape of src_features or target_features is
+# (1, feature_size). Since self-distances are excluded, the denominator
+# used for normalization is 0. See denom calculation in
+# pytorch_adapt.layers.utils.get_mmd_quadratic_batched
