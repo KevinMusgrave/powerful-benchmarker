@@ -50,6 +50,7 @@ class KNN(BaseConfig):
             knn_func=knn_func,
             k=self.validator_args["k"],
             metric="mean_average_precision",
+            batch_size=256,
         )
 
     def set_layer(self):
@@ -81,6 +82,7 @@ class TargetKNN(KNN):
             knn_func=knn_func,
             k=self.validator_args["k"],
             metric="mean_average_precision",
+            batch_size=256,
             add_target_to_ref=self.validator_args["T_in_ref"],
         )
 

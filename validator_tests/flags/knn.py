@@ -1,7 +1,7 @@
 def KNN():
     flags = []
     for layer in ["features", "logits", "preds"]:
-        for k in [1, 10]:
+        for k in [1000, 5000]:
             for p in [2]:
                 for normalize in [0, 1]:
                     flags.append(
@@ -19,7 +19,7 @@ def KNN():
 
 def TargetKNN():
     flags = []
-    for k in [1, 10, 100, 1000]:
+    for k in [1000, 5000]:
         for p in [2]:
             for normalize in [0, 1]:
                 for T_in_ref in [0, 1]:
