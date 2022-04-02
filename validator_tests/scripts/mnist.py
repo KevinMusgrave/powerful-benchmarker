@@ -5,6 +5,7 @@ components = [
     {"flags": "Entropy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "Diversity", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "DEV", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+    {"flags": "DEVBinary", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "SND", "exp_per_slurm_job": "3", "trials_per_exp": "100"},
     {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "AMI", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
