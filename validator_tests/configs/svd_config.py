@@ -7,6 +7,7 @@ class BSP(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
         self.validator_args["k"] = int(self.validator_args["k"])
+        self.layer = self.validator_args["layer"]
         self.validator = BatchSpectralLoss(k=self.validator_args["k"])
 
     def score(self, x, exp_config, device):
@@ -20,6 +21,7 @@ class BSP(BaseConfig):
 class BNM(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
+        self.layer = self.validator_args["layer"]
         self.validator = BNMLoss()
 
     def score(self, x, exp_config, device):
