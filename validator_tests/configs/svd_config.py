@@ -12,7 +12,7 @@ class BSP(BaseConfig):
 
     def score(self, x, exp_config, device):
         features = get_split_and_layer(x, self.split, self.layer, device)
-        return -self.validator(features)
+        return -self.validator(features).item()
 
     def expected_keys(self):
         return {"k", "split", "layer"}
@@ -26,7 +26,7 @@ class BNM(BaseConfig):
 
     def score(self, x, exp_config, device):
         features = get_split_and_layer(x, self.split, self.layer, device)
-        return -self.validator(features)
+        return -self.validator(features).item()
 
     def expected_keys(self):
         return {"split", "layer"}
