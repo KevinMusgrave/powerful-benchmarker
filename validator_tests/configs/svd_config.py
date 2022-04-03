@@ -1,6 +1,6 @@
 from pytorch_adapt.layers import BatchSpectralLoss, BNMLoss
 
-from .base_config import BaseConfig, get_from_hdf5
+from .base_config import BaseConfig, get_split_and_layer
 
 
 class BSP(BaseConfig):
@@ -11,7 +11,7 @@ class BSP(BaseConfig):
         self.validator = BatchSpectralLoss(k=self.validator_args["k"])
 
     def score(self, x, exp_config, device):
-        features = get_from_hdf5(x, device, f"inference/{self.split}/{self.layer}")
+        features = get_split_and_layer(x, self.split, self.layer, device)
         return -self.validator(features)
 
     def expected_keys(self):
@@ -25,7 +25,7 @@ class BNM(BaseConfig):
         self.validator = BNMLoss()
 
     def score(self, x, exp_config, device):
-        features = get_from_hdf5(x, device, f"inference/{self.split}/{self.layer}")
+        features = get_split_and_layer(x, self.split, self.layer, device)
         return -self.validator(features)
 
     def expected_keys(self):
