@@ -29,7 +29,6 @@ class KNN(BaseConfig):
         )
 
         self.validator = self.create_validator(knn_func)
-        print("acc_fn", self.validator.acc_fn)
 
     def score(self, x, exp_config, device):
         return use_src_and_target(
@@ -43,7 +42,6 @@ class KNN(BaseConfig):
 
     def create_validator(self, knn_func):
         batch_size = None if self.validator_args["k"] <= 1000 else 256
-        print("knn batch_size", batch_size)
         return KNNValidator(
             key_map={
                 self.src_split_name: "src_train",
@@ -77,7 +75,6 @@ class TargetKNN(KNN):
     def create_validator(self, knn_func):
         self.validator_args["T_in_ref"] = bool(int(self.validator_args["T_in_ref"]))
         batch_size = None if self.validator_args["k"] <= 1000 else 256
-        print("knn batch_size", batch_size)
         return TargetKNNValidator(
             key_map={
                 self.src_split_name: "src_train",
