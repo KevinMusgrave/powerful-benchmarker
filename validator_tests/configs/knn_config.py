@@ -29,6 +29,7 @@ class KNN(BaseConfig):
         )
 
         self.validator = self.create_validator(knn_func)
+        print("acc_fn", self.validator.acc_fn)
 
     def score(self, x, exp_config, device):
         return use_src_and_target(
@@ -41,6 +42,8 @@ class KNN(BaseConfig):
         )
 
     def create_validator(self, knn_func):
+        batch_size = None if self.validator_args["k"] <= 1000 else 256
+        print("knn batch_size", batch_size)
         return KNNValidator(
             key_map={
                 self.src_split_name: "src_train",
@@ -50,7 +53,7 @@ class KNN(BaseConfig):
             knn_func=knn_func,
             k=self.validator_args["k"],
             metric="mean_average_precision",
-            batch_size=256,
+            batch_size=batch_size,
         )
 
     def set_layer(self):
@@ -73,6 +76,8 @@ class TargetKNN(KNN):
 
     def create_validator(self, knn_func):
         self.validator_args["T_in_ref"] = bool(int(self.validator_args["T_in_ref"]))
+        batch_size = None if self.validator_args["k"] <= 1000 else 256
+        print("knn batch_size", batch_size)
         return TargetKNNValidator(
             key_map={
                 self.src_split_name: "src_train",
@@ -82,7 +87,7 @@ class TargetKNN(KNN):
             knn_func=knn_func,
             k=self.validator_args["k"],
             metric="mean_average_precision",
-            batch_size=256,
+            batch_size=batch_size,
             add_target_to_ref=self.validator_args["T_in_ref"],
         )
 
@@ -91,3 +96,8 @@ class TargetKNN(KNN):
 
     def expected_keys(self):
         return {"k", "p", "normalize", "T_in_ref", "split"}
+
+
+class TargetKNNLogits(TargetKNN):
+    def set_layer(self):
+        self.layer = "logits"

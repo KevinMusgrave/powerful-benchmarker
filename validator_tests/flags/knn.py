@@ -34,3 +34,10 @@ def TargetKNN():
                         }
                     )
     return flags
+
+
+def TargetKNNLogits():
+    flags = TargetKNN()
+    for f in flags:
+        f["validator"] = "TargetKNNLogits"
+    return flags

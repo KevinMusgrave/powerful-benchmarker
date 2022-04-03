@@ -5,6 +5,7 @@ from .diversity import Diversity
 from .dlogits_accuracy import DLogitsAccuracy
 from .entropy import Entropy
 from .ist import IST
-from .knn import KNN, TargetKNN
+from .knn import KNN, TargetKNN, TargetKNNLogits
 from .mmd import MMD, MMDFixedB, MMDPerClass, MMDPerClassFixedB
 from .snd import SND
+from .svd import BNM, BSP
