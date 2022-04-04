@@ -13,9 +13,9 @@ from .base_config import (
 class KNN(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
-        self.validator_args["k"] = int(self.validator_args["k"])
         self.validator_args["p"] = float(self.validator_args["p"])
         self.validator_args["normalize"] = bool(int(self.validator_args["normalize"]))
+        self.set_k()
         self.set_layer()
         self.src_split_name = get_full_split_name("src", self.split)
         self.target_split_name = get_full_split_name("target", self.split)
@@ -53,6 +53,9 @@ class KNN(BaseConfig):
             metric="mean_average_precision",
             batch_size=batch_size,
         )
+
+    def set_k(self):
+        self.validator_args["k"] = int(self.validator_args["k"])
 
     def set_layer(self):
         self.layer = self.validator_args["layer"]

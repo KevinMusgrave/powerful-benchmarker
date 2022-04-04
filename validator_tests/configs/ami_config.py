@@ -1,52 +1,37 @@
 import torch.nn.functional as F
-from pytorch_adapt.validators import ClusterValidator
+from pytorch_adapt.validators import KNNValidator
 from sklearn.cluster import KMeans
 
-from .base_config import BaseConfig, get_full_split_name, use_src_and_target
+from .knn_config import KNN
 
 
-# pass in dummy to avoid initializing FaissKNN
-def knn_func():
-    pass
-
-
-def kmeans_func(normalize):
+def kmeans_func(normalize, p):
     def fn(x, n_clusters):
         if normalize:
-            x = F.normalize(x, dim=1, p=2)
+            x = F.normalize(x, dim=1, p=p)
         return KMeans(n_clusters=n_clusters).fit_predict(x.cpu().numpy())
 
     return fn
 
 
-class AMI(BaseConfig):
-    def __init__(self, config):
-        super().__init__(config)
-        self.validator_args["normalize"] = bool(int(self.validator_args["normalize"]))
-        self.layer = self.validator_args["layer"]
-        self.src_split_name = get_full_split_name("src", self.split)
-        self.target_split_name = get_full_split_name("target", self.split)
-
-        self.validator = ClusterValidator(
+class AMI(KNN):
+    def create_validator(self, knn_func):
+        return KNNValidator(
             key_map={
                 self.src_split_name: "src_train",
                 self.target_split_name: "target_train",
             },
-            layer=self.validator_args["layer"],
+            layer=self.layer,
             knn_func=knn_func,
-            kmeans_func=kmeans_func(self.validator_args["normalize"]),
+            kmeans_func=kmeans_func(
+                self.validator_args["normalize"], self.validator_args["p"]
+            ),
+            k=self.validator_args["k"],
             metric="AMI",
         )
 
-    def score(self, x, exp_config, device):
-        return use_src_and_target(
-            x,
-            device,
-            self.validator,
-            self.src_split_name,
-            self.target_split_name,
-            self.layer,
-        )
+    def set_k(self):
+        pass
 
     def expected_keys(self):
-        return {"normalize", "layer", "split"}
+        return {"p", "normalize", "layer", "split"}
