@@ -22,6 +22,7 @@ from validator_tests.utils.df_utils import (
     exp_specific_columns,
     get_all_acc,
     print_validators_with_nan,
+    remove_nan_scores,
 )
 from validator_tests.utils.plot_heatmap import plot_heatmap, plot_heatmap_per_adapter
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
@@ -60,6 +61,8 @@ def get_processed_df(exp_folder, read_existing):
         df = process_acc_validator(df)
         df.to_pickle(filename)
     print_validators_with_nan(df)
+    df = remove_nan_scores(df)
+    print_validators_with_nan(df, assert_none=True)
     return df
 
 

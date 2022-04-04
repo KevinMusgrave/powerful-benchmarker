@@ -96,7 +96,7 @@ def maybe_per_adapter(df, per_adapter):
     return adapters
 
 
-def print_validators_with_nan(df, return_df=False):
+def print_validators_with_nan(df, return_df=False, assert_none=False):
     for fn in [np.isnan, np.isinf]:
         curr_df = df[fn(df["score"])]
         if return_df:
@@ -106,3 +106,10 @@ def print_validators_with_nan(df, return_df=False):
             type_str = "NaN" if fn is np.isnan else "inf"
             print(f"WARNING: the following validator/validator_args have {type_str}")
             print(curr_df)
+            if assert_none:
+                raise ValueError("There should be no scores with nan or inf")
+
+
+def remove_nan_scores(df):
+    mask = np.isnan(df["score"]) | np.isinf(df["score"])
+    return df[~mask]
