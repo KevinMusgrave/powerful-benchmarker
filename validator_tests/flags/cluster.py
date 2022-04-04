@@ -34,6 +34,13 @@ def ClassAMI():
     return flags
 
 
+def ClassAMICentroidInit():
+    flags = ClassAMI()
+    for f in flags:
+        f["validator"] = "ClassAMICentroidInit"
+    return flags
+
+
 def ClassSS():
     flags = ClassAMI()
     for f in flags:

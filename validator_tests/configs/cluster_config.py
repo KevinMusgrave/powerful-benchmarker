@@ -1,5 +1,5 @@
 import torch.nn.functional as F
-from pytorch_adapt.validators import ClusterValidator, KNNValidator
+from pytorch_adapt.validators import ClassClusterValidator, KNNValidator
 from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_mutual_info_score, silhouette_score
 
@@ -56,10 +56,11 @@ class ClassAMI(BaseConfig):
         self.validator_args["normalize"] = bool(int(self.validator_args["normalize"]))
         self.src_split_name = get_full_split_name("src", self.split)
         self.target_split_name = get_full_split_name("target", self.split)
+        self.create_validator()
 
     def create_validator(self):
         score_fn, score_fn_type = self.get_score_fn()
-        self.validator = ClusterValidator(
+        self.validator = ClassClusterValidator(
             key_map={
                 self.src_split_name: "src_train",
                 self.target_split_name: "target_train",
@@ -69,7 +70,7 @@ class ClassAMI(BaseConfig):
             score_fn_type=score_fn_type,
             with_src=self.validator_args["with_src"],
             pca_size=None,
-            centroid_init=None,
+            centroid_init=self.get_centroid_init(),
             feat_normalizer=feat_normalizer_fn(
                 self.validator_args["normalize"], self.validator_args["p"]
             ),
@@ -77,6 +78,9 @@ class ClassAMI(BaseConfig):
 
     def get_score_fn(self):
         return adjusted_mutual_info_score, "labels"
+
+    def get_centroid_init(self):
+        return None
 
     def score(self, x, exp_config, device):
         return use_labels_and_logits(
@@ -90,6 +94,11 @@ class ClassAMI(BaseConfig):
 
     def expected_keys(self):
         return {"p", "with_src", "normalize", "layer", "split"}
+
+
+class ClassAMICentroidInit(ClassAMI):
+    def get_centroid_init(self):
+        return "label_centers"
 
 
 class ClassSS(ClassAMI):
