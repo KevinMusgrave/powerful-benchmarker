@@ -9,7 +9,7 @@ def DomainCluster():
                         "split": "train",
                         "layer": layer,
                         "normalize": str(normalize),
-                        "p": str(p)
+                        "p": str(p),
                     }
                 )
     return flags
