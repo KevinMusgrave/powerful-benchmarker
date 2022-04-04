@@ -2,14 +2,16 @@ def DomainCluster():
     flags = []
     for layer in ["features", "logits", "preds"]:
         for normalize in [0, 1]:
-            flags.append(
-                {
-                    "validator": "DomainCluster",
-                    "split": "train",
-                    "layer": layer,
-                    "normalize": str(normalize),
-                }
-            )
+            for p in [2]:
+                flags.append(
+                    {
+                        "validator": "DomainCluster",
+                        "split": "train",
+                        "layer": layer,
+                        "normalize": str(normalize),
+                        "p": str(p)
+                    }
+                )
     return flags
 
 
