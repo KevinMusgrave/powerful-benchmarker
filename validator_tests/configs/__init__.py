@@ -1,5 +1,5 @@
 from .accuracy_config import Accuracy
-from .ami_config import AMI
+from .cluster_config import ClassCluster, DomainCluster
 from .d_logits_accuracy_config import DLogitsAccuracy
 from .dev_config import DEV, DEVBinary
 from .diversity_config import Diversity

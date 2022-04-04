@@ -1,5 +1,5 @@
 from .accuracy import Accuracy
-from .ami import AMI
+from .cluster import ClassCluster, DomainCluster
 from .dev import DEV, DEVBinary
 from .diversity import Diversity
 from .dlogits_accuracy import DLogitsAccuracy
