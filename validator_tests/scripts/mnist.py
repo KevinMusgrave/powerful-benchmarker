@@ -9,7 +9,7 @@ components = [
     {"flags": "SND", "exp_per_slurm_job": "3", "trials_per_exp": "100"},
     {"flags": "KNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "DomainCluster", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-    {"flags": "ClassCluster", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+    {"flags": "ClassAMICentroidInit", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "MMDFixedB", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
@@ -19,8 +19,6 @@ components = [
     {"flags": "TargetKNNLogits", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "BSP", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-    {"flags": "SilhouetteScore", "exp_per_slurm_job": "6", "trials_per_exp": "50"},
-    {"flags": "CHScore", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
 ]
 
 all_exps = ["atdoc", "bnm", "bsp", "cdan", "dann", "gvb", "im", "mcc", "mcd", "mmd"]
