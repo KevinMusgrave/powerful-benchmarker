@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 
 from .utils import dict_to_str, validator_str
@@ -6,8 +8,11 @@ SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
 AVERAGE_NAMES = ["micro", "macro"]
 
 
-def exp_specific_columns(df, additional_exclude):
-    exclude = ["score", "validator", "validator_args", *additional_exclude]
+def exp_specific_columns(df, additional_exclude=None, exclude=None):
+    if exclude is None:
+        exclude = ["score", "validator", "validator_args"]
+        if additional_exclude:
+            exclude.extend(additional_exclude)
     return [x for x in df.columns.values if x not in exclude]
 
 
@@ -113,3 +118,13 @@ def print_validators_with_nan(df, return_df=False, assert_none=False):
 def remove_nan_scores(df):
     mask = np.isnan(df["score"]) | np.isinf(df["score"])
     return df[~mask]
+
+
+def remove_arg(df, to_remove):
+    x = json.loads(df["validator_args"])
+    return dict_to_str({k: v for k, v in x.items() if k not in to_remove})
+
+
+def remove_arg_from_validator_args(df, to_remove):
+    new_col = df.apply(lambda y: remove_arg(y, to_remove), axis=1)
+    return df.assign(validator_args=new_col)
