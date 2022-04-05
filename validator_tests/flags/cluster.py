@@ -46,3 +46,10 @@ def ClassSS():
     for f in flags:
         f["validator"] = "ClassSS"
     return flags
+
+
+def ClassSSCentroidInit():
+    flags = ClassAMI()
+    for f in flags:
+        f["validator"] = "ClassSSCentroidInit"
+    return flags

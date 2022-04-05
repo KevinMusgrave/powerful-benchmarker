@@ -104,3 +104,8 @@ class ClassAMICentroidInit(ClassAMI):
 class ClassSS(ClassAMI):
     def get_score_fn(self):
         return silhouette_score, "features"
+
+
+class ClassSSCentroidInit(ClassSS):
+    def get_centroid_init(self):
+        return "label_centers"

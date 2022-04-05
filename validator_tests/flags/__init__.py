@@ -1,5 +1,11 @@
 from .accuracy import Accuracy
-from .cluster import ClassAMI, ClassAMICentroidInit, ClassSS, DomainCluster
+from .cluster import (
+    ClassAMI,
+    ClassAMICentroidInit,
+    ClassSS,
+    ClassSSCentroidInit,
+    DomainCluster,
+)
 from .dev import DEV, DEVBinary
 from .diversity import Diversity
 from .dlogits_accuracy import DLogitsAccuracy
