@@ -13,7 +13,11 @@ from validator_tests.utils.constants import (
     PER_TARGET_PER_ADAPTER_FILENAME,
     PROCESSED_DF_FILENAME,
 )
-from validator_tests.utils.plot_heatmap import plot_heatmap, plot_heatmap_per_adapter
+from validator_tests.utils.plot_heatmap import (
+    plot_heatmap,
+    plot_heatmap_average_across_adapters,
+    plot_heatmap_per_adapter,
+)
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 from validator_tests.utils.threshold_utils import (
     convert_predicted_best_acc_to_rel,
@@ -60,13 +64,14 @@ def main(args):
     if not args.no_scatter:
         plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
-    per_src, per_target = get_per_x_threshold(df, exp_folder, args.read_existing)
+    per_src, _ = get_per_x_threshold(df, exp_folder, args.read_existing)
     plot_heatmap(per_src, args.plots_folder)
 
-    per_src, per_target = get_per_x_threshold(
+    per_src, _ = get_per_x_threshold(
         df, exp_folder, args.read_existing, per_adapter=True
     )
     plot_heatmap_per_adapter(per_src, args.plots_folder)
+    plot_heatmap_average_across_adapters(per_src, args.plots_folder)
 
 
 if __name__ == "__main__":

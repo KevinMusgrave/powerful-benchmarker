@@ -8,7 +8,7 @@ from .df_utils import unify_validator_columns
 
 
 def plot_fn(df, plots_folder, filename, index, columns, values, **kwargs):
-    sns.set(rc={"figure.figsize": (20, 15)})
+    sns.set(rc={"figure.figsize": (40, 30)})
     plots_folder = os.path.join(plots_folder, "heatmaps")
     c_f.makedir_if_not_there(plots_folder)
 
@@ -27,6 +27,32 @@ def plot_fn(df, plots_folder, filename, index, columns, values, **kwargs):
 def process_df(df):
     df = df[df["validator"] != "Accuracy"]
     return unify_validator_columns(df)
+
+
+def plot_heatmap(df, plots_folder):
+    print("plot_heatmap")
+    df = process_df(df)
+    plot_fn(
+        df,
+        plots_folder,
+        "corr_global_heatmap.png",
+        "validator",
+        "src_threshold",
+        "correlation",
+        vmin=-1,
+        vmax=1,
+    )
+
+    plot_fn(
+        df,
+        plots_folder,
+        "predicted_acc_global_heatmap.png",
+        "validator",
+        "src_threshold",
+        "predicted_best_acc",
+        vmin=0,
+        vmax=1,
+    )
 
 
 def plot_heatmap_per_adapter(df, plots_folder):
@@ -55,29 +81,17 @@ def plot_heatmap_per_adapter(df, plots_folder):
             vmax=1,
         )
 
-    df = (
-        df.groupby(["validator", "adapter"])["correlation"]
-        .mean()
-        .reset_index(name="correlation")
-    )
-    plot_fn(
-        df,
-        plots_folder,
-        "avg_corr_heatmap.png",
-        "validator",
-        "adapter",
-        "correlation",
-        vmin=-1,
-        vmax=1,
-    )
 
-
-def plot_heatmap(df, plots_folder):
+def plot_heatmap_average_across_adapters(df, plots_folder):
+    print("plot_heatmap_average_across_adapters")
     df = process_df(df)
+    grouped = df.groupby(["validator", "src_threshold"])
+    corr_df = grouped["correlation"].mean().reset_index(name="correlation")
+    acc_df = grouped["predicted_best_acc"].mean().reset_index(name="predicted_best_acc")
     plot_fn(
-        df,
+        corr_df,
         plots_folder,
-        "corr_global_heatmap.png",
+        "corr_avg_across_adapters_heatmap.png",
         "validator",
         "src_threshold",
         "correlation",
@@ -86,9 +100,9 @@ def plot_heatmap(df, plots_folder):
     )
 
     plot_fn(
-        df,
+        acc_df,
         plots_folder,
-        "predicted_acc_global_heatmap.png",
+        "predicted_acc_avg_across_adapters_heatmap.png",
         "validator",
         "src_threshold",
         "predicted_best_acc",
