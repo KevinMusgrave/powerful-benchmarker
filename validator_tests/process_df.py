@@ -38,13 +38,19 @@ def process_acc_validator(df):
 def warn_unfinished_validators(df):
     df = unify_validator_columns(df)
     unfinished = {}
+    too_many = {}
     for v in df["validator"].unique():
         num_done = len(df[df["validator"] == v])
         if num_done < EXPECTED_NUMBER_OF_CHECKPOINTS:
             unfinished[v] = num_done
+        if num_done > EXPECTED_NUMBER_OF_CHECKPOINTS:
+            too_many[v] = num_done
     if len(unfinished) > 0:
         print("WARNING: the following validators haven't finished")
         print(json.dumps(unfinished, indent=4, sort_keys=True))
+    if len(too_many) > 0:
+        print("WARNING: the following validators have more entries than expected")
+        print(json.dumps(too_many, indent=4, sort_keys=True))
 
 
 def main(args):

@@ -8,7 +8,15 @@ from .df_utils import (
 
 
 def add_derived_scores(df):
-    for x in [add_IM, add_NegSND, add_BNMFull, add_BSPFull]:
+    for x in [
+        add_IM,
+        add_NegSND,
+        add_BNMSummed,
+        add_BSPSummed,
+        add_EntropySummed,
+        add_DiversitySummed,
+        add_IMSummed,
+    ]:
         df = x(df)
     return df
 
@@ -17,14 +25,19 @@ def add_IM(df):
     e = df[df["validator"] == "Entropy"]
     d = df[df["validator"] == "Diversity"]
 
-    e = drop_validator_cols(e).rename(columns={"score": "entropy_score"})
-    d = drop_validator_cols(d).rename(columns={"score": "diversity_score"})
-    im = e.merge(d, on=exp_specific_columns(e, ["entropy_score", "diversity_score"]))
+    e = drop_validator_cols(e, drop_validator_args=False).rename(
+        columns={"score": "entropy_score"}
+    )
+    d = drop_validator_cols(d, drop_validator_args=False).rename(
+        columns={"score": "diversity_score"}
+    )
+    im = e.merge(
+        d, on=exp_specific_columns(e, exclude=["entropy_score", "diversity_score"])
+    )
 
     im = im.assign(
         score=im["entropy_score"] + im["diversity_score"],
         validator="IM",
-        validator_args="{}",
     )
     im = im.drop(columns=["entropy_score", "diversity_score"])
 
@@ -59,21 +72,33 @@ def _add_src_and_target(df, validator_name):
     src = remove_arg_from_validator_args(src, ["split"])
     target = remove_arg_from_validator_args(target, ["split"])
 
-    full = src.merge(
+    summed = src.merge(
         target,
         on=exp_specific_columns(src, exclude=[src_score_name, target_score_name]),
     )
-    full = full.assign(
-        score=full[src_score_name] + full[target_score_name],
-        validator=f"{validator_name}Full",
+    summed = summed.assign(
+        score=summed[src_score_name] + summed[target_score_name],
+        validator=f"{validator_name}Summed",
     )
-    full = full.drop(columns=[src_score_name, target_score_name])
-    return pd.concat([df, full], axis=0)
+    summed = summed.drop(columns=[src_score_name, target_score_name])
+    return pd.concat([df, summed], axis=0)
 
 
-def add_BNMFull(df):
+def add_BNMSummed(df):
     return _add_src_and_target(df, "BNM")
 
 
-def add_BSPFull(df):
+def add_BSPSummed(df):
     return _add_src_and_target(df, "BSP")
+
+
+def add_EntropySummed(df):
+    return _add_src_and_target(df, "Entropy")
+
+
+def add_DiversitySummed(df):
+    return _add_src_and_target(df, "Diversity")
+
+
+def add_IMSummed(df):
+    return _add_src_and_target(df, "IM")
