@@ -8,7 +8,7 @@ from .df_utils import (
 
 
 def add_derived_scores(df):
-    for x in [add_IM, add_NegSND, add_BNMFull]:
+    for x in [add_IM, add_NegSND, add_BNMFull, add_BSPFull]:
         df = x(df)
     return df
 
@@ -41,28 +41,39 @@ def add_NegSND(df):
     return pd.concat([df, x], axis=0)
 
 
-def add_BNMFull(df):
-    x = df[df["validator"] == "BNM"]
+def _add_src_and_target(df, validator_name):
+    x = df[df["validator"] == validator_name]
     src = x[x["validator_args"].str.contains('"split": "src_train"')]
     target = x[x["validator_args"].str.contains('"split": "target_train"')]
 
+    src_score_name = f"src_{validator_name}_score"
+    target_score_name = f"target_{validator_name}_score"
+
     src = drop_validator_cols(src, drop_validator_args=False).rename(
-        columns={"score": "src_BNM_score"}
+        columns={"score": src_score_name}
     )
     target = drop_validator_cols(target, drop_validator_args=False).rename(
-        columns={"score": "target_BNM_score"}
+        columns={"score": target_score_name}
     )
 
     src = remove_arg_from_validator_args(src, ["split"])
     target = remove_arg_from_validator_args(target, ["split"])
 
-    bnm_full = src.merge(
+    full = src.merge(
         target,
-        on=exp_specific_columns(src, exclude=["src_BNM_score", "target_BNM_score"]),
+        on=exp_specific_columns(src, exclude=[src_score_name, target_score_name]),
     )
-    bnm_full = bnm_full.assign(
-        score=bnm_full["src_BNM_score"] + bnm_full["target_BNM_score"],
-        validator="BNMFull",
+    full = full.assign(
+        score=full[src_score_name] + full[target_score_name],
+        validator=f"{validator_name}Full",
     )
-    bnm_full = bnm_full.drop(columns=["src_BNM_score", "target_BNM_score"])
-    return pd.concat([df, bnm_full], axis=0)
+    full = full.drop(columns=[src_score_name, target_score_name])
+    return pd.concat([df, full], axis=0)
+
+
+def add_BNMFull(df):
+    return _add_src_and_target(df, "BNM")
+
+
+def add_BSPFull(df):
+    return _add_src_and_target(df, "BSP")
