@@ -62,7 +62,10 @@ def jobs_that_are_still_running(exp_folder, jobids_file):
     jobid_list = x.stdout.decode("utf-8").split("\n")
 
     all_jobids_filename = os.path.join(exp_folder, jobids_file)
-    with open(all_jobids_filename, "r") as f:
-        y = [line.rstrip("\n") for line in f]
 
-    return set(y).intersection(jobid_list)
+    if os.path.isfile(all_jobids_filename):
+        with open(all_jobids_filename, "r") as f:
+            y = [line.rstrip("\n") for line in f]
+
+        return set(y).intersection(jobid_list)
+    return {}
