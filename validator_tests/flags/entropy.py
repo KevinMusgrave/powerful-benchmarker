@@ -1,2 +1,5 @@
 def Entropy():
-    return [{"validator": "Entropy", "split": "target_train"}]
+    flags = []
+    for split in ["src_train", "target_train"]:
+        flags.append({"validator": "Entropy", "split": split})
+    return flags

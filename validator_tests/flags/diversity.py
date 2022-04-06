@@ -1,2 +1,5 @@
 def Diversity():
-    return [{"validator": "Diversity", "split": "target_train"}]
+    flags = []
+    for split in ["src_train", "target_train"]:
+        flags.append({"validator": "Diversity", "split": split})
+    return flags
