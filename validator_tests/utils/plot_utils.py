@@ -1,6 +1,7 @@
 import os
 
 import tqdm
+from pytorch_adapt.utils import common_functions as c_f
 
 from .df_utils import domains_str, maybe_per_adapter
 from .utils import validator_args_underscore_delimited
@@ -40,16 +41,18 @@ def plot_loop(
     filename_components,
     filename=None,
     per_adapter=True,
+    validator_set=None,
 ):
     finished = []
     if not per_adapter and "adapter" in filter_by:
         raise ValueError("Can't do per_adapter=False and filter by adapter")
     adapters = maybe_per_adapter(df, per_adapter)
+    validator_set = c_f.default(validator_set, df["validator"].unique())
     for adapter in adapters:
         for dataset in df["dataset"].unique():
             for src_domains in df["src_domains"].unique():
                 for target_domains in df["target_domains"].unique():
-                    for validator in df["validator"].unique():
+                    for validator in validator_set:
                         print(
                             "plotting", dataset, src_domains, target_domains, validator
                         )

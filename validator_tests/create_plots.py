@@ -15,10 +15,6 @@ from validator_tests.utils.constants import (
 )
 from validator_tests.utils.plot_heatmap import plot_heatmap, plot_heatmap_per_adapter
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
-from validator_tests.utils.plot_vs_threshold import (
-    plot_corr_vs_X,
-    plot_predicted_best_acc_vs_X,
-)
 from validator_tests.utils.threshold_utils import (
     convert_predicted_best_acc_to_rel,
     get_all_per_task,
@@ -61,20 +57,14 @@ def get_per_x_threshold(df, exp_folder, read_existing, per_adapter=False):
 def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
     df = get_processed_df(exp_folder)
-    plot_val_vs_acc(df, args.plots_folder, False)
+    plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
     per_src, per_target = get_per_x_threshold(df, exp_folder, args.read_existing)
-    plot_corr_vs_X("src", False)(per_src, args.plots_folder)
-    plot_corr_vs_X("target", False)(per_target, args.plots_folder)
-    plot_predicted_best_acc_vs_X("src", False)(per_src, args.plots_folder)
-    plot_predicted_best_acc_vs_X("target", False)(per_target, args.plots_folder)
     plot_heatmap(per_src, args.plots_folder)
 
     per_src, per_target = get_per_x_threshold(
         df, exp_folder, args.read_existing, per_adapter=True
     )
-    plot_corr_vs_X("src", True)(per_src, args.plots_folder)
-    plot_corr_vs_X("target", True)(per_target, args.plots_folder)
     plot_heatmap_per_adapter(per_src, args.plots_folder)
 
 
@@ -84,5 +74,8 @@ if __name__ == "__main__":
     parser.add_argument("--exp_group", type=str, required=True)
     parser.add_argument("--plots_folder", type=str, default="plots")
     parser.add_argument("--read_existing", action="store_true")
+    parser.add_argument(
+        "--scatter_plot_validator_set", nargs="+", type=str, default=None
+    )
     args = parser.parse_args()
     main(args)

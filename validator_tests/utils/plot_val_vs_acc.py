@@ -77,7 +77,7 @@ def per_adapter_per_validator_args_per_task(curr_plots_folder, curr_df, filename
     )
 
 
-def plot_val_vs_acc(df, plots_folder, per_adapter):
+def plot_val_vs_acc(df, plots_folder, per_adapter, validator_set=None):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
 
     if not per_adapter:
@@ -95,6 +95,7 @@ def plot_val_vs_acc(df, plots_folder, per_adapter):
             sub_folder_components=["dataset", "src_domains", "target_domains"],
             filename_components=["validator", "validator_args"],
             per_adapter=per_adapter,
+            validator_set=validator_set,
         )
 
     else:
@@ -119,4 +120,5 @@ def plot_val_vs_acc(df, plots_folder, per_adapter):
             ],
             filename_components=["validator_args"],
             per_adapter=per_adapter,
+            validator_set=validator_set,
         )
