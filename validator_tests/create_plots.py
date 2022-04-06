@@ -57,7 +57,8 @@ def get_per_x_threshold(df, exp_folder, read_existing, per_adapter=False):
 def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
     df = get_processed_df(exp_folder)
-    plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
+    if not args.no_scatter:
+        plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
     per_src, per_target = get_per_x_threshold(df, exp_folder, args.read_existing)
     plot_heatmap(per_src, args.plots_folder)
@@ -77,5 +78,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--scatter_plot_validator_set", nargs="+", type=str, default=None
     )
+    parser.add_argument("--no_scatter", action="store_true")
     args = parser.parse_args()
     main(args)
