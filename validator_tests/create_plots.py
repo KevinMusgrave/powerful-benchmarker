@@ -27,6 +27,18 @@ from validator_tests.utils.threshold_utils import (
 )
 
 
+def the_top_ones(df, key, per_adapter=False):
+    df = df[df["validator"] != "Accuracy"]
+    group_by = ["validator", "validator_args", key]
+    if per_adapter:
+        group_by += ["adapter"]
+    df = df[[*group_by, "src_threshold"]]
+    df = df.groupby(group_by)["src_threshold"].min()
+    df = df.reset_index(name="src_threshold")
+    df = df.sort_values(by=[key], ascending=False)
+    print(df.iloc[:20])
+
+
 def get_processed_df(exp_folder):
     filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
     return pd.read_pickle(filename)
@@ -65,11 +77,15 @@ def main(args):
         plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
     per_src, _ = get_per_x_threshold(df, exp_folder, args.read_existing)
+    the_top_ones(per_src, "predicted_best_acc")
+    the_top_ones(per_src, "correlation")
     plot_heatmap(per_src, args.plots_folder)
 
     per_src, _ = get_per_x_threshold(
         df, exp_folder, args.read_existing, per_adapter=True
     )
+    the_top_ones(per_src, "predicted_best_acc", per_adapter=True)
+    the_top_ones(per_src, "correlation", per_adapter=True)
     plot_heatmap_per_adapter(per_src, args.plots_folder)
     plot_heatmap_average_across_adapters(per_src, args.plots_folder)
 
