@@ -50,7 +50,7 @@ def exp_launcher(args, commands):
 
 def run_slurm_job(args, slurm_args, exp_group, commands):
     executor = submitit.AutoExecutor(
-        folder=os.path.join(args.exp_folder, exp_group, "slurm_logs")
+        folder=os.path.join(args.exp_folder, exp_group, args.slurm_folder)
     )
     slurm_args["job_name"] = f"{args.flags}_validator_tests"
     executor.update_parameters(
@@ -156,7 +156,7 @@ def main(args, slurm_args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    add_default_args(parser, ["exp_folder", "conda_env"])
+    add_default_args(parser, ["exp_folder", "conda_env", "slurm_folder"])
     parser.add_argument("--exp_groups", nargs="+", type=str)
     parser.add_argument("--exp_group_prefix", type=str)
     parser.add_argument("--exp_group_suffix", type=str)

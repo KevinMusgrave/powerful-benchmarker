@@ -131,7 +131,7 @@ def main(cfg, slurm_args):
         return
 
     num_tasks = len(exp_names)
-    executor = submitit.AutoExecutor(folder=os.path.join(exp_folder, "slurm_logs"))
+    executor = submitit.AutoExecutor(folder=os.path.join(exp_folder, cfg.slurm_folder))
     slurm_args["job_name"] = f"{exp_group_name}_" + "_".join(cfg.config_names)
     executor.update_parameters(
         timeout_min=0,
@@ -146,7 +146,9 @@ def main(cfg, slurm_args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    add_default_args(parser, ["exp_folder", "dataset_folder", "conda_env"])
+    add_default_args(
+        parser, ["exp_folder", "dataset_folder", "conda_env", "slurm_folder"]
+    )
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
     parser.add_argument("--slurm_config", type=str, required=True)
