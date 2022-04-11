@@ -1,6 +1,5 @@
 import argparse
 import copy
-import glob
 import math
 import os
 import subprocess
@@ -20,7 +19,7 @@ from powerful_benchmarker.utils.utils import (
 from validator_tests import flags as flags_module
 from validator_tests.main import get_validator_and_condition_fn
 from validator_tests.utils.constants import JOBIDS_FILENAME
-from validator_tests.utils.utils import apply_to_data
+from validator_tests.utils.utils import apply_to_data, filter_exp_groups
 
 
 def split_into_batches(to_run, exp_per_slurm_job):
@@ -143,12 +142,12 @@ def main(args, slurm_args):
     if args.exp_groups:
         exp_groups = args.exp_groups
     elif args.exp_group_prefix:
-        all_folders = glob.glob(os.path.join(args.exp_folder, "*"))
-        exp_groups = []
-        for f in all_folders:
-            basename = os.path.basename(f)
-            if os.path.isdir(f) and basename.startswith(args.exp_group_prefix):
-                exp_groups.append(basename)
+        exp_groups = filter_exp_groups(
+            args.exp_folder,
+            prefix=args.exp_group_prefix,
+            suffix=args.exp_group_suffix,
+            contains=args.exp_group_contains,
+        )
     else:
         raise ValueError("exp_groups or exp_group_prefix must be specified")
 
@@ -160,6 +159,8 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder", "conda_env"])
     parser.add_argument("--exp_groups", nargs="+", type=str)
     parser.add_argument("--exp_group_prefix", type=str)
+    parser.add_argument("--exp_group_suffix", type=str)
+    parser.add_argument("--exp_group_contains", type=str)
     parser.add_argument("--exp_names", nargs="+", type=str, required=True)
     parser.add_argument("--flags", type=str, required=True)
     parser.add_argument("--trials_per_exp", type=int, required=True)
