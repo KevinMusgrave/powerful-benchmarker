@@ -44,7 +44,7 @@ def get_processed_df(exp_folder):
     return pd.read_pickle(filename)
 
 
-def get_per_x_threshold(df, exp_folder, read_existing, per_adapter=False):
+def get_per_x_threshold(df, exp_folder, read_existing, nlargest, per_adapter=False):
     if per_adapter:
         src_basename = PER_SRC_PER_ADAPTER_FILENAME
         target_basename = PER_TARGET_PER_ADAPTER_FILENAME
@@ -61,10 +61,16 @@ def get_per_x_threshold(df, exp_folder, read_existing, per_adapter=False):
         per_src = pd.read_pickle(src_filename)
         per_target = pd.read_pickle(target_filename)
     else:
-        fn = get_all_per_task_per_adapter() if per_adapter else get_all_per_task()
+        fn = (
+            get_all_per_task_per_adapter(nlargest)
+            if per_adapter
+            else get_all_per_task(nlargest)
+        )
         per_src, per_target = get_per_threshold(df, fn)
-        per_src = convert_predicted_best_acc_to_rel(df, per_src, per_adapter)
-        per_target = convert_predicted_best_acc_to_rel(df, per_target, per_adapter)
+        per_src = convert_predicted_best_acc_to_rel(df, per_src, per_adapter, nlargest)
+        per_target = convert_predicted_best_acc_to_rel(
+            df, per_target, per_adapter, nlargest
+        )
         per_src.to_pickle(src_filename)
         per_target.to_pickle(target_filename)
     return per_src, per_target
@@ -76,13 +82,13 @@ def main(args):
     if not args.no_scatter:
         plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
-    per_src, _ = get_per_x_threshold(df, exp_folder, args.read_existing)
+    per_src, _ = get_per_x_threshold(df, exp_folder, args.read_existing, nlargest=100)
     the_top_ones(per_src, "predicted_best_acc")
     the_top_ones(per_src, "correlation")
     plot_heatmap(per_src, args.plots_folder)
 
     per_src, _ = get_per_x_threshold(
-        df, exp_folder, args.read_existing, per_adapter=True
+        df, exp_folder, args.read_existing, nlargest=10, per_adapter=True
     )
     the_top_ones(per_src, "predicted_best_acc", per_adapter=True)
     the_top_ones(per_src, "correlation", per_adapter=True)

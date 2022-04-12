@@ -74,12 +74,8 @@ def get_per_threshold(df, fn):
                 )
                 all_per_src.append(per_src)
                 all_per_target.append(per_target)
-    all_per_src = pd.concat(all_per_src, axis=0, ignore_index=True).drop(
-        columns=["index"]
-    )
-    all_per_target = pd.concat(all_per_target, axis=0, ignore_index=True).drop(
-        columns=["index"]
-    )
+    all_per_src = pd.concat(all_per_src, axis=0, ignore_index=True)
+    all_per_target = pd.concat(all_per_target, axis=0, ignore_index=True)
     return all_per_src, all_per_target
 
 
@@ -100,20 +96,18 @@ def get_corr(group_by):
     return fn
 
 
-def get_predicted_best_acc(group_by):
+def get_predicted_best_acc(group_by, nlargest):
     def fn(df):
-        best_score_idx = df.groupby(group_by)["score"].idxmax()
-        df = df.loc[best_score_idx]
-        df["predicted_best_acc"] = df[TARGET_ACCURACY]
-        df = df[group_by + ["predicted_best_acc"]]
-        return df.reset_index()
+        return get_avg_top_n_acc_by_group(
+            df, group_by, nlargest, "score", "predicted_best_acc"
+        )
 
     return fn
 
 
-def get_all(group_by):
+def get_all(group_by, nlargest):
     corr_fn = get_corr(group_by)
-    acc_fn = get_predicted_best_acc(group_by)
+    acc_fn = get_predicted_best_acc(group_by, nlargest)
 
     def fn(df):
         df1 = corr_fn(df)
@@ -131,28 +125,26 @@ def group_by_task_adapter():
     return group_by_task() + ["adapter"]
 
 
-def get_all_per_task():
-    return get_all(group_by_task())
+def get_all_per_task(nlargest):
+    return get_all(group_by_task(), nlargest)
 
 
-def get_all_per_task_per_adapter():
-    return get_all(group_by_task_adapter())
+def get_all_per_task_per_adapter(nlargest):
+    return get_all(group_by_task_adapter(), nlargest)
 
 
-def get_best_acc_by_group(df, group_by):
-    return df.groupby(group_by)[TARGET_ACCURACY].max()
+def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
+    top_scores = df.groupby(group_by)[sort_by].nlargest(nlargest)
+    top_idx = top_scores.index.get_level_values(len(group_by))
+    df = df.loc[top_idx]
+    return df.groupby(group_by)[TARGET_ACCURACY].mean().reset_index(name=new_col_name)
 
 
-def convert_predicted_best_acc_to_rel(df, per_x, per_adapter):
+def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest):
     group_by = group_by_task_adapter() if per_adapter else group_by_task()
-    best_acc = get_best_acc_by_group(df, group_by).reset_index(name="best_acc")
-    num_unique = len(best_acc["best_acc"].unique())
-
+    best_acc = get_avg_top_n_acc_by_group(
+        df, group_by, nlargest, TARGET_ACCURACY, "best_acc"
+    )
     per_x = per_x.merge(best_acc, on=group_by)
     per_x["predicted_best_acc"] = per_x["predicted_best_acc"] / per_x["best_acc"]
     return per_x
-
-    if per_adapter and num_unique != len(best_acc["adapter"].unique()):
-        print("WARNING: num_unique != len(best_acc['adapter'].unique())")
-    elif (not per_adapter) and num_unique != 1:
-        print("WARNING: num_unique != 1")
