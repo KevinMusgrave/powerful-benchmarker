@@ -18,7 +18,6 @@ from validator_tests.utils.plot_heatmap import (
 )
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 from validator_tests.utils.threshold_utils import (
-    convert_predicted_best_acc_to_rel,
     get_all_per_task_validator,
     get_all_per_task_validator_adapter,
     get_per_threshold,
@@ -54,7 +53,6 @@ def get_per_x_threshold(df, exp_folder, read_existing, nlargest, per_adapter=Fal
             else get_all_per_task_validator(nlargest)
         )
         per_src = get_per_threshold(df, fn)
-        per_src = convert_predicted_best_acc_to_rel(df, per_src, per_adapter, nlargest)
         per_src.to_pickle(src_filename)
     return per_src
 
