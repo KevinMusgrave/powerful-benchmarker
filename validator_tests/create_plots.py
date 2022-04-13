@@ -2,15 +2,9 @@ import argparse
 import os
 import sys
 
-import pandas as pd
-
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests.utils.constants import (
-    PER_SRC_FILENAME,
-    PER_SRC_PER_ADAPTER_FILENAME,
-    PROCESSED_DF_FILENAME,
-)
+from validator_tests.utils.constants import get_per_src_threshold_df, get_processed_df
 from validator_tests.utils.plot_heatmap import (
     plot_heatmap,
     plot_heatmap_average_across_adapters,
@@ -29,17 +23,6 @@ def the_top_ones(df, key, per_adapter=False):
     df = df.reset_index(name="src_threshold")
     df = df.sort_values(by=[key], ascending=False)
     print(df.iloc[:20])
-
-
-def get_processed_df(exp_folder):
-    filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
-    return pd.read_pickle(filename)
-
-
-def get_per_src_threshold_df(exp_folder, per_adapter):
-    basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    filename = os.path.join(exp_folder, basename)
-    return pd.read_pickle(filename)
 
 
 def main(args):
