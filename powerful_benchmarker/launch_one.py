@@ -33,10 +33,6 @@ def get_group_config(args):
         if k not in x:
             x[k] = getattr(args, k)
         assert isinstance(x[k], list) and len(x[k]) > 0
-    # optional args that can be in either configs or command line
-    for k in ["fixed_param_source"]:
-        if k not in x and k in args:
-            x[k] = getattr(args, k)
     return x
 
 
@@ -162,7 +158,6 @@ if __name__ == "__main__":
     # can be specified in group config or here
     parser.add_argument("--src_domains", nargs="+", type=str)
     parser.add_argument("--target_domains", nargs="+", type=str)
-    parser.add_argument("--fixed_param_source", type=str)
     args, unknown_args = parser.parse_known_args()
 
     slurm_args = create_slurm_args(args, unknown_args, get_yaml_config_folder())
