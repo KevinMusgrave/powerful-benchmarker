@@ -38,9 +38,7 @@ def get_group_config(args):
 def get_group_config_str(exp_folder, cfg):
     x = ""
     for k, v in cfg.items():
-        if k == "fixed_param_source":
-            x += f" --{k} {os.path.join(exp_folder, v)}"
-        elif k in ["src_domains", "target_domains"]:
+        if k in ["src_domains", "target_domains"]:
             list_str = " ".join(v)
             x += f" --{k} {list_str}"
         else:
@@ -112,6 +110,7 @@ def main(cfg, slurm_args):
         ("atdoc", "ATDOCConfig"),
         ("im", "IMConfig"),
         ("star", "STARConfig"),
+        ("atdocdann", "ATDOCDANNConfig"),
     ]
 
     for i in [0, 1]:

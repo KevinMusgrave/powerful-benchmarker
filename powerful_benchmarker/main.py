@@ -263,7 +263,7 @@ def hyperparam_search(cfg, exp_path):
 
     num_fixed_params = 0
     if cfg.fixed_param_source:
-        fp_source_path = cfg.fixed_param_source
+        fp_source_path = os.path.join(cfg.exp_folder, cfg.fixed_param_source)
         fp_source_best_trial_json = os.path.join(fp_source_path, BEST_TRIAL_FILENAME)
         if not os.path.isfile(fp_source_best_trial_json):
             FileNotFoundError(
