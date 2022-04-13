@@ -7,7 +7,6 @@ from powerful_benchmarker.utils.score_utils import (
     pretrained_target_train_accuracy,
 )
 
-BASE_GROUP_BY = ["validator", "validator_args"]
 TARGET_ACCURACY = "target_train_macro"
 
 
@@ -59,7 +58,7 @@ def get_per_target_threshold(df, dataset, source_domain, target_domain, fn):
 
 
 def get_per_threshold(df, fn):
-    all_per_src, all_per_target, all_per_src_target = [], [], []
+    all_per_src = []
     for dataset in df["dataset"].unique():
         for src_domains in df["src_domains"].unique():
             for target_domains in df["target_domains"].unique():
@@ -69,14 +68,9 @@ def get_per_threshold(df, fn):
                     & (df["target_domains"] == target_domains)
                 ]
                 per_src = get_per_src_threshold(curr_df, dataset, src_domains, fn)
-                per_target = get_per_target_threshold(
-                    curr_df, dataset, src_domains, target_domains, fn
-                )
                 all_per_src.append(per_src)
-                all_per_target.append(per_target)
     all_per_src = pd.concat(all_per_src, axis=0, ignore_index=True)
-    all_per_target = pd.concat(all_per_target, axis=0, ignore_index=True)
-    return all_per_src, all_per_target
+    return all_per_src
 
 
 def get_corr(group_by):
@@ -117,34 +111,43 @@ def get_all(group_by, nlargest):
     return fn
 
 
-def group_by_task():
-    return BASE_GROUP_BY + ["dataset", "src_domains", "target_domains"]
+def group_by_task(per_adapter):
+    output = ["dataset", "src_domains", "target_domains"]
+    if per_adapter:
+        output.append("adapter")
+    return output
 
 
-def group_by_task_adapter():
-    return group_by_task() + ["adapter"]
+def group_by_task_validator(per_adapter):
+    return ["validator", "validator_args"] + group_by_task(per_adapter)
 
 
-def get_all_per_task(nlargest):
-    return get_all(group_by_task(), nlargest)
+def get_all_per_task_validator(nlargest):
+    return get_all(group_by_task_validator(per_adapter=False), nlargest)
 
 
-def get_all_per_task_per_adapter(nlargest):
-    return get_all(group_by_task_adapter(), nlargest)
+def get_all_per_task_validator_adapter(nlargest):
+    return get_all(group_by_task_validator(per_adapter=True), nlargest)
 
 
 def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
-    top_scores = df.groupby(group_by)[sort_by].nlargest(nlargest)
-    top_idx = top_scores.index.get_level_values(len(group_by))
-    df = df.loc[top_idx]
-    return df.groupby(group_by)[TARGET_ACCURACY].mean().reset_index(name=new_col_name)
+    top_rows = (
+        df.sort_values([sort_by], ascending=False).groupby(group_by).head(nlargest)
+    )
+    return (
+        top_rows.groupby(group_by)[TARGET_ACCURACY]
+        .mean()
+        .reset_index(name=new_col_name)
+    )
 
 
 def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest):
-    group_by = group_by_task_adapter() if per_adapter else group_by_task()
+    group_by = group_by_task_validator(per_adapter=per_adapter)
     best_acc = get_avg_top_n_acc_by_group(
         df, group_by, nlargest, TARGET_ACCURACY, "best_acc"
     )
     per_x = per_x.merge(best_acc, on=group_by)
     per_x["predicted_best_acc"] = per_x["predicted_best_acc"] / per_x["best_acc"]
+    if per_x["predicted_best_acc"].max() > 1:
+        raise ValueError
     return per_x
