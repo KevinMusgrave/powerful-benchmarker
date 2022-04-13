@@ -12,7 +12,12 @@ class BSP(BaseConfig):
 
     def score(self, x, exp_config, device):
         features = get_split_and_layer(x, self.split, self.layer, device)
-        return -self.validator(features).item()
+        try:
+            return -self.validator(features).item()
+        except RuntimeError as e:
+            if "svd_cuda" in str(e):
+                return float("nan")
+            raise
 
     def expected_keys(self):
         return {"k", "split", "layer"}
