@@ -1,0 +1,8 @@
+common: &common --group_configs default_oracle fl6_adam_lr1 mnist_oracle
+A: &A --config_names atdoc star
+
+
+commands:
+- - python powerful_benchmarker/launch_one.py
+  - *A
+  - *common
