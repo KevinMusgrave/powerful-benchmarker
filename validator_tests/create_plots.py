@@ -17,12 +17,6 @@ from validator_tests.utils.plot_heatmap import (
     plot_heatmap_per_adapter,
 )
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
-from validator_tests.utils.threshold_utils import (
-    convert_predicted_best_acc_to_rel,
-    get_all_per_task_validator,
-    get_all_per_task_validator_adapter,
-    get_per_threshold,
-)
 
 
 def the_top_ones(df, key, per_adapter=False):
@@ -42,37 +36,24 @@ def get_processed_df(exp_folder):
     return pd.read_pickle(filename)
 
 
-def get_per_x_threshold(df, exp_folder, read_existing, nlargest, per_adapter=False):
-    src_basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    src_filename = os.path.join(exp_folder, src_basename)
-    if read_existing and os.path.isfile(src_filename):
-        per_src = pd.read_pickle(src_filename)
-    else:
-        fn = (
-            get_all_per_task_validator_adapter(nlargest)
-            if per_adapter
-            else get_all_per_task_validator(nlargest)
-        )
-        per_src = get_per_threshold(df, fn)
-        per_src = convert_predicted_best_acc_to_rel(df, per_src, per_adapter, nlargest)
-        per_src.to_pickle(src_filename)
-    return per_src
+def get_per_src_threshold_df(exp_folder, per_adapter):
+    basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
+    filename = os.path.join(exp_folder, basename)
+    return pd.read_pickle(filename)
 
 
 def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
-    df = get_processed_df(exp_folder)
     if not args.no_scatter:
+        df = get_processed_df(exp_folder)
         plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
-    per_src = get_per_x_threshold(df, exp_folder, args.read_existing, nlargest=100)
+    per_src = get_per_src_threshold_df(exp_folder, False)
     the_top_ones(per_src, "predicted_best_acc")
     the_top_ones(per_src, "correlation")
     plot_heatmap(per_src, args.plots_folder)
 
-    per_src = get_per_x_threshold(
-        df, exp_folder, args.read_existing, nlargest=10, per_adapter=True
-    )
+    per_src = get_per_src_threshold_df(exp_folder, True)
     the_top_ones(per_src, "predicted_best_acc", per_adapter=True)
     the_top_ones(per_src, "correlation", per_adapter=True)
     plot_heatmap_per_adapter(per_src, args.plots_folder)
@@ -84,7 +65,6 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder"])
     parser.add_argument("--exp_group", type=str, required=True)
     parser.add_argument("--plots_folder", type=str, default="plots")
-    parser.add_argument("--read_existing", action="store_true")
     parser.add_argument(
         "--scatter_plot_validator_set", nargs="+", type=str, default=None
     )
