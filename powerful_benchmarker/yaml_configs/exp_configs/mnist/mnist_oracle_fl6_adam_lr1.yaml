@@ -1,6 +1,6 @@
 common: &common --group_configs default_oracle fl6_adam_lr1 mnist_oracle
 A: &A --config_names atdoc star
-B: &B --config_names atdocdann --fixed_param_source dann
+B: &B --config_names dann
 
 
 commands:
