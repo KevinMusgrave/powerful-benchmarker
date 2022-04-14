@@ -24,7 +24,7 @@ def main(cfg):
     for e in exp_groups:
         slurm_folder = os.path.join(cfg.exp_folder, e, cfg.slurm_folder)
         if not os.path.isdir(slurm_folder):
-            raise ValueError
+            continue
         files = glob.glob(os.path.join(slurm_folder, "*"))
         num_files += len(files)
         if cfg.delete:
