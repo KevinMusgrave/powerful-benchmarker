@@ -13,18 +13,6 @@ from validator_tests.utils.plot_heatmap import (
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 
 
-def the_top_ones(df, key, per_adapter=False):
-    df = df[df["validator"] != "Accuracy"]
-    group_by = ["validator", "validator_args", key]
-    if per_adapter:
-        group_by += ["adapter"]
-    df = df[[*group_by, "src_threshold"]]
-    df = df.groupby(group_by)["src_threshold"].min()
-    df = df.reset_index(name="src_threshold")
-    df = df.sort_values(by=[key], ascending=False)
-    print(df.iloc[:20])
-
-
 def main(args):
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
     if not args.no_scatter:
@@ -32,13 +20,9 @@ def main(args):
         plot_val_vs_acc(df, args.plots_folder, False, args.scatter_plot_validator_set)
 
     per_src = get_per_src_threshold_df(exp_folder, False)
-    the_top_ones(per_src, "predicted_best_acc")
-    the_top_ones(per_src, "correlation")
     plot_heatmap(per_src, args.plots_folder)
 
     per_src = get_per_src_threshold_df(exp_folder, True)
-    the_top_ones(per_src, "predicted_best_acc", per_adapter=True)
-    the_top_ones(per_src, "correlation", per_adapter=True)
     plot_heatmap_per_adapter(per_src, args.plots_folder)
     plot_heatmap_average_across_adapters(per_src, args.plots_folder)
 
