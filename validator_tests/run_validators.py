@@ -52,16 +52,19 @@ def run_slurm_job(args, slurm_args, exp_group, commands):
     executor = submitit.AutoExecutor(
         folder=os.path.join(args.exp_folder, exp_group, args.slurm_folder)
     )
-    slurm_args["job_name"] = f"{args.flags}_validator_tests"
+    split_commands = [c.split(" ") for c in commands]
+    exp_names = [c[c.index("--exp_name") + 1] for c in split_commands]
+    exp_names = " ".join(set(sorted(exp_names)))
+    job_name = f"{exp_group}_{exp_names}_{args.flags}_validator_tests"
+    slurm_args["job_name"] = job_name
     executor.update_parameters(
         timeout_min=0,
         tasks_per_node=len(commands),
         slurm_additional_parameters=slurm_args,
     )
     job = executor.submit(exp_launcher, args, commands)
-    jobid = job.job_id
     all_jobids_filename = os.path.join(args.exp_folder, JOBIDS_FILENAME)
-    append_jobid_to_file(jobid, all_jobids_filename)
+    append_jobid_to_file(job.job_id, job_name, all_jobids_filename)
 
 
 def flags_to_strs(flags):

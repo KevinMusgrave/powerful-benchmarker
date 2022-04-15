@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-JOBIDS_FILENAME = "all_validator_jobids.txt"
+JOBIDS_FILENAME = "all_validator_jobids.json"
 VALIDATOR_TESTS_FOLDER = "validator_tests"
 ALL_DFS_FILENAME = "all_dfs.pkl"
 PER_SRC_FILENAME = "per_src_threshold.pkl"
