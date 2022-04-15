@@ -76,7 +76,7 @@ def jobs_that_are_still_running(exp_folder, jobids_file):
 
     if os.path.isfile(all_jobids_filename):
         with open(all_jobids_filename, "r") as f:
-            y = [line.rstrip("\n") for line in f]
+            y = list(json.load(f).keys())
 
         return set(y).intersection(jobid_list)
     return {}
