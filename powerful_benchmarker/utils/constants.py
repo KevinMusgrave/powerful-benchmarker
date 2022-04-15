@@ -2,7 +2,7 @@ import yaml
 
 TRIALS_FILENAME = "trials.csv"
 BEST_TRIAL_FILENAME = "best_trial.json"
-JOBIDS_FILENAME = "all_jobids.txt"
+JOBIDS_FILENAME = "all_jobids.json"
 
 
 def get_user_constants(constants_path):

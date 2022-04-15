@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -39,17 +40,27 @@ def get_yaml_config_path(category, name):
     return os.path.join(get_yaml_config_folder(), category, f"{name}.yaml")
 
 
-def append_jobid_to_file(jobid, filename):
+def append_jobid_to_file(jobid, jobname, filename):
     print(f"running job_id = {jobid}")
-    with open(filename, "a") as fd:
-        fd.write(f"{jobid}\n")
+    if os.path.isfile(filename):
+        with open(filename, "r") as f:
+            jobids = json.load(f)
+    else:
+        jobids = {}
+    jobids[jobid] = jobname
+    with open(filename, "w") as f:
+        json.dump(jobids, f, indent=2)
 
 
 def kill_all_jobs(exp_folder, jobids_file):
     all_jobids_filename = os.path.join(exp_folder, jobids_file)
+    if not os.path.isfile(all_jobids_filename):
+        print("jobids file not found, skipping")
+        return
     with open(all_jobids_filename, "r") as f:
-        jobids = " ".join([line.rstrip("\n") for line in f])
+        jobids = json.load(f)
 
+    jobids = " ".join(list(jobids.keys()))
     command = f"scancel {jobids}"
     print("killing slurm jobs")
     subprocess.run(command.split(" "))

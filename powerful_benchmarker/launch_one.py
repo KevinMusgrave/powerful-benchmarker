@@ -133,16 +133,16 @@ def main(cfg, slurm_args):
 
     num_tasks = len(exp_names)
     executor = submitit.AutoExecutor(folder=os.path.join(exp_folder, cfg.slurm_folder))
-    slurm_args["job_name"] = f"{exp_group_name}_" + "_".join(cfg.config_names)
+    job_name = f"{exp_group_name}_" + "_".join(cfg.config_names)
+    slurm_args["job_name"] = job_name
     executor.update_parameters(
         timeout_min=0,
         tasks_per_node=num_tasks,
         slurm_additional_parameters=slurm_args,
     )
     job = executor.submit(exp_launcher, cfg, exp_folder, exp_names, gcfg)
-    jobid = job.job_id
     all_jobids_filename = os.path.join(cfg.exp_folder, JOBIDS_FILENAME)
-    append_jobid_to_file(jobid, all_jobids_filename)
+    append_jobid_to_file(job.job_id, job_name, all_jobids_filename)
 
 
 if __name__ == "__main__":
