@@ -4,7 +4,6 @@ import os
 import sys
 
 import pandas as pd
-import tqdm
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
@@ -23,7 +22,7 @@ def main(args):
         for ef in exp_folders:
             print(ef)
             df_files = glob.glob(os.path.join(ef, VALIDATOR_TESTS_FOLDER, "*.pkl"))
-            for dff in tqdm.tqdm(df_files):
+            for dff in df_files:
                 df.append(pd.read_pickle(dff))
 
     df = pd.concat(df, axis=0, ignore_index=True)
