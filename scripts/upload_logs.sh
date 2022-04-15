@@ -1,7 +1,7 @@
-conda deactivate && conda activate "$6"
+conda deactivate && conda activate "$5"
 while :
 do
-    cd "$5"
+    cd "$4"
     echo "Getting progress"
     python print_progress.py --exp_folder "$1" --save_to_file progress.txt --with_validator_progress
     progress_fail=$?
@@ -18,12 +18,18 @@ do
             find -maxdepth 4 -name *.err -o -name *.out | zip -qr all_logs -@
             find -maxdepth 4 -name trials.csv | zip -qr csvs -@
             zip -qu csvs.zip progress.txt
+            for w in $6 $7
+            do
+                if [ -f $w ]; then
+                zip -qu csvs.zip $w
+                fi
+            done
             echo "Deleting existing files"
-            gdrive list -q "'$3' in parents" --no-header --max 0 | cut -d" " -f1 - | xargs -L 1 gdrive delete
+            gdrive list -q "'$2' in parents" --no-header --max 0 | cut -d" " -f1 - | xargs -L 1 gdrive delete
             echo "Starting upload"
-            gdrive upload --parent "$3" all_logs.zip
-            gdrive upload --parent "$3" csvs.zip
+            gdrive upload --parent "$2" all_logs.zip
+            gdrive upload --parent "$2" csvs.zip
     fi
-    echo "Sleeping for $4"
-    sleep "$4"
+    echo "Sleeping for $3"
+    sleep "$3"
 done
