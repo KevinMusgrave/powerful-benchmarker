@@ -53,7 +53,7 @@ def run_slurm_job(args, slurm_args, exp_group, commands):
     )
     split_commands = [c.split(" ") for c in commands]
     exp_names = [c[c.index("--exp_name") + 1] for c in split_commands]
-    exp_names = " ".join(set(sorted(exp_names)))
+    exp_names = "_".join(set(sorted(exp_names)))
     job_name = f"{exp_group}_{exp_names}_{args.flags}_validator_tests"
     slurm_args["job_name"] = job_name
     executor.update_parameters(
