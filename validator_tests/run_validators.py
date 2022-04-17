@@ -10,7 +10,7 @@ import submitit
 import torch
 
 sys.path.insert(0, ".")
-from powerful_benchmarker.utils.constants import add_default_args
+from powerful_benchmarker.utils.constants import add_default_args, add_exp_group_args
 from powerful_benchmarker.utils.utils import (
     append_jobid_to_file,
     create_slurm_args,
@@ -159,10 +159,7 @@ def main(args, slurm_args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "conda_env", "slurm_folder"])
-    parser.add_argument("--exp_groups", nargs="+", type=str)
-    parser.add_argument("--exp_group_prefix", type=str)
-    parser.add_argument("--exp_group_suffix", type=str)
-    parser.add_argument("--exp_group_contains", type=str)
+    add_exp_group_args(parser)
     parser.add_argument("--exp_names", nargs="+", type=str, required=True)
     parser.add_argument("--flags", type=str, required=True)
     parser.add_argument("--trials_per_exp", type=int, required=True)

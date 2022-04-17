@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, ".")
 
-from powerful_benchmarker.utils.constants import add_default_args
+from powerful_benchmarker.utils.constants import add_default_args, add_exp_group_args
 from validator_tests.utils import utils
 
 
@@ -37,10 +37,7 @@ def main(cfg):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "slurm_folder"])
-    parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
-    parser.add_argument("--exp_group_prefix", type=str)
-    parser.add_argument("--exp_group_suffix", type=str)
-    parser.add_argument("--exp_group_contains", type=str)
+    add_exp_group_args(parser)
     parser.add_argument("--delete", action="store_true")
     args = parser.parse_args()
     main(args)
