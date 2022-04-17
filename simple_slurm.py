@@ -24,6 +24,7 @@ def main(args, slurm_args):
         slurm_additional_parameters=slurm_args,
     )
     job = executor.submit(exp_launcher, args, args.command)
+    print("started", job.job_id)
 
 
 if __name__ == "__main__":
