@@ -122,3 +122,15 @@ def filter_exp_groups(exp_folder, prefix="", suffix="", contains=""):
         if match:
             exp_groups.append(basename)
     return exp_groups
+
+
+def get_exp_groups(args):
+    if args.exp_groups:
+        return args.exp_groups
+    else:
+        return filter_exp_groups(
+            args.exp_folder,
+            prefix=args.exp_group_prefix,
+            suffix=args.exp_group_suffix,
+            contains=args.exp_group_contains,
+        )

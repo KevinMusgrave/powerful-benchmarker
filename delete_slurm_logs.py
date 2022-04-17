@@ -5,21 +5,15 @@ import sys
 
 sys.path.insert(0, ".")
 
-from powerful_benchmarker.utils.constants import add_default_args, add_exp_group_args
+from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
+from validator_tests.utils.constants import add_exp_group_args
 
 
 def main(cfg):
     if not cfg.slurm_folder:
         raise ValueError
-    exp_groups = cfg.exp_groups
-    if not exp_groups:
-        exp_groups = utils.filter_exp_groups(
-            args.exp_folder,
-            prefix=args.exp_group_prefix,
-            suffix=args.exp_group_suffix,
-            contains=args.exp_group_contains,
-        )
+    exp_groups = utils.get_exp_groups(cfg)
     num_files = 0
     for e in exp_groups:
         slurm_folder = os.path.join(cfg.exp_folder, e, cfg.slurm_folder)

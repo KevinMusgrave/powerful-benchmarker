@@ -22,9 +22,3 @@ def add_default_args(parser, args_to_add, constants_path="constants.yaml"):
             type=str,
             default=constants[k],
         )
-
-
-def add_exp_group_args(parser):
-    parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
-    for x in ["exp_group_prefix", "exp_group_suffix", "exp_group_contains"]:
-        parser.add_argument(f"--{x}", type=str)

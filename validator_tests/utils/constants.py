@@ -26,3 +26,9 @@ def get_per_src_threshold_df(exp_folder, per_adapter):
     basename = get_per_src_basename(per_adapter)
     filename = os.path.join(exp_folder, basename)
     return pd.read_pickle(filename)
+
+
+def add_exp_group_args(parser):
+    parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
+    for x in ["exp_group_prefix", "exp_group_suffix", "exp_group_contains"]:
+        parser.add_argument(f"--{x}", type=str)

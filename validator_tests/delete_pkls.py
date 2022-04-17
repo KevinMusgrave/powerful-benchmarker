@@ -4,8 +4,9 @@ import sys
 
 sys.path.insert(0, ".")
 
-from powerful_benchmarker.utils.constants import add_default_args, add_exp_group_args
+from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
+from validator_tests.utils.constants import add_exp_group_args
 
 
 def delete_fn(pkls):
@@ -16,14 +17,7 @@ def delete_fn(pkls):
 
 def main(cfg):
     fn = delete_fn if cfg.delete else None
-    exp_groups = cfg.exp_groups
-    if not exp_groups:
-        exp_groups = utils.filter_exp_groups(
-            args.exp_folder,
-            prefix=args.exp_group_prefix,
-            suffix=args.exp_group_suffix,
-            contains=args.exp_group_contains,
-        )
+    exp_groups = utils.get_exp_groups(cfg)
 
     for exp_group in exp_groups:
         utils.count_pkls(os.path.join(cfg.exp_folder, exp_group), cfg.validator, fn)

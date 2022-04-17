@@ -10,16 +10,17 @@ import submitit
 import torch
 
 sys.path.insert(0, ".")
-from powerful_benchmarker.utils.constants import add_default_args, add_exp_group_args
+from powerful_benchmarker.utils.constants import add_default_args
 from powerful_benchmarker.utils.utils import (
     append_jobid_to_file,
     create_slurm_args,
+    get_exp_groups,
     rotate,
 )
 from validator_tests import flags as flags_module
 from validator_tests.main import get_validator_and_condition_fn
-from validator_tests.utils.constants import JOBIDS_FILENAME
-from validator_tests.utils.utils import apply_to_data, filter_exp_groups
+from validator_tests.utils.constants import JOBIDS_FILENAME, add_exp_group_args
+from validator_tests.utils.utils import apply_to_data
 
 
 def split_into_batches(to_run, exp_per_slurm_job):
@@ -141,18 +142,7 @@ def launcher(args, slurm_args, exp_groups):
 
 
 def main(args, slurm_args):
-    if args.exp_groups:
-        exp_groups = args.exp_groups
-    elif args.exp_group_prefix:
-        exp_groups = filter_exp_groups(
-            args.exp_folder,
-            prefix=args.exp_group_prefix,
-            suffix=args.exp_group_suffix,
-            contains=args.exp_group_contains,
-        )
-    else:
-        raise ValueError("exp_groups or exp_group_prefix must be specified")
-
+    exp_groups = get_exp_groups(args)
     launcher(args, slurm_args, exp_groups)
 
 
