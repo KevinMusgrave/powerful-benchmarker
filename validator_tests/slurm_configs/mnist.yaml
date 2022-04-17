@@ -1,4 +1,4 @@
 wckey: ""
 cpus-per-task: 2
 gres: "gpu:1"
-time: "4:00:00"
+time: "8:00:00"
