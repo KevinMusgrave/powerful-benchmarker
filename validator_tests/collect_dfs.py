@@ -8,12 +8,16 @@ import pandas as pd
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
-from validator_tests.utils.constants import ALL_DFS_FILENAME, VALIDATOR_TESTS_FOLDER
+from validator_tests.utils.constants import (
+    ALL_DFS_FILENAME,
+    VALIDATOR_TESTS_FOLDER,
+    add_exp_group_args,
+)
 
 
-def main(args):
+def collect_dfs(args, exp_group):
     df = []
-    exp_folder = os.path.join(args.exp_folder, args.exp_group)
+    exp_folder = os.path.join(args.exp_folder, exp_group)
     exp_names = [os.path.basename(x) for x in glob.glob(os.path.join(exp_folder, "*"))]
     if args.slurm_folder in exp_names:
         exp_names.remove(args.slurm_folder)
@@ -31,9 +35,15 @@ def main(args):
     df.to_pickle(filename)
 
 
+def main(args):
+    exp_groups = utils.get_exp_groups(args)
+    for e in exp_groups:
+        collect_dfs(args, e)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "slurm_folder"])
-    parser.add_argument("--exp_group", type=str, required=True)
+    add_exp_group_args(parser)
     args = parser.parse_args()
     main(args)
