@@ -16,12 +16,13 @@ def get_processed_df(exp_folder):
     return pd.read_pickle(filename)
 
 
-def get_per_src_basename(per_adapter):
-    return PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
+def get_per_src_basename(per_adapter, task):
+    basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
+    return f"{task}_{basename}"
 
 
-def get_per_src_threshold_df(exp_folder, per_adapter):
-    basename = get_per_src_basename(per_adapter)
+def get_per_src_threshold_df(exp_folder, per_adapter, task):
+    basename = get_per_src_basename(per_adapter, task)
     filename = os.path.join(exp_folder, basename)
     return pd.read_pickle(filename)
 

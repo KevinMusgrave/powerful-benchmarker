@@ -24,14 +24,13 @@ def collect_dfs(args, exp_group):
     for e in exp_names:
         exp_folders = utils.get_exp_folders(exp_folder, e)
         for ef in exp_folders:
-            print(ef)
+            print(ef, flush=True)
             df_files = glob.glob(os.path.join(ef, VALIDATOR_TESTS_FOLDER, "*.pkl"))
             for dff in df_files:
                 df.append(pd.read_pickle(dff))
 
     df = pd.concat(df, axis=0, ignore_index=True)
     filename = os.path.join(exp_folder, ALL_DFS_FILENAME)
-    print(df)
     df.to_pickle(filename)
 
 
