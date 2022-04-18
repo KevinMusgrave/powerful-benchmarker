@@ -14,9 +14,11 @@ from validator_tests.utils.constants import (
     add_exp_group_args,
 )
 from validator_tests.utils.df_utils import (
+    add_task_column,
     all_acc_score_column_names,
     assert_acc_rows_are_correct,
     convert_list_to_tuple,
+    drop_irrelevant_columns,
     exp_specific_columns,
     get_all_acc,
     print_validators_with_nan,
@@ -32,6 +34,7 @@ def read_all_dfs(exp_folder):
     if not os.path.isfile(df_path):
         print(f"{df_path} not found, skipping")
         return None
+    print(f"reading {df_path}")
     return pd.read_pickle(df_path)
 
 
@@ -68,8 +71,9 @@ def process_df(args, exp_group):
     df = read_all_dfs(exp_folder)
     if df is None:
         return
+    df = drop_irrelevant_columns(df)
     convert_list_to_tuple(df)
-
+    df = add_task_column(df)
     print("adding derived scores")
     df = derive.add_derived_scores(df)
     print("finding unfinished validators")

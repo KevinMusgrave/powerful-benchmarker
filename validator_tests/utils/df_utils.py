@@ -71,6 +71,23 @@ def assert_acc_rows_are_correct(df):
                 raise ValueError("These columns should be equal")
 
 
+def drop_irrelevant_columns(df):
+    return df.drop(
+        columns=[
+            "exp_folder",
+            "dataset_folder",
+            "num_workers",
+            "evaluate",
+            "save_features",
+            "download_datasets",
+            "use_stat_getter",
+            "check_initial_score",
+            "use_full_inference",
+            "exp_validator",
+        ]
+    )
+
+
 def domains_str(domains):
     return "_".join(domains)
 
@@ -80,9 +97,10 @@ def task_str(dataset, src_domains, target_domains):
 
 
 def add_task_column(df):
-    return df.assign(
-        task=lambda x: task_str(x["dataset"], x["src_domains"], x["target_domains"])
+    new_col = df.apply(
+        lambda x: task_str(x["dataset"], x["src_domains"], x["target_domains"]), axis=1
     )
+    return df.assign(task=new_col)
 
 
 def unify_validator_columns(df):
