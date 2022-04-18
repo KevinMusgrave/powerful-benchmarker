@@ -109,7 +109,7 @@ def count_pkls(exp_folder, validator, fn=None):
     print("num_pkls", num_pkls)
 
 
-def filter_exp_groups(exp_folder, prefix="", suffix="", contains=""):
+def filter_exp_groups(exp_folder, prefix="", suffix="", includes="", excludes=""):
     all_folders = glob.glob(os.path.join(exp_folder, "*"))
     exp_groups = []
     for f in all_folders:
@@ -118,7 +118,8 @@ def filter_exp_groups(exp_folder, prefix="", suffix="", contains=""):
             continue
         match = (not prefix) or (prefix and basename.startswith(prefix))
         match &= (not suffix) or (suffix and basename.endswith(suffix))
-        match &= (not contains) or (contains and contains in basename)
+        match &= (not includes) or (includes and includes in basename)
+        match &= (not excludes) or (excludes and excludes not in basename)
         if match:
             exp_groups.append(basename)
     return exp_groups
@@ -132,5 +133,6 @@ def get_exp_groups(args):
             args.exp_folder,
             prefix=args.exp_group_prefix,
             suffix=args.exp_group_suffix,
-            contains=args.exp_group_contains,
+            includes=args.exp_group_includes,
+            excludes=args.exp_group_excludes,
         )

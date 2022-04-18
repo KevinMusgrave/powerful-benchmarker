@@ -30,5 +30,10 @@ def get_per_src_threshold_df(exp_folder, per_adapter):
 
 def add_exp_group_args(parser):
     parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
-    for x in ["exp_group_prefix", "exp_group_suffix", "exp_group_contains"]:
+    for x in [
+        "exp_group_prefix",
+        "exp_group_suffix",
+        "exp_group_includes",
+        "exp_group_excludes",
+    ]:
         parser.add_argument(f"--{x}", type=str)
