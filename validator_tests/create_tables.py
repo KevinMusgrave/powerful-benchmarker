@@ -7,8 +7,11 @@ sys.path.insert(0, ".")
 from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests.utils.constants import get_per_src_threshold_df, get_processed_df
-from validator_tests.utils.threshold_utils import TARGET_ACCURACY
+from validator_tests.utils.constants import (
+    TARGET_ACCURACY,
+    get_per_src_threshold_df,
+    get_processed_df,
+)
 
 
 def to_csv(df, folder, key, per_adapter=False):

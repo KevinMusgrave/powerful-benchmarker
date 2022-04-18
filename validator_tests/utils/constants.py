@@ -11,6 +11,7 @@ PER_SRC_PER_ADAPTER_FILENAME = "per_src_threshold_per_adapter.pkl"
 PER_TARGET_PER_ADAPTER_FILENAME = "per_target_threshold_per_adapter.pkl"
 PER_TARGET_FILENAME = "per_target_threshold.pkl"
 PROCESSED_DF_FILENAME = "all_dfs_processed.pkl"
+TARGET_ACCURACY = "target_train_macro"
 
 
 def get_processed_df(exp_folder):

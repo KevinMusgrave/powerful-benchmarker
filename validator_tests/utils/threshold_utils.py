@@ -7,7 +7,7 @@ from powerful_benchmarker.utils.score_utils import (
     pretrained_target_train_accuracy,
 )
 
-TARGET_ACCURACY = "target_train_macro"
+from .constants import TARGET_ACCURACY
 
 
 def filter_by_acc(df, min_acc, domain_type):
@@ -15,7 +15,7 @@ def filter_by_acc(df, min_acc, domain_type):
         split = "val"
     elif domain_type == "target":
         split = "train"
-    return df[df[f"{domain_type}_{split}_macro"] > min_acc]
+    return df[df[f"{domain_type}_{split}_macro"] >= min_acc]
 
 
 def domain_type_str(domain_type):
@@ -27,7 +27,6 @@ def per_threshold(df, pretrained_acc, domain_type, fn):
     all_df = []
     upper_bound = 2
     thresholds = np.linspace(0, upper_bound, 201)
-    thresholds = np.insert(thresholds, 0, -0.01)
     for threshold in tqdm.tqdm(thresholds):
         min_acc = [pa * threshold for pa in pretrained_acc]
         curr_df = df
