@@ -18,17 +18,13 @@ do
             find -maxdepth 4 -name *.err -o -name *.out | zip -qr all_logs -@
             find -maxdepth 4 -name trials.csv | zip -qr csvs -@
             zip -qu csvs.zip progress.txt
-            for w in $6 $7
+            for w in $6
             do
                 if [ -f $w ]; then
                 zip -qu csvs.zip $w
                 fi
             done
-            echo "Deleting existing files"
-            gdrive list -q "'$2' in parents" --no-header --max 0 | cut -d" " -f1 - | xargs -L 1 gdrive delete
-            echo "Starting upload"
-            gdrive upload --parent "$2" all_logs.zip
-            gdrive upload --parent "$2" csvs.zip
+            $4/scripts/gdrive_upload.sh "all_logs.zip csvs.zip" $2
     fi
     echo "Sleeping for $3"
     sleep "$3"

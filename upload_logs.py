@@ -11,16 +11,16 @@ from validator_tests.utils.constants import JOBIDS_FILENAME as V_JOBSID_FILENAME
 def main(cfg):
     curr_dir = os.getcwd()
 
-    command = "bash -i ./scripts/upload_logs.sh {0} {1} {2} {3} {4} {5} {6}".format(
+    command = "bash -i ./scripts/upload_logs.sh {0} {1} {2} {3} {4}".format(
         cfg.exp_folder,
         cfg.gdrive_folder,
         cfg.sleep_time,
         curr_dir,
         cfg.conda_env,
-        JOBIDS_FILENAME,
-        V_JOBSID_FILENAME,
     )
-    subprocess.run(command.split(" "))
+    command = command.split(" ")
+    command.append(f"{JOBIDS_FILENAME} {V_JOBSID_FILENAME}")
+    subprocess.run(command)
 
 
 if __name__ == "__main__":
