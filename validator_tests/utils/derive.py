@@ -25,6 +25,9 @@ def add_IM(df):
     e = df[df["validator"] == "Entropy"]
     d = df[df["validator"] == "Diversity"]
 
+    if len(e) == 0 or len(d) == 0:
+        return df
+
     e = drop_validator_cols(e, drop_validator_args=False).rename(
         columns={"score": "entropy_score"}
     )
@@ -46,6 +49,8 @@ def add_IM(df):
 
 def add_NegSND(df):
     x = df[df["validator"] == "SND"]
+    if len(x) == 0:
+        return df
     x = drop_validator_cols(x, drop_validator_args=False).rename(
         columns={"score": "SND_score"}
     )
@@ -56,6 +61,8 @@ def add_NegSND(df):
 
 def _add_src_and_target(df, validator_name):
     x = df[df["validator"] == validator_name]
+    if len(x) == 0:
+        return df
     src = x[x["validator_args"].str.contains('"split": "src_train"')]
     target = x[x["validator_args"].str.contains('"split": "target_train"')]
 
