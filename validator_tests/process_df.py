@@ -16,7 +16,7 @@ from validator_tests.utils.df_utils import (
     exp_specific_columns,
     get_all_acc,
     print_validators_with_nan,
-    remove_nan_scores,
+    remove_nan_inf_scores,
     unify_validator_columns,
 )
 
@@ -69,7 +69,7 @@ def main(args):
     print("processing accuracies")
     df = process_acc_validator(df)
     print_validators_with_nan(df)
-    df = remove_nan_scores(df)
+    df = remove_nan_inf_scores(df)
     print_validators_with_nan(df, assert_none=True)
 
     print(f"processed df:\n{df}")

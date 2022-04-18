@@ -115,7 +115,7 @@ def print_validators_with_nan(df, return_df=False, assert_none=False):
                 raise ValueError("There should be no scores with nan or inf")
 
 
-def remove_nan_scores(df):
+def remove_nan_inf_scores(df):
     mask = np.isnan(df["score"]) | np.isinf(df["score"])
     return df[~mask]
 
