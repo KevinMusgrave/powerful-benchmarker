@@ -14,13 +14,12 @@ from powerful_benchmarker.utils.constants import add_default_args
 from powerful_benchmarker.utils.utils import (
     append_jobid_to_file,
     create_slurm_args,
-    get_exp_groups,
     rotate,
 )
 from validator_tests import flags as flags_module
 from validator_tests.main import get_validator_and_condition_fn
 from validator_tests.utils.constants import JOBIDS_FILENAME, add_exp_group_args
-from validator_tests.utils.utils import apply_to_data
+from validator_tests.utils.utils import apply_to_data, get_exp_groups
 
 
 def split_into_batches(to_run, exp_per_slurm_job):
