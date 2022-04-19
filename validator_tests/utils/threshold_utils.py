@@ -38,9 +38,9 @@ def per_threshold(df, pretrained_acc, domain_type, fn):
             assert len(curr_df) == len(df)
         t_str = f"{domain_type_str(domain_type)}_threshold"
         curr_df = fn(curr_df)
-        if curr_df is None:
-            continue
-        curr_df = curr_df.assign(**{t_str: threshold})
+        curr_df = curr_df.assign(
+            **{t_str: threshold, "num_past_threshold": len(curr_df)}
+        )
         curr_df = curr_df.round({t_str: 2})
         all_df.append(curr_df)
     return pd.concat(all_df, axis=0, ignore_index=True)
@@ -105,8 +105,6 @@ def get_all(group_by, nlargest):
     acc_fn = get_predicted_best_acc(group_by, nlargest)
 
     def fn(df):
-        if len(df) < nlargest:
-            return None
         df1 = corr_fn(df)
         df2 = acc_fn(df)
         return df1.merge(df2, on=group_by)
