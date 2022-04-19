@@ -23,8 +23,9 @@ from validator_tests.utils.threshold_utils import (
 def create_per_x_threshold(df, exp_folder, per_adapter, topN):
     print(f"per_adapter = {per_adapter}")
     tasks = df["task"].unique()
-    assert len(tasks) == 1
     print(f"tasks = {tasks}")
+    if len(tasks) != 1:
+        raise ValueError(f"There should be only 1 task")
     print(f"feature_layers = {df['feature_layer'].unique()}")
     basename = get_per_src_basename(per_adapter, topN, task=tasks[0])
     filename = os.path.join(exp_folder, basename)
