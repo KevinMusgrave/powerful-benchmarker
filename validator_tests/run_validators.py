@@ -141,6 +141,7 @@ def launcher(args, slurm_args, exp_groups):
 
 
 def main(args, slurm_args):
+    assert args.exp_per_slurm_job >= 1 and args.trials_per_exp >= 1
     exp_groups = get_exp_groups(args)
     launcher(args, slurm_args, exp_groups)
 

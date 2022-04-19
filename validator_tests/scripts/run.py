@@ -49,8 +49,12 @@ def main(args):
     exp_names = " ".join(exp_names)
 
     for x in validators:
+        exp_per_slurm_job = int(
+            int(x["exp_per_slurm_job"]) * args.exp_per_slurm_job_mul
+        )
+        trials_per_exp = int(int(x["trials_per_exp"]) * args.trials_per_exp_mul)
         command = f"python validator_tests/run_validators.py {args.other_args} --slurm_config {args.slurm_config} --run"
-        command += f" --exp_names {exp_names} --flags {x['flags']} --exp_per_slurm_job {x['exp_per_slurm_job']} --trials_per_exp {x['trials_per_exp']}"
+        command += f" --exp_names {exp_names} --flags {x['flags']} --exp_per_slurm_job {exp_per_slurm_job} --trials_per_exp {trials_per_exp}"
         subprocess.run(command.split(" "))
 
 
@@ -60,5 +64,7 @@ if __name__ == "__main__":
     parser.add_argument("--validators", nargs="+", type=str, default=[])
     parser.add_argument("--other_args", type=str, default="")
     parser.add_argument("--slurm_config", type=str, required=True)
+    parser.add_argument("--exp_per_slurm_job_mul", type=float, default=1)
+    parser.add_argument("--trials_per_exp_mul", type=float, default=1)
     args = parser.parse_args()
     main(args)
