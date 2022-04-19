@@ -13,6 +13,8 @@ TARGET_ACCURACY = "target_train_macro"
 
 def get_processed_df(exp_folder):
     filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
+    if not os.path.isfile(filename):
+        return None
     return pd.read_pickle(filename)
 
 

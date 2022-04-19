@@ -53,6 +53,8 @@ def get_combined_dfs(args, exp_groups):
         curr_matching = []
         for j in range(i + 1, num_exp_groups):
             df2 = get_processed_df(os.path.join(args.exp_folder, exp_groups[j]))
+            if df1 is None or df2 is None:
+                continue
             if df1["task"].unique() == df2["task"].unique():
                 curr_matching.append(df2)
         if len(curr_matching) > 0:
@@ -65,6 +67,8 @@ def main(args):
     for e in exp_groups:
         exp_folder = os.path.join(args.exp_folder, e)
         df = get_processed_df(exp_folder)
+        if df is None:
+            continue
         run_both(df, exp_folder)
 
     combined_dfs = get_combined_dfs(args, exp_groups)
