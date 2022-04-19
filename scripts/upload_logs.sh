@@ -24,7 +24,7 @@ do
                 zip -qu csvs.zip $w
                 fi
             done
-            $4/scripts/gdrive_upload.sh "all_logs.zip csvs.zip" $2
+            $4/scripts/gdrive_upload.sh "all_logs.zip csvs.zip all_dfs.zip" $2
     fi
     echo "Sleeping for $3"
     sleep "$3"
