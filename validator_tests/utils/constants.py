@@ -18,9 +18,9 @@ def get_processed_df(exp_folder):
     return pd.read_pickle(filename)
 
 
-def get_per_src_basename(per_adapter, task):
+def get_per_src_basename(per_adapter, topN, task):
     basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    return f"{task}_{basename}"
+    return f"{task}_top{topN}_{basename}"
 
 
 def get_per_src_threshold_df(exp_folder, per_adapter, task):
