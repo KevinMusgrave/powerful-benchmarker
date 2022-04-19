@@ -27,12 +27,19 @@ def get_per_src_threshold_df(exp_folder, per_adapter, task):
     return pd.read_pickle(filename)
 
 
-def add_exp_group_args(parser):
-    parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
-    for x in [
+def exp_group_args():
+    return [
+        "exp_groups",
         "exp_group_prefix",
         "exp_group_suffix",
         "exp_group_includes",
         "exp_group_excludes",
-    ]:
-        parser.add_argument(f"--{x}", type=str)
+    ]
+
+
+def add_exp_group_args(parser):
+    parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
+    x = exp_group_args()
+    x.remove("exp_groups")
+    for k in x:
+        parser.add_argument(f"--{k}", type=str)
