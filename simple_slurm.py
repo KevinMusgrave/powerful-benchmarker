@@ -10,8 +10,8 @@ from validator_tests.utils import utils
 from validator_tests.utils.constants import add_exp_group_args, exp_group_args
 
 
-def exp_launcher(args, command):
-    full_command = f"bash -i ./scripts/script_wrapper.sh {args.conda_env}".split(" ")
+def exp_launcher(conda_env, command):
+    full_command = f"bash -i ./scripts/script_wrapper.sh {conda_env}".split(" ")
     full_command += [command]
     subprocess.run(full_command)
 
@@ -30,7 +30,7 @@ def run(args, slurm_args, exp_group):
     if exp_group:
         command = f"{command} --exp_groups {exp_group}"
 
-    job = executor.submit(exp_launcher, args, args.command)
+    job = executor.submit(exp_launcher, args.conda_env, command)
     print("started", job.job_id)
 
 
