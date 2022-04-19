@@ -61,10 +61,11 @@ def add_NegSND(df):
 
 def _add_src_and_target(df, validator_name):
     x = df[df["validator"] == validator_name]
-    if len(x) == 0:
-        return df
     src = x[x["validator_args"].str.contains('"split": "src_train"')]
     target = x[x["validator_args"].str.contains('"split": "target_train"')]
+
+    if len(src) == 0 or len(target) == 0:
+        return df
 
     src_score_name = f"src_{validator_name}_score"
     target_score_name = f"target_{validator_name}_score"
