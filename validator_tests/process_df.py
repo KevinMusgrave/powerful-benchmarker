@@ -71,16 +71,26 @@ def process_df(args, exp_group):
     df = read_all_dfs(exp_folder)
     if df is None:
         return
-    df = drop_irrelevant_columns(df)
+    print("convert_list_to_tuple")
     convert_list_to_tuple(df)
-    df = add_task_column(df)
-    print("adding derived scores")
-    df = derive.add_derived_scores(df)
-    print("finding unfinished validators")
-    warn_unfinished_validators(df)
 
     print("processing accuracies")
     df = process_acc_validator(df)
+    if len(df) == 0:
+        print("accuracies have not been computed yet. Exiting")
+        return
+
+    print("drop_irrelevant_columns")
+    df = drop_irrelevant_columns(df)
+
+    print("add_task_column")
+    df = add_task_column(df)
+
+    print("adding derived scores")
+    df = derive.add_derived_scores(df)
+
+    print("finding unfinished validators")
+    warn_unfinished_validators(df)
     print_validators_with_nan(df)
     df = remove_nan_inf_scores(df)
     print_validators_with_nan(df, assert_none=True)
