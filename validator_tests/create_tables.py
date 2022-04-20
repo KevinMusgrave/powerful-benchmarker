@@ -31,7 +31,7 @@ def to_csv(df, folder, key, per_adapter=False):
     df.to_csv(filename, index=False)
 
 
-def best_validators(df, key, folder, per_adapter=False):
+def best_validators(df, key, folder, per_adapter, topN):
     c_f.makedir_if_not_there(folder)
 
     df = df[df["validator"] != "Accuracy"]
@@ -56,12 +56,18 @@ def get_tables_folder(args, task, feature_layers):
     return os.path.join(args.tables_folder, base_foldername)
 
 
-def create_best_validators_tables(per_src, tables_folder, per_adapter):
-    best_validators(per_src, "predicted_best_acc", tables_folder, per_adapter)
-    # For correlation, only keep src_thresholds where there is a meaningful number of datapoints
-    # per_src = per_src[per_src["num_past_threshold"] > 200]
-    # print(per_src["num_past_threshold"].max())
-    best_validators(per_src, "correlation", tables_folder, per_adapter)
+def create_best_validators_tables(exp_folder, task, tables_folder):
+    for per_adapter in [True, False]:
+        topN = args.topN_per_adapter if per_adapter else args.topN
+        per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, task)
+        if per_src is None:
+            continue
+
+        best_validators(per_src, "predicted_best_acc", tables_folder, per_adapter, topN)
+        # For correlation, only keep src_thresholds where there is a meaningful number of datapoints
+        # per_src = per_src[per_src["num_past_threshold"] > 200]
+        # print(per_src["num_past_threshold"].max())
+        best_validators(per_src, "correlation", tables_folder, per_adapter, topN)
 
 
 def create_tables(args, exp_group):
@@ -74,12 +80,7 @@ def create_tables(args, exp_group):
     feature_layers = df["feature_layer"].unique()
     tables_folder = get_tables_folder(args, task, feature_layers)
     best_accuracy_per_adapter(df, TARGET_ACCURACY, tables_folder)
-
-    for per_adapter in [True, False]:
-        topN = args.topN_per_adapter if per_adapter else args.topN
-        per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, task)
-        create_best_validators_tables(per_src, tables_folder, per_adapter)
-
+    create_best_validators_tables(exp_folder, task, tables_folder)
     return task
 
 
@@ -92,13 +93,8 @@ def main(args):
             continue
         # now do with feature layers in one dataframe
         # which are saved in args.exp_folder
-        for per_adapter in [True, False]:
-            topN = args.topN_per_adapter if per_adapter else args.topN
-            per_src = get_per_src_threshold_df(args.exp_folder, per_adapter, topN, task)
-            if per_src is None:
-                continue
-            tables_folder = get_tables_folder(args, task, [])
-            create_best_validators_tables(per_src, tables_folder, per_adapter)
+        tables_folder = get_tables_folder(args, task, [])
+        create_best_validators_tables(args.exp_folder, task, tables_folder)
 
 
 if __name__ == "__main__":
