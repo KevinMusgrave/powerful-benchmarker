@@ -23,9 +23,11 @@ def get_per_src_basename(per_adapter, topN, task):
     return f"{task}_top{topN}_{basename}"
 
 
-def get_per_src_threshold_df(exp_folder, per_adapter, task):
-    basename = get_per_src_basename(per_adapter, task)
+def get_per_src_threshold_df(exp_folder, per_adapter, topN, task):
+    basename = get_per_src_basename(per_adapter, topN, task)
     filename = os.path.join(exp_folder, basename)
+    if not os.path.isfile(filename):
+        return None
     return pd.read_pickle(filename)
 
 
