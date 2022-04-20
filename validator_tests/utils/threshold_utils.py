@@ -32,16 +32,13 @@ def per_threshold(df, pretrained_acc, domain_type, fn):
         curr_df = df
         for i, k in enumerate(domain_type):
             curr_df = filter_by_acc(curr_df, np.round(min_acc[i], 4), k)
-        num_past_threshold = len(curr_df)
-        if num_past_threshold == 0:
+        if len(curr_df) == 0:
             continue
-        if threshold < 0:
+        if threshold == 0:
             assert len(curr_df) == len(df)
         t_str = f"{domain_type_str(domain_type)}_threshold"
         curr_df = fn(curr_df)
-        curr_df = curr_df.assign(
-            **{t_str: threshold, "num_past_threshold": num_past_threshold}
-        )
+        curr_df = curr_df.assign(**{t_str: threshold})
         curr_df = curr_df.round({t_str: 2})
         all_df.append(curr_df)
     return pd.concat(all_df, axis=0, ignore_index=True)
@@ -108,7 +105,11 @@ def get_all(group_by, nlargest):
     def fn(df):
         df1 = corr_fn(df)
         df2 = acc_fn(df)
-        return df1.merge(df2, on=group_by)
+        num_past_threshold = (
+            df.groupby(group_by).size().reset_index(name="num_past_threshold")
+        )
+        df = df1.merge(df2, on=group_by)
+        return df.merge(num_past_threshold, on=group_by)
 
     return fn
 
