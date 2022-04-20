@@ -7,7 +7,7 @@ from powerful_benchmarker.utils.score_utils import (
     pretrained_target_train_accuracy,
 )
 
-from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, TARGET_ACCURACY
+from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, NUM_ADAPTERS, TARGET_ACCURACY
 
 
 def filter_by_acc(df, min_acc, domain_type):
@@ -154,6 +154,9 @@ def convert_predicted_best_acc_to_rel(
     if len(df) > max_num_checkpoints:
         print(len(df))
         raise ValueError
+
+    if per_adapter:
+        max_num_checkpoints /= NUM_ADAPTERS
     if per_x["num_past_threshold"].max() > max_num_checkpoints:
         print(per_x["num_past_threshold"].max())
         raise ValueError
