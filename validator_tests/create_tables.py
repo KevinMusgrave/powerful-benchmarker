@@ -95,6 +95,8 @@ def main(args):
         for per_adapter in [True, False]:
             topN = args.topN_per_adapter if per_adapter else args.topN
             per_src = get_per_src_threshold_df(args.exp_folder, per_adapter, topN, task)
+            if per_src is None:
+                continue
             tables_folder = get_tables_folder(args, task, [])
             create_best_validators_tables(per_src, tables_folder, per_adapter)
 
