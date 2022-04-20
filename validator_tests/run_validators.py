@@ -47,14 +47,21 @@ def exp_launcher(args, commands):
     subprocess.run(full_command)
 
 
-def run_slurm_job(args, slurm_args, exp_group, commands):
-    executor = submitit.AutoExecutor(
-        folder=os.path.join(args.exp_folder, exp_group, args.slurm_folder)
-    )
+def get_exp_info_from_commands(commands, flag):
     split_commands = [c.split(" ") for c in commands]
-    exp_names = [c[c.index("--exp_name") + 1] for c in split_commands]
-    exp_names = "_".join(set(sorted(exp_names)))
-    job_name = f"{exp_group}_{exp_names}_{args.flags}_validator_tests"
+    infos = [c[c.index(f"--{flag}") + 1] for c in split_commands]
+    return sorted(list(set(infos)))
+
+
+def run_slurm_job(args, slurm_args, commands):
+    exp_groups = get_exp_info_from_commands(commands, "exp_group")
+    executor = submitit.AutoExecutor(
+        folder=os.path.join(args.exp_folder, exp_groups[0], args.slurm_folder)
+    )
+    exp_names = get_exp_info_from_commands(commands, "exp_name")
+    exp_names = "_".join(exp_names)
+    exp_groups = "_".join(exp_groups)
+    job_name = f"{exp_groups}_{exp_names}_{args.flags}_validator_tests"
     slurm_args["job_name"] = job_name
     executor.update_parameters(
         timeout_min=0,
@@ -137,7 +144,7 @@ def launcher(args, slurm_args, exp_groups):
     for commands in to_run:
         print(f"{len(commands)} exps in this job")
         if len(commands) > 0 and args.run:
-            run_slurm_job(args, slurm_args, exp_group, commands)
+            run_slurm_job(args, slurm_args, commands)
 
 
 def main(args, slurm_args):
