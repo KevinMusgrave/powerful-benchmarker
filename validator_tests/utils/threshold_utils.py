@@ -158,7 +158,12 @@ def convert_predicted_best_acc_to_rel(
     )
     per_x = per_x.merge(best_acc, on=group_by)
     per_x["predicted_best_acc"] = per_x["predicted_best_acc"] / per_x["best_acc"]
-    if per_x["predicted_best_acc"].max() > (1 + 1e-8):
-        print(per_x.loc[per_x["predicted_best_acc"].idxmax()])
+
+    # The rows with num_past_threshold < nlargest can have predicted_best_acc > 1
+    # because they are unfairly focusing on a smaller subset.
+    # So this check only applies when num_past_threshold >= nlargest
+    strict_rows = per_x[per_x["num_past_threshold"] >= nlargest]
+    if strict_rows["predicted_best_acc"].max() > (1 + 1e-8):
+        print(strict_rows.loc[strict_rows["predicted_best_acc"].idxmax()])
         raise ValueError
     return per_x
