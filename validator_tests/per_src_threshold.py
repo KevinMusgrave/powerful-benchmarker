@@ -26,7 +26,8 @@ def create_per_x_threshold(df, exp_folder, per_adapter, topN):
     print(f"tasks = {tasks}")
     if len(tasks) != 1:
         raise ValueError(f"There should be only 1 task")
-    print(f"feature_layers = {df['feature_layer'].unique()}")
+    feature_layers = df["feature_layer"].unique()
+    print(f"feature_layers = {feature_layers}")
     basename = get_per_src_basename(per_adapter, topN, task=tasks[0])
     filename = os.path.join(exp_folder, basename)
     fn = (
@@ -35,7 +36,9 @@ def create_per_x_threshold(df, exp_folder, per_adapter, topN):
         else get_all_per_task_validator(topN)
     )
     per_src = get_per_threshold(df, fn)
-    per_src = convert_predicted_best_acc_to_rel(df, per_src, per_adapter, topN)
+    per_src = convert_predicted_best_acc_to_rel(
+        df, per_src, per_adapter, topN, len(feature_layers)
+    )
     print(f"saving to {filename}\n\n")
     per_src.to_pickle(filename)
 

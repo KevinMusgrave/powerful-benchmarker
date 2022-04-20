@@ -143,11 +143,13 @@ def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
     )
 
 
-def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest):
+def convert_predicted_best_acc_to_rel(
+    df, per_x, per_adapter, nlargest, num_feature_layers
+):
     # the accuracy columns are duplicated for each validator/validator_args
     df = df.drop(columns=["validator", "validator_args", "score"]).drop_duplicates()
     # TODO change this to != when experiments are done
-    if len(df) > EXPECTED_NUMBER_OF_CHECKPOINTS:
+    if len(df) > EXPECTED_NUMBER_OF_CHECKPOINTS * num_feature_layers:
         print(len(df))
         raise ValueError
     group_by = group_by_task(per_adapter=per_adapter)
