@@ -149,10 +149,15 @@ def convert_predicted_best_acc_to_rel(
 ):
     # the accuracy columns are duplicated for each validator/validator_args
     df = df.drop(columns=["validator", "validator_args", "score"]).drop_duplicates()
+    max_num_checkpoints = EXPECTED_NUMBER_OF_CHECKPOINTS * num_feature_layers
     # TODO change this to != when experiments are done
-    if len(df) > EXPECTED_NUMBER_OF_CHECKPOINTS * num_feature_layers:
+    if len(df) > max_num_checkpoints:
         print(len(df))
         raise ValueError
+    if per_x["num_past_threshold"].max() > max_num_checkpoints:
+        print(per_x["num_past_threshold"].max())
+        raise ValueError
+
     group_by = group_by_task(per_adapter=per_adapter)
     best_acc = get_avg_top_n_acc_by_group(
         df, group_by, nlargest, TARGET_ACCURACY, "best_acc"
