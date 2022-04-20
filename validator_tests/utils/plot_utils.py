@@ -13,6 +13,8 @@ def create_name(filters, components):
         curr_val = filters[k]
         if k in ["src_domains", "target_domains"]:
             x = domains_str(curr_val)
+        elif k == "feature_layer":
+            x = f"fl{curr_val}"
         elif k == "validator_args":
             x = validator_args_underscore_delimited(curr_val)
         else:
@@ -52,31 +54,38 @@ def plot_loop(
         for dataset in df["dataset"].unique():
             for src_domains in df["src_domains"].unique():
                 for target_domains in df["target_domains"].unique():
-                    for validator in validator_set:
-                        print(
-                            "plotting", dataset, src_domains, target_domains, validator
-                        )
-                        for args in tqdm.tqdm(df["validator_args"].unique()):
-                            filters = {
-                                "adapter": adapter,
-                                "dataset": dataset,
-                                "src_domains": src_domains,
-                                "target_domains": target_domains,
-                                "validator": validator,
-                                "validator_args": args,
-                            }
-                            curr_df = filter_df(
-                                df,
-                                filter_by,
-                                filters,
-                                finished,
+                    for feature_layer in df["feature_layer"].unique():
+                        for validator in validator_set:
+                            print(
+                                "plotting",
+                                dataset,
+                                src_domains,
+                                target_domains,
+                                feature_layer,
+                                validator,
                             )
-                            if len(curr_df) == 0:
-                                continue
-                            curr_plots_folder = os.path.join(
-                                plots_folder,
-                                create_name(filters, sub_folder_components),
-                            )
-                            if len(filename_components) > 0:
-                                filename = create_name(filters, filename_components)
-                            plot_fn(curr_plots_folder, curr_df, filename)
+                            for args in tqdm.tqdm(df["validator_args"].unique()):
+                                filters = {
+                                    "adapter": adapter,
+                                    "dataset": dataset,
+                                    "src_domains": src_domains,
+                                    "target_domains": target_domains,
+                                    "feature_layer": feature_layer,
+                                    "validator": validator,
+                                    "validator_args": args,
+                                }
+                                curr_df = filter_df(
+                                    df,
+                                    filter_by,
+                                    filters,
+                                    finished,
+                                )
+                                if len(curr_df) == 0:
+                                    continue
+                                curr_plots_folder = os.path.join(
+                                    plots_folder,
+                                    create_name(filters, sub_folder_components),
+                                )
+                                if len(filename_components) > 0:
+                                    filename = create_name(filters, filename_components)
+                                plot_fn(curr_plots_folder, curr_df, filename)
