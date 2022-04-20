@@ -32,14 +32,15 @@ def per_threshold(df, pretrained_acc, domain_type, fn):
         curr_df = df
         for i, k in enumerate(domain_type):
             curr_df = filter_by_acc(curr_df, np.round(min_acc[i], 4), k)
-        if len(curr_df) == 0:
+        num_past_threshold = len(curr_df)
+        if num_past_threshold == 0:
             continue
         if threshold < 0:
             assert len(curr_df) == len(df)
         t_str = f"{domain_type_str(domain_type)}_threshold"
         curr_df = fn(curr_df)
         curr_df = curr_df.assign(
-            **{t_str: threshold, "num_past_threshold": len(curr_df)}
+            **{t_str: threshold, "num_past_threshold": num_past_threshold}
         )
         curr_df = curr_df.round({t_str: 2})
         all_df.append(curr_df)
