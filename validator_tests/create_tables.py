@@ -23,8 +23,10 @@ def best_accuracy_per_adapter(df, key, folder):
     df.to_csv(filename, index=False)
 
 
-def to_csv(df, folder, key, per_adapter=False):
-    filename = f"top_{key}"
+def to_csv(df, folder, key, per_adapter, topN):
+    filename = f"{key}"
+    if key == "predicted_best_acc":
+        filename += f"_top{topN}"
     if per_adapter:
         filename += "_per_adapter"
     filename = os.path.join(folder, f"{filename}.csv")
@@ -34,7 +36,7 @@ def to_csv(df, folder, key, per_adapter=False):
 def best_validators(df, key, folder, per_adapter, topN):
     c_f.makedir_if_not_there(folder)
 
-    df = df[df["validator"] != "Accuracy"]
+    # df = df[(df["validator"] != "Accuracy"]
     group_by = ["validator", "validator_args", key]
     if per_adapter:
         group_by += ["adapter"]
@@ -45,7 +47,7 @@ def best_validators(df, key, folder, per_adapter, topN):
     df = df.sort_values(by=[key], ascending=False)
     df = df.head(100)
     df.validator_args = df.validator_args.apply(json.loads)
-    to_csv(df, folder, key, per_adapter)
+    to_csv(df, folder, key, per_adapter, topN)
 
 
 def get_tables_folder(args, task, feature_layers):
