@@ -10,6 +10,7 @@ from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import derive, utils
 from validator_tests.utils.constants import (
     ALL_DFS_FILENAME,
+    EXPECTED_NUMBER_OF_CHECKPOINTS,
     PROCESSED_DF_FILENAME,
     add_exp_group_args,
 )
@@ -25,8 +26,6 @@ from validator_tests.utils.df_utils import (
     remove_nan_inf_scores,
     unify_validator_columns,
 )
-
-EXPECTED_NUMBER_OF_CHECKPOINTS = 10 * 100 * 20
 
 
 def read_all_dfs(exp_folder):

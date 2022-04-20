@@ -9,6 +9,7 @@ PER_SRC_FILENAME = "per_src_threshold.pkl"
 PER_SRC_PER_ADAPTER_FILENAME = "per_src_threshold_per_adapter.pkl"
 PROCESSED_DF_FILENAME = "all_dfs_processed.pkl"
 TARGET_ACCURACY = "target_train_macro"
+EXPECTED_NUMBER_OF_CHECKPOINTS = 10 * 100 * 20
 
 
 def get_processed_df(exp_folder):

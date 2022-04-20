@@ -7,7 +7,7 @@ from powerful_benchmarker.utils.score_utils import (
     pretrained_target_train_accuracy,
 )
 
-from .constants import TARGET_ACCURACY
+from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, TARGET_ACCURACY
 
 
 def filter_by_acc(df, min_acc, domain_type):
@@ -144,6 +144,11 @@ def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
 
 
 def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest):
+    # the accuracy columns are duplicated for each validator/validator_args
+    df = df.drop(columns=["validator", "validator_args", "score"]).drop_duplicates()
+    if len(df) != EXPECTED_NUMBER_OF_CHECKPOINTS:
+        print(len(df))
+        raise ValueError
     group_by = group_by_task(per_adapter=per_adapter)
     best_acc = get_avg_top_n_acc_by_group(
         df, group_by, nlargest, TARGET_ACCURACY, "best_acc"
