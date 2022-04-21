@@ -68,13 +68,9 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         best_validators(per_src, "correlation", tables_folder, per_adapter, topN)
 
 
-def create_tables(args, exp_group):
-    exp_folder = os.path.join(args.exp_folder, exp_group)
-    df = get_processed_df(exp_folder)
-    if df is None:
-        return
-    best_accuracy_per_adapter(df, TARGET_ACCURACY, [exp_group], args.tables_folder)
-    create_best_validators_tables(exp_folder, [exp_group], args.tables_folder)
+def create_tables(exp_folder, exp_groups, tables_folder, df):
+    best_accuracy_per_adapter(df, TARGET_ACCURACY, exp_groups, tables_folder)
+    create_best_validators_tables(exp_folder, exp_groups, tables_folder)
 
 
 def main(args):
@@ -82,16 +78,19 @@ def main(args):
     for e in exp_groups:
         print("exp_group", e)
         # do per feature layer
-        create_tables(args, e)
+        exp_folder = os.path.join(args.exp_folder, e)
+        df = get_processed_df(exp_folder)
+        if df is not None:
+            create_tables(exp_folder, [e], args.tables_folder, df)
 
     # # now do with feature layers in one dataframe
     # # which are saved in args.exp_folder
-    combined_exp_groups = get_exp_groups_with_matching_tasks(
-        args.exp_folder, exp_groups
+    combined_dfs, combined_exp_groups = get_exp_groups_with_matching_tasks(
+        args.exp_folder, exp_groups, return_dfs=True
     )
-    for e in combined_exp_groups:
+    for df, e in zip(combined_dfs, combined_exp_groups):
         print("exp_groups", e)
-        create_best_validators_tables(args.exp_folder, e, args.tables_folder)
+        create_tables(args.exp_folder, e, args.tables_folder, df)
 
 
 if __name__ == "__main__":
