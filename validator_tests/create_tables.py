@@ -44,10 +44,9 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     if per_adapter:
         group_by += ["adapter"]
     df = df[df["src_threshold"] == src_threshold]
-    print("per_adapter", per_adapter)
-    print(
-        f"src_threshold={src_threshold}    min/max num_past_threshold: {df['num_past_threshold'].min()}/{df['num_past_threshold'].max()}"
-    )
+    min_num_past_threshold = df["num_past_threshold"].min()
+    if min_num_past_threshold < topN:
+        raise ValueError(f"{min_num_past_threshold} < {topN}")
 
     df = df.groupby([*group_by])[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
@@ -58,7 +57,7 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
     tables_folder = os.path.join(tables_folder, get_name_from_exp_groups(exp_groups))
 
-    for per_adapter in [True, False]:
+    for per_adapter in [False]:
         topN = args.topN_per_adapter if per_adapter else args.topN
         per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups)
         if per_src is None:
