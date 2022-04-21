@@ -25,6 +25,7 @@ def create_per_x_threshold(df, exp_folder, per_adapter, topN, exp_groups):
     print(f"tasks = {tasks}")
     if len(tasks) != 1:
         raise ValueError(f"There should be only 1 task")
+    print("feature layers", df["feature_layer"].unique())
     basename = get_per_src_basename(per_adapter, topN, exp_groups)
     filename = os.path.join(exp_folder, basename)
     fn = (

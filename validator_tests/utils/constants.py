@@ -39,6 +39,10 @@ def get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups):
     return pd.read_pickle(filename)
 
 
+def tasks_match(e1, e2):
+    return e1.split("_fl")[0] == e2.split("_fl")[0]
+
+
 # combined across feature layers etc
 def get_exp_groups_with_matching_tasks(exp_folder, exp_groups, return_dfs=False):
     num_exp_groups = len(exp_groups)
@@ -47,19 +51,27 @@ def get_exp_groups_with_matching_tasks(exp_folder, exp_groups, return_dfs=False)
         e1 = exp_groups[i]
         if any(e1 in ceg for ceg in combined_exp_groups):
             continue
-        df1 = get_processed_df(os.path.join(exp_folder, e1))
-        curr_matching, curr_exp_groups = [], []
+
+        curr_exp_groups = []
+        if return_dfs:
+            df1 = get_processed_df(os.path.join(exp_folder, e1))
+            curr_dfs = []
+
         for j in range(i + 1, num_exp_groups):
             e2 = exp_groups[j]
-            df2 = get_processed_df(os.path.join(exp_folder, e2))
-            if df1 is None or df2 is None:
+            if not tasks_match(e1, e2):
                 continue
-            if df1["task"].unique() == df2["task"].unique():
-                curr_matching.append(df2)
-                curr_exp_groups.append(e2)
-        if len(curr_matching) > 0:
             if return_dfs:
-                combined_dfs.append(pd.concat([df1, *curr_matching], axis=0))
+                df2 = get_processed_df(os.path.join(exp_folder, e2))
+                if df1 is None or df2 is None:
+                    continue
+                assert df1["task"].unique() == df2["task"].unique()
+                curr_dfs.append(df2)
+            curr_exp_groups.append(e2)
+
+        if len(curr_exp_groups) > 0:
+            if return_dfs:
+                combined_dfs.append(pd.concat([df1, *curr_dfs], axis=0))
             combined_exp_groups.append((e1, *curr_exp_groups))
 
     if return_dfs:
