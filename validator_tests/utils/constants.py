@@ -20,17 +20,49 @@ def get_processed_df(exp_folder):
     return pd.read_pickle(filename)
 
 
-def get_per_src_basename(per_adapter, topN, task):
+def get_name_from_exp_groups(exp_groups):
+    split_names = [i.split("_") for i in exp_groups]
+    return "_".join(["".join(sorted(list(set(i)))) for i in zip(*split_names)])
+
+
+def get_per_src_basename(per_adapter, topN, exp_groups):
     basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    return f"{task}_top{topN}_{basename}"
+    exp_groups = get_name_from_exp_groups(exp_groups)
+    return f"{exp_groups}_top{topN}_{basename}"
 
 
-def get_per_src_threshold_df(exp_folder, per_adapter, topN, task):
-    basename = get_per_src_basename(per_adapter, topN, task)
+def get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups):
+    basename = get_per_src_basename(per_adapter, topN, exp_groups)
     filename = os.path.join(exp_folder, basename)
     if not os.path.isfile(filename):
         return None
     return pd.read_pickle(filename)
+
+
+# combined across feature layers etc
+def get_exp_groups_with_matching_tasks(exp_folder, exp_groups, return_dfs=False):
+    num_exp_groups = len(exp_groups)
+    combined_dfs, combined_exp_groups = [], []
+    for i in range(num_exp_groups):
+        e1 = exp_groups[i]
+        df1 = get_processed_df(os.path.join(exp_folder, e1))
+        curr_matching, curr_exp_groups = [], []
+        for j in range(i + 1, num_exp_groups):
+            e2 = exp_groups[j]
+            df2 = get_processed_df(os.path.join(exp_folder, e2))
+            if df1 is None or df2 is None:
+                continue
+            if df1["task"].unique() == df2["task"].unique():
+                curr_matching.append(df2)
+                curr_exp_groups.append(e2)
+        if len(curr_matching) > 0:
+            if return_dfs:
+                combined_dfs.append(pd.concat([df1, *curr_matching], axis=0))
+            combined_exp_groups.append((e1, *curr_exp_groups))
+
+    if return_dfs:
+        return combined_dfs, combined_exp_groups
+    return combined_exp_groups
 
 
 def exp_group_args():
