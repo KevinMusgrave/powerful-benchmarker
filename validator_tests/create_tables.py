@@ -11,12 +11,15 @@ from validator_tests.utils import utils
 from validator_tests.utils.constants import (
     TARGET_ACCURACY,
     add_exp_group_args,
+    get_exp_groups_with_matching_tasks,
+    get_name_from_exp_groups,
     get_per_src_threshold_df,
     get_processed_df,
 )
 
 
-def best_accuracy_per_adapter(df, key, folder):
+def best_accuracy_per_adapter(df, key, exp_groups, tables_folder):
+    folder = os.path.join(tables_folder, get_name_from_exp_groups(exp_groups))
     c_f.makedir_if_not_there(folder)
     df = df.groupby(["adapter"])[key].max().reset_index(name=key)
     filename = os.path.join(folder, f"best_accuracy_per_adapter.csv")
@@ -50,21 +53,14 @@ def best_validators(df, key, folder, per_adapter, topN):
     to_csv(df, folder, key, per_adapter, topN)
 
 
-def get_tables_folder(args, task, feature_layers):
-    if len(feature_layers) == 1:
-        base_foldername = f"{task}_fl{str(feature_layers[0])}"
-    else:
-        base_foldername = task
-    return os.path.join(args.tables_folder, base_foldername)
+def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
+    tables_folder = os.path.join(tables_folder, get_name_from_exp_groups(exp_groups))
 
-
-def create_best_validators_tables(exp_folder, task, tables_folder):
     for per_adapter in [True, False]:
         topN = args.topN_per_adapter if per_adapter else args.topN
-        per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, task)
+        per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups)
         if per_src is None:
             continue
-
         best_validators(per_src, "predicted_best_acc", tables_folder, per_adapter, topN)
         # For correlation, only keep src_thresholds where there is a meaningful number of datapoints
         # per_src = per_src[per_src["num_past_threshold"] > 200]
@@ -73,30 +69,29 @@ def create_best_validators_tables(exp_folder, task, tables_folder):
 
 
 def create_tables(args, exp_group):
-    print("exp_group", exp_group)
     exp_folder = os.path.join(args.exp_folder, exp_group)
     df = get_processed_df(exp_folder)
     if df is None:
         return
-    task = df["task"].unique()[0]
-    feature_layers = df["feature_layer"].unique()
-    tables_folder = get_tables_folder(args, task, feature_layers)
-    best_accuracy_per_adapter(df, TARGET_ACCURACY, tables_folder)
-    create_best_validators_tables(exp_folder, task, tables_folder)
-    return task
+    best_accuracy_per_adapter(df, TARGET_ACCURACY, [exp_group], args.tables_folder)
+    create_best_validators_tables(exp_folder, [exp_group], args.tables_folder)
 
 
 def main(args):
     exp_groups = utils.get_exp_groups(args)
     for e in exp_groups:
+        print("exp_group", e)
         # do per feature layer
-        task = create_tables(args, e)
-        if task is None:
-            continue
-        # now do with feature layers in one dataframe
-        # which are saved in args.exp_folder
-        tables_folder = get_tables_folder(args, task, [])
-        create_best_validators_tables(args.exp_folder, task, tables_folder)
+        create_tables(args, e)
+
+    # # now do with feature layers in one dataframe
+    # # which are saved in args.exp_folder
+    combined_exp_groups = get_exp_groups_with_matching_tasks(
+        args.exp_folder, exp_groups
+    )
+    for e in combined_exp_groups:
+        print("exp_groups", e)
+        create_best_validators_tables(args.exp_folder, e, args.tables_folder)
 
 
 if __name__ == "__main__":
