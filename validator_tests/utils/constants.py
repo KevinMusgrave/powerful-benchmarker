@@ -45,6 +45,8 @@ def get_exp_groups_with_matching_tasks(exp_folder, exp_groups, return_dfs=False)
     combined_dfs, combined_exp_groups = [], []
     for i in range(num_exp_groups):
         e1 = exp_groups[i]
+        if any(e1 in ceg for ceg in combined_exp_groups):
+            continue
         df1 = get_processed_df(os.path.join(exp_folder, e1))
         curr_matching, curr_exp_groups = [], []
         for j in range(i + 1, num_exp_groups):
