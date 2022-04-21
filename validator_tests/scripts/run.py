@@ -10,7 +10,6 @@ def main(args):
         {"flags": "DEV", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "DEVBinary", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "SND", "exp_per_slurm_job": "3", "trials_per_exp": "100"},
-        {"flags": "DomainCluster", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {
             "flags": "ClassAMICentroidInit",
             "exp_per_slurm_job": "4",
