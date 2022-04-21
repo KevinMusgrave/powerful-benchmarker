@@ -26,31 +26,33 @@ def best_accuracy_per_adapter(df, key, exp_groups, tables_folder):
     df.to_csv(filename, index=False)
 
 
-def to_csv(df, folder, key, per_adapter, topN):
+def to_csv(df, folder, key, per_adapter, topN, src_threshold):
     filename = f"{key}"
     if key == "predicted_best_acc":
         filename += f"_top{topN}"
     if per_adapter:
         filename += "_per_adapter"
+    filename += f"_{src_threshold}_src_threshold"
     filename = os.path.join(folder, f"{filename}.csv")
     df.to_csv(filename, index=False)
 
 
-def best_validators(df, key, folder, per_adapter, topN):
+def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     c_f.makedir_if_not_there(folder)
 
-    # df = df[(df["validator"] != "Accuracy"]
-    group_by = ["validator", "validator_args", key]
+    group_by = ["validator", "validator_args"]
     if per_adapter:
         group_by += ["adapter"]
-    df = df[[*group_by, "src_threshold"]]
-    # If two values match, we want the one with the lowest src threshold
-    df = df.groupby(group_by)["src_threshold"].min()
-    df = df.reset_index(name="src_threshold")
+    df = df[df["src_threshold"] == src_threshold]
+    print("per_adapter", per_adapter)
+    print(
+        f"src_threshold={src_threshold}    min/max num_past_threshold: {df['num_past_threshold'].min()}/{df['num_past_threshold'].max()}"
+    )
+
+    df = df.groupby([*group_by])[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
-    df = df.head(100)
     df.validator_args = df.validator_args.apply(json.loads)
-    to_csv(df, folder, key, per_adapter, topN)
+    to_csv(df, folder, key, per_adapter, topN, src_threshold)
 
 
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
@@ -61,11 +63,18 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups)
         if per_src is None:
             continue
-        best_validators(per_src, "predicted_best_acc", tables_folder, per_adapter, topN)
-        # For correlation, only keep src_thresholds where there is a meaningful number of datapoints
-        # per_src = per_src[per_src["num_past_threshold"] > 200]
-        # print(per_src["num_past_threshold"].max())
-        best_validators(per_src, "correlation", tables_folder, per_adapter, topN)
+        for src_threshold in [0, 0.9]:
+            best_validators(
+                per_src,
+                "predicted_best_acc",
+                tables_folder,
+                per_adapter,
+                topN,
+                src_threshold,
+            )
+            best_validators(
+                per_src, "correlation", tables_folder, per_adapter, topN, src_threshold
+            )
 
 
 def create_tables(exp_folder, exp_groups, tables_folder, df):
