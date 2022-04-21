@@ -59,9 +59,9 @@ def add_NegSND(df):
     return pd.concat([df, x], axis=0)
 
 
-def _add_src_and_target(df, validator_name):
+def _add_src_and_target(df, validator_name, src_split="train"):
     x = df[df["validator"] == validator_name]
-    src = x[x["validator_args"].str.contains('"split": "src_train"')]
+    src = x[x["validator_args"].str.contains(f'"split": "src_{src_split}"')]
     target = x[x["validator_args"].str.contains('"split": "target_train"')]
 
     if len(src) == 0 or len(target) == 0:
@@ -94,6 +94,10 @@ def _add_src_and_target(df, validator_name):
 
 def add_BNMSummed(df):
     return _add_src_and_target(df, "BNM")
+
+
+def add_BNMSummedSrcVal(df):
+    return _add_src_and_target(df, "BNM", src_split="val")
 
 
 def add_BSPSummed(df):
