@@ -7,7 +7,6 @@ def main(args):
         {"flags": "Accuracy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "Entropy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "Diversity", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "DEV", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "DEVBinary", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "SND", "exp_per_slurm_job": "3", "trials_per_exp": "100"},
         {
@@ -25,7 +24,6 @@ def main(args):
         },
         {"flags": "TargetKNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "TargetKNNLogits", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "BSP", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     ]
 
