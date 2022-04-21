@@ -55,7 +55,7 @@ def scatter_plot(
     fig.clf()
 
 
-def per_validator_args_per_task(curr_plots_folder, curr_df, filename):
+def score_vs_target_accuracy(curr_plots_folder, curr_df, filename):
     scatter_plot(
         curr_plots_folder,
         curr_df,
@@ -66,65 +66,35 @@ def per_validator_args_per_task(curr_plots_folder, curr_df, filename):
     )
 
 
-def per_adapter_per_validator_args_per_task(curr_plots_folder, curr_df, filename):
-    scatter_plot(
-        curr_plots_folder,
-        curr_df,
-        "score",
-        TARGET_ACCURACY,
-        filename,
-        "src_val_macro",
-    )
-
-
-def plot_val_vs_acc(df, plots_folder, per_adapter, validator_set=None):
+def plot_val_vs_acc(
+    df, plots_folder, per_adapter, per_feature_layer, validator_set=None
+):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
 
-    if not per_adapter:
-        plot_loop(
-            df,
-            plots_folder,
-            per_validator_args_per_task,
-            filter_by=[
-                "dataset",
-                "src_domains",
-                "target_domains",
-                "validator",
-                "validator_args",
-                "feature_layer",
-            ],
-            sub_folder_components=[
-                "dataset",
-                "src_domains",
-                "target_domains",
-                "feature_layer",
-            ],
-            filename_components=["validator", "validator_args"],
-            per_adapter=per_adapter,
-            validator_set=validator_set,
-        )
+    filter_by = [
+        "dataset",
+        "src_domains",
+        "target_domains",
+        "validator",
+        "validator_args",
+    ]
 
-    else:
-        plot_loop(
-            df,
-            plots_folder,
-            per_adapter_per_validator_args_per_task,
-            filter_by=[
-                "adapter",
-                "dataset",
-                "src_domains",
-                "target_domains",
-                "validator",
-                "validator_args",
-            ],
-            sub_folder_components=[
-                "dataset",
-                "src_domains",
-                "target_domains",
-                "validator",
-                "adapter",
-            ],
-            filename_components=["validator_args"],
-            per_adapter=per_adapter,
-            validator_set=validator_set,
-        )
+    sub_folder_components = ["dataset", "src_domains", "target_domains"]
+
+    if per_adapter:
+        filter_by.append("adapter")
+        sub_folder_components.append("adapter")
+    if per_feature_layer:
+        filter_by.append("feature_layer")
+        sub_folder_components.append("feature_layer")
+
+    plot_loop(
+        df,
+        plots_folder,
+        score_vs_target_accuracy,
+        filter_by=filter_by,
+        sub_folder_components=sub_folder_components,
+        filename_components=["validator", "validator_args"],
+        per_adapter=per_adapter,
+        validator_set=validator_set,
+    )

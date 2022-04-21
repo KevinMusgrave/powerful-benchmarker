@@ -7,6 +7,7 @@ from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
 from validator_tests.utils.constants import (
     add_exp_group_args,
+    get_exp_groups_with_matching_tasks,
     get_per_src_threshold_df,
     get_processed_df,
 )
@@ -18,28 +19,44 @@ from validator_tests.utils.plot_heatmap import (
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 
 
-def scatter_and_heatmap(args, exp_group):
-    exp_folder = os.path.join(args.exp_folder, exp_group)
+def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, per_feature_layer, df):
     if args.scatter:
-        df = get_processed_df(exp_folder)
-        if df is not None:
-            plot_val_vs_acc(
-                df, args.plots_folder, False, args.scatter_plot_validator_set
-            )
-
+        plot_val_vs_acc(
+            df,
+            plots_folder,
+            per_adapter=False,
+            per_feature_layer=per_feature_layer,
+            validator_set=args.scatter_plot_validator_set,
+        )
     if args.heatmap:
-        per_src = get_per_src_threshold_df(exp_folder, False)
-        plot_heatmap(per_src, args.plots_folder)
+        per_src = get_per_src_threshold_df(exp_folder, False, args.topN, exp_groups)
+        plot_heatmap(per_src, plots_folder)
 
-        per_src = get_per_src_threshold_df(exp_folder, True)
-        plot_heatmap_per_adapter(per_src, args.plots_folder)
-        plot_heatmap_average_across_adapters(per_src, args.plots_folder)
+        per_src = get_per_src_threshold_df(
+            exp_folder, True, args.topN_per_adapter, exp_groups
+        )
+        plot_heatmap_per_adapter(per_src, plots_folder)
+        plot_heatmap_average_across_adapters(per_src, plots_folder)
 
 
 def main(args):
     exp_groups = utils.get_exp_groups(args)
     for e in exp_groups:
-        scatter_and_heatmap(args, e)
+        print("exp_group", e)
+        # do per feature layer
+        exp_folder = os.path.join(args.exp_folder, e)
+        df = get_processed_df(exp_folder)
+        if df is not None:
+            scatter_and_heatmap(exp_folder, [e], args.plots_folder, True, df)
+
+    # now do with feature layers in one dataframe
+    # which are saved in args.exp_folder
+    combined_dfs, combined_exp_groups = get_exp_groups_with_matching_tasks(
+        args.exp_folder, exp_groups, return_dfs=True
+    )
+    for df, e in zip(combined_dfs, combined_exp_groups):
+        print("exp_groups", e)
+        scatter_and_heatmap(args.exp_folder, e, args.plots_folder, False, df)
 
 
 if __name__ == "__main__":
@@ -52,5 +69,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--scatter", action="store_true")
     parser.add_argument("--heatmap", action="store_true")
+
+    # topN here refers to the topN used in per_src_threshold.py
+    parser.add_argument("--topN", type=int, default=200)
+    parser.add_argument("--topN_per_adapter", type=int, default=20)
     args = parser.parse_args()
     main(args)
