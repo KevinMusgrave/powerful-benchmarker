@@ -25,7 +25,7 @@ def plot_fn(df, plots_folder, filename, index, columns, values, **kwargs):
 
 
 def process_df(df):
-    df = df[df["validator"] != "Accuracy"]
+    # df = df[df["validator"] != "Accuracy"]
     return unify_validator_columns(df)
 
 
