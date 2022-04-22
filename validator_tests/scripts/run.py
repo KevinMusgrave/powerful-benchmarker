@@ -16,12 +16,6 @@ def main(args):
         },
         {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "MMDFixedB", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {
-            "flags": "MMDPerClassFixedB",
-            "exp_per_slurm_job": "4",
-            "trials_per_exp": "100",
-        },
         {"flags": "TargetKNN", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "TargetKNNLogits", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
