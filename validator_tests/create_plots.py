@@ -8,6 +8,7 @@ from validator_tests.utils import utils
 from validator_tests.utils.constants import (
     add_exp_group_args,
     get_exp_groups_with_matching_tasks,
+    get_name_from_exp_groups,
     get_per_src_threshold_df,
     get_processed_df,
 )
@@ -29,14 +30,17 @@ def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, per_feature_layer,
             validator_set=args.scatter_plot_validator_set,
         )
     if args.heatmap:
+        plots_folder = os.path.join(plots_folder, get_name_from_exp_groups(exp_groups))
         per_src = get_per_src_threshold_df(exp_folder, False, args.topN, exp_groups)
-        plot_heatmap(per_src, plots_folder)
+        plot_heatmap(per_src, plots_folder, args.topN)
 
         per_src = get_per_src_threshold_df(
             exp_folder, True, args.topN_per_adapter, exp_groups
         )
-        plot_heatmap_per_adapter(per_src, plots_folder)
-        plot_heatmap_average_across_adapters(per_src, plots_folder)
+        plot_heatmap_per_adapter(per_src, plots_folder, args.topN_per_adapter)
+        plot_heatmap_average_across_adapters(
+            per_src, plots_folder, args.topN_per_adapter
+        )
 
 
 def main(args):
