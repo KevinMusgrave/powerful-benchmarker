@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests.utils import utils
+from validator_tests.utils import create_main, utils
 from validator_tests.utils.constants import (
     add_exp_group_args,
     get_exp_groups_with_matching_tasks,
@@ -66,7 +66,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
-    parser.add_argument("--topN", type=int, default=200)
-    parser.add_argument("--topN_per_adapter", type=int, default=20)
+    create_main.add_topN_args(parser)
     args = parser.parse_args()
     main(args)

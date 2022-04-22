@@ -4,13 +4,11 @@ import sys
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests.utils import utils
+from validator_tests.utils import create_main
 from validator_tests.utils.constants import (
     add_exp_group_args,
-    get_exp_groups_with_matching_tasks,
     get_name_from_exp_groups,
     get_per_src_threshold_df,
-    get_processed_df,
 )
 from validator_tests.utils.plot_heatmap import (
     plot_heatmap,
@@ -20,7 +18,7 @@ from validator_tests.utils.plot_heatmap import (
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 
 
-def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, per_feature_layer, df):
+def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, df, per_feature_layer):
     if args.scatter:
         plot_val_vs_acc(
             df,
@@ -43,39 +41,25 @@ def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, per_feature_layer,
         )
 
 
-def main(args):
-    exp_groups = utils.get_exp_groups(args)
-    for e in exp_groups:
-        print("exp_group", e)
-        # do per feature layer
-        exp_folder = os.path.join(args.exp_folder, e)
-        df = get_processed_df(exp_folder)
-        if df is not None:
-            scatter_and_heatmap(exp_folder, [e], args.plots_folder, True, df)
+def fn1(*args):
+    scatter_and_heatmap(*args, per_feature_layer=True)
 
-    # now do with feature layers in one dataframe
-    # which are saved in args.exp_folder
-    combined_dfs, combined_exp_groups = get_exp_groups_with_matching_tasks(
-        args.exp_folder, exp_groups, return_dfs=True
-    )
-    for df, e in zip(combined_dfs, combined_exp_groups):
-        print("exp_groups", e)
-        scatter_and_heatmap(args.exp_folder, e, args.plots_folder, False, df)
+
+def fn2(*args):
+    scatter_and_heatmap(*args, per_feature_layer=False)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
-    parser.add_argument("--plots_folder", type=str, default="plots")
+    # topN here refers to the topN used in per_src_threshold.py
+    create_main.add_topN_args(parser)
+    parser.add_argument("--output_folder", type=str, default="plots")
     parser.add_argument(
         "--scatter_plot_validator_set", nargs="+", type=str, default=None
     )
     parser.add_argument("--scatter", action="store_true")
     parser.add_argument("--heatmap", action="store_true")
-
-    # topN here refers to the topN used in per_src_threshold.py
-    parser.add_argument("--topN", type=int, default=200)
-    parser.add_argument("--topN_per_adapter", type=int, default=20)
     args = parser.parse_args()
-    main(args)
+    create_main.main(args, fn1, fn2)
