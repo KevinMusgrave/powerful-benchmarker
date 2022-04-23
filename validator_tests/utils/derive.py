@@ -12,6 +12,7 @@ def add_derived_scores(df):
         add_IM,
         add_NegSND,
         add_BNMSummed,
+        add_BNMSummedSrcVal,
         add_BSPSummed,
         add_EntropySummed,
         add_DiversitySummed,
@@ -59,7 +60,7 @@ def add_NegSND(df):
     return pd.concat([df, x], axis=0)
 
 
-def _add_src_and_target(df, validator_name, src_split="train"):
+def _add_src_and_target(df, validator_name, src_split="train", new_name=None):
     x = df[df["validator"] == validator_name]
     src = x[x["validator_args"].str.contains(f'"split": "src_{src_split}"')]
     target = x[x["validator_args"].str.contains('"split": "target_train"')]
@@ -84,9 +85,12 @@ def _add_src_and_target(df, validator_name, src_split="train"):
         target,
         on=exp_specific_columns(src, exclude=[src_score_name, target_score_name]),
     )
+    if new_name is None:
+        new_name = f"{validator_name}Summed"
+
     summed = summed.assign(
         score=summed[src_score_name] + summed[target_score_name],
-        validator=f"{validator_name}Summed",
+        validator=new_name,
     )
     summed = summed.drop(columns=[src_score_name, target_score_name])
     return pd.concat([df, summed], axis=0)
@@ -97,7 +101,7 @@ def add_BNMSummed(df):
 
 
 def add_BNMSummedSrcVal(df):
-    return _add_src_and_target(df, "BNM", src_split="val")
+    return _add_src_and_target(df, "BNM", src_split="val", new_name="BNMSummedSrcVal")
 
 
 def add_BSPSummed(df):
