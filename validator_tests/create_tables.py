@@ -19,7 +19,7 @@ from validator_tests.utils.constants import (
 def best_accuracy_per_adapter(df, key, exp_groups, tables_folder):
     folder = os.path.join(tables_folder, get_name_from_exp_groups(exp_groups))
     c_f.makedir_if_not_there(folder)
-    df = df.groupby(["adapter"])[key].max().reset_index(name=key)
+    df = df.groupby(["adapter", "task"])[key].max().reset_index(name=key)
     filename = os.path.join(folder, f"best_accuracy_per_adapter.csv")
     df.to_csv(filename, index=False)
 
