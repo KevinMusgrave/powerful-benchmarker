@@ -34,17 +34,29 @@ def assign_shortened_task_name(df):
     return df.assign(task=new_col)
 
 
+def preprocess_df(df):
+    convert_adapter_name(df)
+    df = assign_shortened_task_name(df)
+    return df
+
+
+def postprocess_df(df):
+    df = pd.concat(df, axis=0)
+    df = df.pivot(index="adapter", columns="task")
+    df = (df * 100).round(1)
+    return df
+
+
 def main(args):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
     df = []
     for e in exp_groups:
         filename = os.path.join(args.input_folder, e, f"{args.filename}.csv")
         curr_df = pd.read_csv(filename)
-        convert_adapter_name(curr_df)
-        curr_df = assign_shortened_task_name(curr_df)
+        curr_df = preprocess_df(curr_df)
         df.append(curr_df)
 
-    df = pd.concat(df, axis=1)
+    df = postprocess_df(df)
     print(df)
 
 
