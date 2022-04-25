@@ -7,7 +7,7 @@ from powerful_benchmarker.utils.score_utils import (
     pretrained_target_train_accuracy,
 )
 
-from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, NUM_ADAPTERS, TARGET_ACCURACY
+from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, TARGET_ACCURACY
 from .df_utils import get_sorted_unique
 
 
@@ -165,19 +165,17 @@ def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
     )
 
 
-def convert_predicted_best_acc_to_rel(
-    df, per_x, per_adapter, nlargest, num_feature_layers
-):
+def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_groups):
     # the accuracy columns are duplicated for each validator/validator_args
     df = df.drop(columns=["validator", "validator_args", "score"]).drop_duplicates()
-    max_num_checkpoints = EXPECTED_NUMBER_OF_CHECKPOINTS * num_feature_layers
+    max_num_checkpoints = EXPECTED_NUMBER_OF_CHECKPOINTS * num_exp_groups
     # TODO change this to != when experiments are done
     if len(df) > max_num_checkpoints:
         print(len(df))
         raise ValueError
 
     if per_adapter:
-        max_num_checkpoints /= NUM_ADAPTERS
+        max_num_checkpoints /= len(df["adapter"].unique())
     if per_x["num_past_threshold"].max() > max_num_checkpoints:
         print(per_x["num_past_threshold"].max())
         raise ValueError
