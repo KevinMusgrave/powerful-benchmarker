@@ -8,6 +8,7 @@ from powerful_benchmarker.utils.score_utils import (
 )
 
 from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, NUM_ADAPTERS, TARGET_ACCURACY
+from .df_utils import get_sorted_unique
 
 
 def filter_by_acc(df, min_acc, domain_type):
@@ -56,15 +57,27 @@ def get_per_target_threshold(df, dataset, source_domain, target_domain, fn):
     return per_threshold(df, [pretrained_acc], ["target"], fn)
 
 
+def assign_original_df_info(all_per_src, df):
+    task = get_sorted_unique(df, "task", assert_one=True)[0]
+    dataset = get_sorted_unique(df, "dataset", assert_one=True)[0]
+    src_domains = get_sorted_unique(df, "src_domains", assert_one=True)[0]
+    target_domains = get_sorted_unique(df, "target_domains", assert_one=True)[0]
+    feature_layer = get_sorted_unique(df, "feature_layer")
+    optimizer = get_sorted_unique(df, "optimizer")
+    lr_multiplier = get_sorted_unique(df, "lr_multiplier")
+
+    return all_per_src.assign(
+        task=task,
+        dataset=dataset,
+        src_domains=[src_domains] * len(all_per_src),
+        target_domains=[target_domains] * len(all_per_src),
+        feature_layer=[feature_layer] * len(all_per_src),
+        optimizer=[optimizer] * len(all_per_src),
+        lr_multiplier=[lr_multiplier] * len(all_per_src),
+    )
+
+
 def get_per_threshold(df, fn):
-    tasks = df["task"].unique()
-    print(f"tasks = {tasks}")
-    if len(tasks) != 1:
-        raise ValueError(f"There should be only 1 task")
-
-    feature_layer = tuple(sorted(df["feature_layer"].unique()))
-    print("feature layer", feature_layer)
-
     all_per_src = []
     for dataset in df["dataset"].unique():
         for src_domains in df["src_domains"].unique():
@@ -77,9 +90,7 @@ def get_per_threshold(df, fn):
                 per_src = get_per_src_threshold(curr_df, dataset, src_domains, fn)
                 all_per_src.append(per_src)
     all_per_src = pd.concat(all_per_src, axis=0, ignore_index=True)
-    return all_per_src.assign(
-        task=tasks[0], feature_layer=[feature_layer] * len(all_per_src)
-    )
+    return assign_original_df_info(all_per_src, df)
 
 
 def get_corr(group_by):

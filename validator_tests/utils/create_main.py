@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, ".")
 from validator_tests.utils import utils
-from validator_tests.utils.constants import (
+from validator_tests.utils.df_utils import (
     get_exp_groups_with_matching_tasks,
     get_processed_df,
 )

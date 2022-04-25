@@ -5,8 +5,8 @@ import sys
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main, utils
-from validator_tests.utils.constants import (
-    add_exp_group_args,
+from validator_tests.utils.constants import add_exp_group_args
+from validator_tests.utils.df_utils import (
     get_exp_groups_with_matching_tasks,
     get_per_src_basename,
     get_processed_df,
@@ -21,8 +21,6 @@ from validator_tests.utils.threshold_utils import (
 
 def create_per_x_threshold(df, exp_folder, per_adapter, topN, exp_groups):
     print(f"per_adapter = {per_adapter}")
-    basename = get_per_src_basename(per_adapter, topN, exp_groups)
-    filename = os.path.join(exp_folder, basename)
     fn = (
         get_all_per_task_validator_adapter(topN)
         if per_adapter
@@ -32,6 +30,8 @@ def create_per_x_threshold(df, exp_folder, per_adapter, topN, exp_groups):
     per_src = convert_predicted_best_acc_to_rel(
         df, per_src, per_adapter, topN, len(exp_groups)
     )
+    basename = get_per_src_basename(per_src, per_adapter, topN)
+    filename = os.path.join(exp_folder, basename)
     print(f"saving to {filename}\n\n")
     per_src.to_pickle(filename)
 
