@@ -11,13 +11,14 @@ from validator_tests.utils.df_utils import (
 
 def main(args, fn1, fn2):
     exp_groups = utils.get_exp_groups(args)
+    output_folder = getattr(args, "output_folder", None)
     for e in exp_groups:
         print("exp_group", e)
         # do per feature layer
         exp_folder = os.path.join(args.exp_folder, e)
         df = get_processed_df(exp_folder)
         if df is not None:
-            fn1(exp_folder, [e], args.output_folder, df)
+            fn1(exp_folder, [e], output_folder, df)
 
     # now do with feature layers in one dataframe
     # which are saved in args.exp_folder
@@ -26,7 +27,7 @@ def main(args, fn1, fn2):
     )
     for df, e in zip(combined_dfs, combined_exp_groups):
         print("exp_groups", e)
-        fn2(args.exp_folder, e, args.output_folder, df)
+        fn2(args.exp_folder, e, output_folder, df)
 
 
 def add_topN_args(parser):
