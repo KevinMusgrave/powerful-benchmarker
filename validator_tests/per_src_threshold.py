@@ -26,7 +26,7 @@ def create_per_x_threshold(df, exp_folder, per_adapter, topN, exp_groups):
     per_src = convert_predicted_best_acc_to_rel(
         df, per_src, per_adapter, topN, len(exp_groups)
     )
-    basename = get_per_src_basename(per_src, per_adapter, topN)
+    basename = get_per_src_basename(per_adapter, topN, df=per_src)
     filename = os.path.join(exp_folder, basename)
     print(f"saving to {filename}\n\n")
     per_src.to_pickle(filename)

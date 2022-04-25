@@ -8,16 +8,12 @@ from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
-from validator_tests.utils.constants import (
-    TARGET_ACCURACY,
-    add_exp_group_args,
-    get_name_from_exp_groups,
-    get_per_src_threshold_df,
-)
+from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
+from validator_tests.utils.df_utils import get_name_from_df, get_per_src_threshold_df
 
 
-def best_accuracy_per_adapter(df, key, exp_groups, tables_folder):
-    folder = os.path.join(tables_folder, get_name_from_exp_groups(exp_groups))
+def best_accuracy_per_adapter(df, key, tables_folder):
+    folder = os.path.join(tables_folder, get_name_from_df(df, assert_one_task=True))
     c_f.makedir_if_not_there(folder)
     df = df.groupby(["adapter", "task"])[key].max().reset_index(name=key)
     filename = os.path.join(folder, f"best_accuracy_per_adapter.csv")
@@ -53,29 +49,30 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
 
 
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
-    tables_folder = os.path.join(tables_folder, get_name_from_exp_groups(exp_groups))
-
     for per_adapter in [False]:
         topN = args.topN_per_adapter if per_adapter else args.topN
         per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups)
         if per_src is None:
             continue
+        curr_folder = os.path.join(
+            tables_folder, get_name_from_df(per_src, assert_one_task=True)
+        )
         for src_threshold in [0, 0.9]:
             best_validators(
                 per_src,
                 "predicted_best_acc",
-                tables_folder,
+                curr_folder,
                 per_adapter,
                 topN,
                 src_threshold,
             )
             best_validators(
-                per_src, "correlation", tables_folder, per_adapter, topN, src_threshold
+                per_src, "correlation", curr_folder, per_adapter, topN, src_threshold
             )
 
 
 def create_tables(exp_folder, exp_groups, tables_folder, df):
-    best_accuracy_per_adapter(df, TARGET_ACCURACY, exp_groups, tables_folder)
+    best_accuracy_per_adapter(df, TARGET_ACCURACY, tables_folder)
     create_best_validators_tables(exp_folder, exp_groups, tables_folder)
 
 

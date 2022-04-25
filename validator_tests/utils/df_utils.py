@@ -191,13 +191,16 @@ def get_name_from_exp_groups(exp_groups):
     return "_".join("".join(sorted(list(set(i)))) for i in zip(*split_names))
 
 
-def get_per_src_basename(df, per_adapter, topN):
+def get_per_src_basename(per_adapter, topN, df=None, exp_groups=None):
     basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    return f"{get_name_from_df(df)}_top{topN}_{basename}"
+    exp_group = (
+        get_name_from_df(df) if df is not None else get_name_from_exp_groups(exp_groups)
+    )
+    return f"{exp_group}_top{topN}_{basename}"
 
 
 def get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups):
-    basename = get_per_src_basename(per_adapter, topN, exp_groups)
+    basename = get_per_src_basename(per_adapter, topN, exp_groups=exp_groups)
     filename = os.path.join(exp_folder, basename)
     return read_df(exp_folder, filename)
 
