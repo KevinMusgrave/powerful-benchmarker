@@ -38,7 +38,7 @@ def exp_launcher(args, commands):
     job_env = submitit.JobEnvironment()
     local_rank = job_env.local_rank
     gpu_list = list(range(num_gpus))
-    use_devices = ",".join([str(x) for x in rotate(gpu_list, local_rank)])
+    use_devices = ",".join(str(x) for x in rotate(gpu_list, local_rank))
     command = commands[local_rank]
     full_command = f"bash -i ./validator_tests/scripts/script_wrapper.sh {args.conda_env} {use_devices}".split(
         " "
@@ -77,7 +77,7 @@ def flags_to_strs(flags):
     output = []
     for f in flags:
         trial_range = f.pop("trial_range")
-        x = " ".join([f"--{k}={v}" for k, v in f.items()])
+        x = " ".join(f"--{k}={v}" for k, v in f.items())
         x += f" --trial_range {trial_range[0]} {trial_range[1]}"
         output.append(x)
     return output

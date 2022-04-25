@@ -83,7 +83,7 @@ def apply_to_data(exp_folders, condition, fn=None, end_fn=None):
 
 # str representation of dict as input
 def validator_args_underscore_delimited(validator_args_str):
-    return "_".join([f"{k}_{v}" for k, v in json.loads(validator_args_str).items()])
+    return "_".join(f"{k}_{v}" for k, v in json.loads(validator_args_str).items())
 
 
 def validator_str(validator_name, validator_args_str):

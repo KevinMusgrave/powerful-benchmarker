@@ -32,7 +32,7 @@ def get_processed_df(exp_folder):
 
 def get_name_from_exp_groups(exp_groups):
     split_names = [i.split("_") for i in exp_groups]
-    return "_".join(["".join(sorted(list(set(i)))) for i in zip(*split_names)])
+    return "_".join("".join(sorted(list(set(i)))) for i in zip(*split_names))
 
 
 def get_per_src_basename(per_adapter, topN, exp_groups):
