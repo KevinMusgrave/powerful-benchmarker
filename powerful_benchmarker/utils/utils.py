@@ -80,3 +80,26 @@ def jobs_that_are_still_running(exp_folder, jobids_file):
 
         return set(y).intersection(jobid_list)
     return {}
+
+
+def create_exp_group_name(
+    dataset,
+    src_domains,
+    target_domains,
+    feature_layers,
+    optimizers,
+    lr_multipliers,
+    validator=None,
+):
+    src_domains = "_".join(src_domains)
+    target_domains = "_".join(target_domains)
+    exp_group_name = f"{dataset}_{src_domains}_{target_domains}"
+    if validator:
+        exp_group_name += f"_{validator}"
+    feature_layers = "".join(f"fl{str(x)}" for x in sorted(feature_layers))
+    optimizers = "".join(x for x in sorted(optimizers))
+    lr_multipliers = "".join(
+        f"lr{f'{x:.1f}' if x < 1 else int(x)}" for x in sorted(lr_multipliers)
+    )
+    exp_group_name += f"_{feature_layers}_{optimizers}_{lr_multipliers}"
+    return exp_group_name

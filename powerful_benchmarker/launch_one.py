@@ -15,6 +15,7 @@ from powerful_benchmarker.utils.constants import (
 )
 from powerful_benchmarker.utils.utils import (
     append_jobid_to_file,
+    create_exp_group_name,
     create_slurm_args,
     get_yaml_config_folder,
     get_yaml_config_path,
@@ -73,7 +74,7 @@ def exp_launcher(cfg, exp_folder, exp_names, gcfg):
     local_rank = job_env.local_rank
     exp_name, config_name = exp_names[local_rank]
     gpu_list = list(range(num_gpus))
-    use_devices = ",".join([str(x) for x in rotate(gpu_list, local_rank)])
+    use_devices = ",".join(str(x) for x in rotate(gpu_list, local_rank))
     command = base_command(cfg.dataset_folder, exp_folder, exp_name, config_name, gcfg)
     args = f"{exp_name} {str(cfg.script_wrapper_timeout)} {exp_folder} {cfg.conda_env} {use_devices} {BEST_TRIAL_FILENAME}"
     full_command = (
@@ -81,21 +82,6 @@ def exp_launcher(cfg, exp_folder, exp_names, gcfg):
     )
     full_command += [command]
     subprocess.run(full_command)
-
-
-def create_exp_group_name(gcfg):
-    # catch the 0.1 case in a safe way
-    if (gcfg["lr_multiplier"] - 1) < -0.5:
-        lr_str = f"{gcfg['lr_multiplier']:.1f}"
-    else:
-        lr_str = f"{int(gcfg['lr_multiplier'])}"
-    src_domains = "_".join(gcfg["src_domains"])
-    target_domains = "_".join(gcfg["target_domains"])
-    exp_group_name = f"{gcfg['dataset']}_{src_domains}_{target_domains}"
-    if "validator" in gcfg:
-        exp_group_name += f"_{gcfg['validator']}"
-    exp_group_name += f"_fl{gcfg['feature_layer']}_{gcfg['optimizer']}_lr{lr_str}"
-    return exp_group_name
 
 
 def main(cfg, slurm_args):
@@ -124,7 +110,15 @@ def main(cfg, slurm_args):
         assert len(set(x[i] for x in exp_names)) == len(exp_names)
 
     gcfg = get_group_config(cfg)
-    exp_group_name = create_exp_group_name(gcfg)
+    exp_group_name = create_exp_group_name(
+        gcfg["dataset"],
+        gcfg["src_domains"],
+        gcfg["target_domains"],
+        [gcfg["feature_layer"]],
+        [gcfg["optimizer"]],
+        [gcfg["lr_multiplier"]],
+        gcfg.get("validator"),
+    )
     exp_folder = os.path.join(cfg.exp_folder, exp_group_name)
 
     if already_done(exp_folder, cfg.config_names):
