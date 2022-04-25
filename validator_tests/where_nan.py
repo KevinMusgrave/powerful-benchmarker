@@ -10,21 +10,16 @@ import torch
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests import configs
-from validator_tests.utils.constants import ALL_DFS_FILENAME
+from validator_tests.utils.constants import get_all_dfs
 from validator_tests.utils.df_utils import print_validators_with_nan
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def read_all_dfs(exp_folder):
-    df_path = os.path.join(exp_folder, ALL_DFS_FILENAME)
-    return pd.read_pickle(df_path)
-
-
 def main(args):
     pd.options.display.max_colwidth = 100
     exp_folder = os.path.join(args.exp_folder, args.exp_group)
-    df = read_all_dfs(exp_folder)
+    df = get_all_dfs(exp_folder)
     df = print_validators_with_nan(df, return_df=True)
     validator_name = "MMDPerClassFixedB"
     df = df[df["validator"] == validator_name]

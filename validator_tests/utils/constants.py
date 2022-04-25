@@ -13,11 +13,21 @@ NUM_ADAPTERS = 10
 EXPECTED_NUMBER_OF_CHECKPOINTS = NUM_ADAPTERS * 100 * 20
 
 
-def get_processed_df(exp_folder):
-    filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
-    if not os.path.isfile(filename):
+def read_df(exp_folder, filename):
+    df_path = os.path.join(exp_folder, filename)
+    if not os.path.isfile(df_path):
+        print(f"{df_path} not found, skipping")
         return None
-    return pd.read_pickle(filename)
+    print(f"reading {df_path}")
+    return pd.read_pickle(df_path)
+
+
+def get_all_dfs(exp_folder):
+    return read_df(exp_folder, ALL_DFS_FILENAME)
+
+
+def get_processed_df(exp_folder):
+    return read_df(exp_folder, PROCESSED_DF_FILENAME)
 
 
 def get_name_from_exp_groups(exp_groups):
@@ -34,9 +44,7 @@ def get_per_src_basename(per_adapter, topN, exp_groups):
 def get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups):
     basename = get_per_src_basename(per_adapter, topN, exp_groups)
     filename = os.path.join(exp_folder, basename)
-    if not os.path.isfile(filename):
-        return None
-    return pd.read_pickle(filename)
+    return read_df(exp_folder, filename)
 
 
 def tasks_match(e1, e2):
@@ -44,39 +52,32 @@ def tasks_match(e1, e2):
 
 
 # combined across feature layers etc
-def get_exp_groups_with_matching_tasks(exp_folder, exp_groups, return_dfs=False):
+def get_exp_groups_with_matching_tasks(exp_folder, exp_groups):
     num_exp_groups = len(exp_groups)
-    combined_dfs, combined_exp_groups = [], []
+    combined_exp_groups, combined_dfs = [], []
     for i in range(num_exp_groups):
+        curr_exp_groups, curr_dfs = [], []
         e1 = exp_groups[i]
         if any(e1 in ceg for ceg in combined_exp_groups):
             continue
-
-        curr_exp_groups = []
-        if return_dfs:
-            df1 = get_processed_df(os.path.join(exp_folder, e1))
-            curr_dfs = []
+        df1 = get_processed_df(os.path.join(exp_folder, e1))
 
         for j in range(i + 1, num_exp_groups):
             e2 = exp_groups[j]
             if not tasks_match(e1, e2):
                 continue
-            if return_dfs:
-                df2 = get_processed_df(os.path.join(exp_folder, e2))
-                if df1 is None or df2 is None:
-                    continue
-                assert df1["task"].unique() == df2["task"].unique()
-                curr_dfs.append(df2)
+            df2 = get_processed_df(os.path.join(exp_folder, e2))
+            if df1 is None or df2 is None:
+                continue
+            assert df1["task"].unique() == df2["task"].unique()
             curr_exp_groups.append(e2)
+            curr_dfs.append(df2)
 
         if len(curr_exp_groups) > 0:
-            if return_dfs:
-                combined_dfs.append(pd.concat([df1, *curr_dfs], axis=0))
             combined_exp_groups.append((e1, *curr_exp_groups))
+            combined_dfs.append(pd.concat([df1, *curr_dfs], axis=0))
 
-    if return_dfs:
-        return combined_dfs, combined_exp_groups
-    return combined_exp_groups
+    return combined_dfs, combined_exp_groups
 
 
 def exp_group_args():

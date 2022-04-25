@@ -22,7 +22,7 @@ def main(args, fn1, fn2):
     # now do with feature layers in one dataframe
     # which are saved in args.exp_folder
     combined_dfs, combined_exp_groups = get_exp_groups_with_matching_tasks(
-        args.exp_folder, exp_groups, return_dfs=True
+        args.exp_folder, exp_groups
     )
     for df, e in zip(combined_dfs, combined_exp_groups):
         print("exp_groups", e)

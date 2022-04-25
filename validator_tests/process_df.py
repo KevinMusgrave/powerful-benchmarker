@@ -3,16 +3,14 @@ import json
 import os
 import sys
 
-import pandas as pd
-
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import derive, utils
 from validator_tests.utils.constants import (
-    ALL_DFS_FILENAME,
     EXPECTED_NUMBER_OF_CHECKPOINTS,
     PROCESSED_DF_FILENAME,
     add_exp_group_args,
+    get_all_dfs,
 )
 from validator_tests.utils.df_utils import (
     add_task_column,
@@ -26,15 +24,6 @@ from validator_tests.utils.df_utils import (
     remove_nan_inf_scores,
     unify_validator_columns,
 )
-
-
-def read_all_dfs(exp_folder):
-    df_path = os.path.join(exp_folder, ALL_DFS_FILENAME)
-    if not os.path.isfile(df_path):
-        print(f"{df_path} not found, skipping")
-        return None
-    print(f"reading {df_path}")
-    return pd.read_pickle(df_path)
 
 
 def process_acc_validator(df):
@@ -67,7 +56,7 @@ def process_df(args, exp_group):
     filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
 
     print("reading file")
-    df = read_all_dfs(exp_folder)
+    df = get_all_dfs(exp_folder)
     if df is None:
         return
     print("convert_list_to_tuple")
