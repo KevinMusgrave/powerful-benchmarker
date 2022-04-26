@@ -7,7 +7,8 @@ from pytorch_adapt.utils import common_functions as c_f
 
 sys.path.insert(0, ".")
 from validator_tests.utils import utils
-from validator_tests.utils.constants import add_exp_group_args, get_name_from_exp_groups
+from validator_tests.utils.constants import add_exp_group_args
+from validator_tests.utils.df_utils import get_name_from_exp_groups
 
 
 def save_to_latex(df, folder, filename):
@@ -55,6 +56,7 @@ def preprocess_df(df):
 
 def postprocess_df(df):
     df = pd.concat(df, axis=0)
+    print(df)
     df = df.pivot(index="adapter", columns="task")
     df = (df * 100).round(1)
     return df
