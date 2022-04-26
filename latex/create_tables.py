@@ -30,6 +30,12 @@ def convert_adapter_name(df):
 def assign_shortened_task_name(df):
     task_name_map = {
         "mnist_mnist_mnistm": "MM",
+        "office31_amazon_dslr": "AD",
+        "office31_amazon_webcam": "AW",
+        "office31_dslr_amazon": "DA",
+        "office31_dslr_webcam": "DW",
+        "office31_webcam_amazon": "WA",
+        "office31_webcam_dslr": "WD",
         "officehome_art_clipart": "AC",
         "officehome_art_product": "AP",
         "officehome_art_real": "AR",

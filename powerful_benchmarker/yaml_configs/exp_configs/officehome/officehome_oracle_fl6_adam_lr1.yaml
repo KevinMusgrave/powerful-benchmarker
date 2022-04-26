@@ -1,0 +1,80 @@
+common: &common --group_configs default_oracle fl6_adam_lr1 officehome_oracle
+A: &A --config_names atdoc star
+B: &B --config_names dann
+
+
+commands:
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains product
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains art
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains product
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains art
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains art
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains product
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+  - *A
+  - *common
+
+
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains clipart
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains product
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains real
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains art
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains product
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains real
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains art
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains clipart
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains real
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains art
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains product
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+  - *B
+  - *common
