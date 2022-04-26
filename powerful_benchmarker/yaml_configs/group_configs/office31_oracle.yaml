@@ -1,0 +1,6 @@
+dataset: office31
+validator: oracle
+max_epochs: 2000
+val_interval: 10
+patience: 200
+num_workers: 5

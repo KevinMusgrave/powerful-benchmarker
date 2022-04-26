@@ -1,0 +1,44 @@
+common: &common --group_configs default_oracle fl6_adam_lr1 office31_oracle
+A: &A --config_names atdoc star
+B: &B --config_names dann
+
+commands:
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
+  - *A
+  - *common
+
+
+
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
+  - *B
+  - *common
