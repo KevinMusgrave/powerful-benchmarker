@@ -19,7 +19,8 @@ def main(args):
         {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     ]
 
-    validators = [v for v in validators if v["flags"] in args.validators]
+    if args.validators:
+        validators = [v for v in validators if v["flags"] in args.validators]
 
     exp_names = [
         "atdoc",
