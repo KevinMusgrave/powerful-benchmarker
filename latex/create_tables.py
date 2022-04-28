@@ -6,6 +6,7 @@ import pandas as pd
 from pytorch_adapt.utils import common_functions as c_f
 
 sys.path.insert(0, ".")
+from latex import utils as latex_utils
 from validator_tests.utils import utils
 from validator_tests.utils.constants import add_exp_group_args
 from validator_tests.utils.df_utils import get_name_from_exp_groups
@@ -23,47 +24,26 @@ def save_to_latex(df, folder, filename):
         text_file.write(latex_str)
 
 
-def convert_adapter_name(df):
-    df["adapter"] = df["adapter"].str.replace("Config", "")
-
-
-def assign_shortened_task_name(df):
-    task_name_map = {
-        "mnist_mnist_mnistm": "MM",
-        "office31_amazon_dslr": "AD",
-        "office31_amazon_webcam": "AW",
-        "office31_dslr_amazon": "DA",
-        "office31_dslr_webcam": "DW",
-        "office31_webcam_amazon": "WA",
-        "office31_webcam_dslr": "WD",
-        "officehome_art_clipart": "AC",
-        "officehome_art_product": "AP",
-        "officehome_art_real": "AR",
-        "officehome_clipart_art": "CA",
-        "officehome_clipart_product": "CP",
-        "officehome_clipart_real": "CR",
-        "officehome_product_art": "PA",
-        "officehome_product_clipart": "PC",
-        "officehome_product_real": "PR",
-        "officehome_real_art": "RA",
-        "officehome_real_clipart": "RC",
-        "officehome_real_product": "RP",
-    }
-
-    new_col = df.apply(lambda x: task_name_map[x["task"]], axis=1)
-    return df.assign(task=new_col)
-
-
 def preprocess_df(df):
-    convert_adapter_name(df)
-    df = assign_shortened_task_name(df)
+    latex_utils.convert_adapter_name(df)
     return df
+
+
+def remove_accuracy_name_multiindex(df):
+    accuracy_name = df.columns.levels[0]
+    assert len(accuracy_name) == 1
+    accuracy_name = accuracy_name[0]
+    df = df.droplevel(0, axis=1)
+    return df, accuracy_name
 
 
 def postprocess_df(df):
     df = pd.concat(df, axis=0)
     print(df)
     df = df.pivot(index="adapter", columns="task")
+    df, accuracy_name = remove_accuracy_name_multiindex(df)
+    df = latex_utils.add_source_only(df, accuracy_name)
+    df = latex_utils.shortened_task_names(df)
     df = (df * 100).round(1)
     return df
 

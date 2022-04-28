@@ -113,6 +113,17 @@ def add_task_column(df):
     return df.assign(task=new_col)
 
 
+def task_name_split(name):
+    # returns dataset, src domain, target domain
+    # TODO support multiple src domains and target domains
+    return name.split("_")
+
+
+def accuracy_name_split(name):
+    # returns src/target, train/val, micro/macro
+    return name.split("_")
+
+
 def unify_validator_columns(df):
     new_col = df.apply(
         lambda x: validator_str(x["validator"], x["validator_args"]), axis=1
