@@ -1,8 +1,7 @@
 def BNM():
     flags = []
-    for layer in ["features", "logits", "preds"]:
-        for split in ["src_train", "target_train", "src_val"]:
-            flags.append({"validator": "BNM", "layer": layer, "split": split})
+    for split in ["src_train", "target_train", "src_val"]:
+        flags.append({"validator": "BNM", "layer": "logits", "split": split})
     return flags
 
 
