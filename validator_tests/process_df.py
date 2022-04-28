@@ -10,7 +10,6 @@ from validator_tests.utils.constants import (
     EXPECTED_NUMBER_OF_CHECKPOINTS,
     PROCESSED_DF_FILENAME,
     add_exp_group_args,
-    get_all_dfs,
 )
 from validator_tests.utils.df_utils import (
     add_task_column,
@@ -20,10 +19,29 @@ from validator_tests.utils.df_utils import (
     drop_irrelevant_columns,
     exp_specific_columns,
     get_all_acc,
+    get_all_dfs,
     print_validators_with_nan,
     remove_nan_inf_scores,
     unify_validator_columns,
 )
+
+
+def filter_validators(df):
+    return df[
+        df["validator"].isin(
+            [
+                "Accuracy",
+                "Entropy",
+                "Diversity",
+                "DEVBinary",
+                "SND",
+                "ClassAMICentroidInit",
+                "MMD",
+                "MMDPerClass",
+                "BNM",
+            ]
+        )
+    ]
 
 
 def process_acc_validator(df):
@@ -61,6 +79,9 @@ def process_df(args, exp_group):
         return
     print("convert_list_to_tuple")
     convert_list_to_tuple(df)
+
+    print("filtering validators")
+    df = filter_validators(df)
 
     print("processing accuracies")
     df = process_acc_validator(df)
