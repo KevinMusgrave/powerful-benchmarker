@@ -13,4 +13,4 @@ from .entropy_config import Entropy
 from .knn_config import KNN, TargetKNN, TargetKNNLogits
 from .mmd_config import MMD, MMDFixedB, MMDPerClass, MMDPerClassFixedB
 from .snd_config import SND
-from .svd_config import BNM, BSP
+from .svd_config import BNM, BSP, FBNM

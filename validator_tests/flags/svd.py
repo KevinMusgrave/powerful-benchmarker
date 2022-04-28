@@ -14,3 +14,10 @@ def BSP():
                     {"validator": "BSP", "layer": layer, "split": split, "k": str(k)}
                 )
     return flags
+
+
+def FBNM():
+    flags = BNM()
+    for f in flags:
+        f["validator"] = "FBNM"
+    return flags

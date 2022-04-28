@@ -1,3 +1,4 @@
+import torch
 from pytorch_adapt.layers import BatchSpectralLoss, BNMLoss
 
 from .base_config import BaseConfig, get_split_and_layer
@@ -32,6 +33,30 @@ class BNM(BaseConfig):
     def score(self, x, exp_config, device):
         features = get_split_and_layer(x, self.split, self.layer, device)
         return -self.validator(features).item()
+
+    def expected_keys(self):
+        return {"split", "layer"}
+
+
+# from https://github.com/cuishuhao/BNM
+# TODO: move to pytorch-adapt
+def FBNM_loss(X):
+    X = torch.nn.functional.softmax(X, dim=1)
+    list_svd, _ = torch.sort(
+        torch.sqrt(torch.sum(torch.pow(X, 2), dim=0)), descending=True
+    )
+    nums = min(X.shape[0], X.shape[1])
+    return -torch.sum(list_svd[:nums])
+
+
+class FBNM(BaseConfig):
+    def __init__(self, config):
+        super().__init__(config)
+        self.layer = self.validator_args["layer"]
+
+    def score(self, x, exp_config, device):
+        features = get_split_and_layer(x, self.split, self.layer, device)
+        return -FBNM_loss(features).item()
 
     def expected_keys(self):
         return {"split", "layer"}

@@ -13,4 +13,4 @@ from .entropy import Entropy
 from .knn import KNN, TargetKNN, TargetKNNLogits
 from .mmd import MMD, MMDFixedB, MMDPerClass, MMDPerClassFixedB
 from .snd import SND
-from .svd import BNM, BSP
+from .svd import BNM, BSP, FBNM
