@@ -11,4 +11,4 @@ notebooks/*.pkl
 powerful_benchmarker/local_scripts/
 plots/
 tables/
-latex_tables/
+tables_latex/
