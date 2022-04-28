@@ -48,11 +48,12 @@ def postprocess_df(df):
     return df
 
 
-def main(args):
+def best_accuracy_per_adapter(args):
+    basename = "best_accuracy_per_adapter"
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
     df = []
     for e in exp_groups:
-        filename = os.path.join(args.input_folder, e, f"{args.filename}.csv")
+        filename = os.path.join(args.input_folder, e, f"{basename}.csv")
         curr_df = pd.read_csv(filename)
         curr_df = preprocess_df(curr_df)
         df.append(curr_df)
@@ -62,7 +63,11 @@ def main(args):
     output_folder = os.path.join(
         args.output_folder, get_name_from_exp_groups(exp_groups)
     )
-    save_to_latex(df, output_folder, args.filename)
+    save_to_latex(df, output_folder, basename)
+
+
+def main(args):
+    best_accuracy_per_adapter(args)
 
 
 if __name__ == "__main__":
@@ -70,6 +75,5 @@ if __name__ == "__main__":
     add_exp_group_args(parser)
     parser.add_argument("--input_folder", type=str, default="tables")
     parser.add_argument("--output_folder", type=str, default="tables_latex")
-    parser.add_argument("--filename", type=str, required=True)
     args = parser.parse_args()
     main(args)
