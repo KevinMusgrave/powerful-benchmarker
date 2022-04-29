@@ -34,7 +34,7 @@ def to_csv(df, folder, key, per_adapter, topN, src_threshold):
 def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     c_f.makedir_if_not_there(folder)
 
-    group_by = ["validator", "validator_args"]
+    group_by = ["validator", "validator_args", "task"]
     if per_adapter:
         group_by += ["adapter"]
     df = df[df["src_threshold"] == src_threshold]
