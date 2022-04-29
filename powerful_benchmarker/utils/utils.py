@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 import subprocess
 
 import yaml
@@ -55,12 +56,20 @@ def append_jobid_to_file(jobid, jobname, filename):
 def kill_all_jobs(exp_folder, jobids_file):
     all_jobids_filename = os.path.join(exp_folder, jobids_file)
     if not os.path.isfile(all_jobids_filename):
-        print("jobids file not found, skipping")
+        print(f"{all_jobids_filename} file not found, skipping")
         return
-    with open(all_jobids_filename, "r") as f:
-        jobids = json.load(f)
 
-    jobids = " ".join(list(jobids.keys()))
+    filetype = pathlib.Path(all_jobids_filename).suffix
+
+    if filetype == ".json":
+        with open(all_jobids_filename, "r") as f:
+            jobids = json.load(f)
+        jobids = " ".join(list(jobids.keys()))
+
+    else:
+        with open(all_jobids_filename, "r") as f:
+            jobids = " ".join([line.rstrip("\n") for line in f])
+
     command = f"scancel {jobids}"
     print("killing slurm jobs")
     subprocess.run(command.split(" "))
