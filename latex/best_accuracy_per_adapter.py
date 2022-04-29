@@ -29,4 +29,6 @@ def postprocess_df(df):
 
 
 def best_accuracy_per_adapter(args):
-    table_creator(args, "best_accuracy_per_adapter", preprocess_df, postprocess_df)
+    basename = "best_accuracy_per_adapter"
+    color_map_tag_kwargs = {"tag_prefix": f"{basename.replace('_', '')}"}
+    table_creator(args, basename, preprocess_df, postprocess_df, color_map_tag_kwargs)

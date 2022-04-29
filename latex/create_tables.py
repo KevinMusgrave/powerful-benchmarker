@@ -10,6 +10,7 @@ from validator_tests.utils.constants import add_exp_group_args
 def main(args):
     best_accuracy_per_adapter(args)
     correlation_src_threshold(args, threshold=0)
+    correlation_src_threshold(args, threshold=0.9)
 
 
 if __name__ == "__main__":
