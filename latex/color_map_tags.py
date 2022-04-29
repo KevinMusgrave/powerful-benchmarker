@@ -13,20 +13,17 @@ def format_tag_and_float(prefix, column_name):
 
 
 def create_color_map_tags(
-    df, tag_prefix, min_value=None, max_value=None, ascending=True
+    df, tag_prefix, min_value_fn=None, max_value_fn=None, larger_is_better=True
 ):
     output_strs = []
     for column_name in df.columns.values:
         curr_df = df[column_name]
-        if min_value is None:
-            min_value = 0
-        if max_value is None:
-            max_value = curr_df.max()
+        min_value = 0 if min_value_fn is None else min_value_fn(curr_df)
+        max_value = curr_df.max() if max_value_fn is None else max_value_fn(curr_df)
 
         intervals = np.linspace(min_value, max_value, 11)
 
-        # if large values should be green
-        if ascending:
+        if larger_is_better:
             intervals = intervals[::-1]
 
         curr_str = f"\\def{format_tag(tag_prefix, column_name)}" + "#1{"
@@ -35,7 +32,7 @@ def create_color_map_tags(
             if i == 0:
                 continue
             greenness = (10 - i + 1) * 10
-            operation = ">" if ascending else "<"
+            operation = ">" if larger_is_better else "<"
             curr_str += (
                 f"\\ifdim#1pt{operation}{lower_bound:.1f}"
                 + f"pt\\cellcolor{{lime!{greenness}}}\\else"
