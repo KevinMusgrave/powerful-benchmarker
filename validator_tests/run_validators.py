@@ -126,6 +126,8 @@ def launcher(args, slurm_args, exp_groups):
         for exp_name in args.exp_names:
             print(f"creating flags for {exp_group}/{exp_name}/{args.flags}")
             base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {exp_group} --exp_name {exp_name}"
+            if args.skip_validator_errors:
+                base_command += " --skip_validator_errors"
             flags = getattr(flags_module, args.flags)()
             trial_ranges = get_trial_ranges(args.trials_per_exp)
             flags = remove_completed_flags(
@@ -162,6 +164,7 @@ if __name__ == "__main__":
     parser.add_argument("--trials_per_exp", type=int, required=True)
     parser.add_argument("--exp_per_slurm_job", type=int, required=True)
     parser.add_argument("--slurm_config", type=str, required=True)
+    parser.add_argument("--skip_validator_errors", action="store_true")
     parser.add_argument("--run", action="store_true")
     args, unknown_args = parser.parse_known_args()
     slurm_args = create_slurm_args(args, unknown_args, "validator_tests")

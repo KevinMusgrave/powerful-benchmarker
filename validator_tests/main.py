@@ -10,6 +10,8 @@ import torch
 from tqdm import tqdm
 
 sys.path.insert(0, ".")
+from pytorch_adapt.utils import common_functions as c_f
+
 from powerful_benchmarker.utils.constants import add_default_args
 from powerful_benchmarker.utils.utils import convert_unknown_args
 from validator_tests import configs
@@ -37,7 +39,13 @@ def save_df(validator_name, validator_args_str, all_scores):
     return fn
 
 
-def get_and_save_scores(validator_name, validator, validator_args_str, all_scores):
+def get_and_save_scores(
+    validator_name,
+    validator,
+    validator_args_str,
+    all_scores,
+    skip_validator_errors,
+):
     def fn(epoch, x, exp_config, exp_folder):
         if isinstance(validator, configs.DEV):
             temp_folder = os.path.join(
@@ -48,7 +56,22 @@ def get_and_save_scores(validator_name, validator, validator_args_str, all_score
             validator.validator.temp_folder = temp_folder
             if os.path.isdir(temp_folder):
                 shutil.rmtree(temp_folder)  # delete any old copies
-        score = validator.score(x, exp_config, DEVICE)
+        error_was_raised = False
+        try:
+            score = validator.score(x, exp_config, DEVICE)
+        except Exception as e:
+            if skip_validator_errors:
+                error_was_raised = True
+                c_f.LOGGER.info(e)
+                c_f.LOGGER.info(
+                    "Ignoring validator exception because skip_validator_errors is True"
+                )
+            else:
+                raise
+
+        if skip_validator_errors and error_was_raised:
+            return
+
         curr_dict = copy.deepcopy(exp_config)
         assert_curr_dict(curr_dict)
         curr_dict["trial_params"] = utils.dict_to_str(curr_dict["trial_params"])
@@ -92,7 +115,13 @@ def main(args, validator_args):
         args.exp_name,
     )
     all_scores = []
-    fn = get_and_save_scores(args.validator, validator, validator_args_str, all_scores)
+    fn = get_and_save_scores(
+        args.validator,
+        validator,
+        validator_args_str,
+        all_scores,
+        args.skip_validator_errors,
+    )
     end_fn = save_df(args.validator, validator_args_str, all_scores)
     utils.apply_to_data(exp_folders, condition_fn, fn, end_fn)
 
@@ -104,6 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp_name", type=str, required=True)
     parser.add_argument("--validator", type=str, required=True)
     parser.add_argument("--trial_range", nargs="+", type=int, default=[])
+    parser.add_argument("--skip_validator_errors", action="store_true")
     args, unknown_args = parser.parse_known_args()
     validator_args = convert_unknown_args(unknown_args)
     main(args, validator_args)
