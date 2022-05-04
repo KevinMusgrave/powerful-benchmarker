@@ -1,9 +1,14 @@
 import argparse
 import copy
+import logging
 import os
 import shutil
 import sys
 from functools import partialmethod
+
+logging.basicConfig()
+logging.getLogger("pytorch-adapt").setLevel(logging.INFO)
+
 
 import pandas as pd
 import torch
