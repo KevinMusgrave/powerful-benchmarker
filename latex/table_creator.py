@@ -31,8 +31,8 @@ def table_creator(args, basename, preprocess_df, postprocess_df, color_map_tag_k
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
     df = []
     for e in exp_groups:
-        filename = os.path.join(args.input_folder, e, f"{basename}.csv")
-        curr_df = pd.read_csv(filename)
+        filename = os.path.join(args.input_folder, e, f"{basename}.pkl")
+        curr_df = pd.read_pickle(filename)
         curr_df = preprocess_df(curr_df)
         df.append(curr_df)
 

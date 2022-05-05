@@ -16,19 +16,21 @@ def best_accuracy_per_adapter(df, key, tables_folder):
     folder = os.path.join(tables_folder, get_name_from_df(df, assert_one_task=True))
     c_f.makedir_if_not_there(folder)
     df = df.groupby(["adapter", "task"])[key].max().reset_index(name=key)
-    filename = os.path.join(folder, f"best_accuracy_per_adapter.csv")
-    df.to_csv(filename, index=False)
+    filename = os.path.join(folder, f"best_accuracy_per_adapter")
+    df.to_csv(f"{filename}.csv", index=False)
+    df.to_pickle(f"{filename}.pkl")
 
 
-def to_csv(df, folder, key, per_adapter, topN, src_threshold):
+def to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold):
     filename = f"{key}"
     if key == "predicted_best_acc":
         filename += f"_top{topN}"
     if per_adapter:
         filename += "_per_adapter"
     filename += f"_{src_threshold}_src_threshold"
-    filename = os.path.join(folder, f"{filename}.csv")
-    df.to_csv(filename, index=False)
+    filename = os.path.join(folder, f"{filename}")
+    df.to_csv(f"{filename}.csv", index=False)
+    df.to_pickle(f"{filename}.pkl")
 
 
 def best_validators(df, key, folder, per_adapter, topN, src_threshold):
@@ -44,8 +46,7 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
 
     df = df.groupby([*group_by])[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
-    df.validator_args = df.validator_args.apply(json.loads)
-    to_csv(df, folder, key, per_adapter, topN, src_threshold)
+    to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold)
 
 
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
