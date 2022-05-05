@@ -4,7 +4,7 @@ import tqdm
 from pytorch_adapt.utils import common_functions as c_f
 
 from .df_utils import domains_str, maybe_per_adapter
-from .utils import validator_args_underscore_delimited
+from .utils import validator_args_delimited
 
 
 def create_name(filters, components):
@@ -16,7 +16,7 @@ def create_name(filters, components):
         elif k == "feature_layer":
             x = f"fl{curr_val}"
         elif k == "validator_args":
-            x = validator_args_underscore_delimited(curr_val)
+            x = validator_args_delimited(curr_val)
         else:
             x = curr_val
         s = x if s == "" else f"{s}_{x}"

@@ -2,12 +2,15 @@ import pandas as pd
 
 from latex import utils as latex_utils
 from latex.table_creator import table_creator
-from validator_tests.utils.utils import validator_args_underscore_delimited
+from validator_tests.utils.utils import validator_args_delimited
 
 
 def preprocess_df(df):
     df["validator_args"] = df.apply(
-        lambda x: validator_args_underscore_delimited(x["validator_args"]), axis=1
+        lambda x: validator_args_delimited(x["validator_args"], delimiter=" ").replace(
+            "_", " "
+        ),
+        axis=1,
     )
     return df
 
