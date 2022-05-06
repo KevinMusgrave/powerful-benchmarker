@@ -53,14 +53,17 @@ def get_and_save_scores(
 ):
     def fn(epoch, x, exp_config, exp_folder):
         if isinstance(validator, configs.DEV):
+            # temporarily appending epoch to folder name
+            # because of folder deletion problem
             temp_folder = os.path.join(
                 exp_folder,
                 VALIDATOR_TESTS_FOLDER,
-                utils.validator_str(validator_name, validator_args_str),
+                f"{utils.validator_str(validator_name, validator_args_str)}_{epoch}",
             )
             validator.validator.temp_folder = temp_folder
-            if os.path.isdir(temp_folder):
-                shutil.rmtree(temp_folder)  # delete any old copies
+            # temporarily disabling this
+            # if os.path.isdir(temp_folder):
+            # shutil.rmtree(temp_folder)  # delete any old copies
         error_was_raised = False
         try:
             score = validator.score(x, exp_config, DEVICE)
