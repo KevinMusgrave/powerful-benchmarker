@@ -2,7 +2,6 @@ import argparse
 import copy
 import logging
 import os
-import shutil
 import sys
 from functools import partialmethod
 

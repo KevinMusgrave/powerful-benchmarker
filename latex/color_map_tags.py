@@ -12,33 +12,64 @@ def format_tag_and_float(prefix, column_name):
     return return_fn
 
 
+def default_operation_fn(_):
+    return ">"
+
+
+# operation fn
+def absolute_value_greater_than(lower_bound):
+    if lower_bound >= 0:
+        return ">"
+    return "<"
+
+
+def default_interval_fn(min_value, max_value, num_steps):
+    intervals = np.linspace(min_value, max_value, num_steps)
+    return [intervals[::-1]]
+
+
+# operation fn
+def absolute_value_interval_fn(min_value, max_value, num_steps):
+    intervals = np.linspace(min_value, max_value, num_steps)
+    intervals = intervals[::-1]
+    return [intervals, intervals * -1]
+
+
 def create_color_map_tags(
-    df, tag_prefix, min_value_fn=None, max_value_fn=None, larger_is_better=True
+    df,
+    tag_prefix,
+    min_value_fn=None,
+    max_value_fn=None,
+    operation_fn=None,
+    interval_fn=None,
+    num_steps=11,
 ):
     output_strs = []
+    if operation_fn is None:
+        operation_fn = default_operation_fn
+    if interval_fn is None:
+        interval_fn = default_interval_fn
     for column_name in df.columns.values:
         curr_df = df[column_name]
         min_value = 0 if min_value_fn is None else min_value_fn(curr_df)
         max_value = curr_df.max() if max_value_fn is None else max_value_fn(curr_df)
-
-        intervals = np.linspace(min_value, max_value, 11)
-
-        if larger_is_better:
-            intervals = intervals[::-1]
+        intervals_list = interval_fn(min_value, max_value, num_steps)
 
         curr_str = f"\\def{format_tag(tag_prefix, column_name)}" + "#1{"
-
-        for i, lower_bound in enumerate(intervals):
-            if i == 0:
-                continue
-            greenness = (10 - i + 1) * 10
-            operation = ">" if larger_is_better else "<"
-            curr_str += (
-                f"\\ifdim#1pt{operation}{lower_bound:.1f}"
-                + f"pt\\cellcolor{{lime!{greenness}}}\\else"
-            )
+        ifdim_count = 0
+        for intervals in intervals_list:
+            for i, lower_bound in enumerate(intervals):
+                if i == 0:
+                    continue
+                greenness = (10 - i + 1) * 10
+                operation = operation_fn(lower_bound)
+                curr_str += (
+                    f"\\ifdim#1pt{operation}{lower_bound:.1f}"
+                    + f"pt\\cellcolor{{lime!{greenness}}}\\else"
+                )
+                ifdim_count += 1
         curr_str += f"\\cellcolor{{lime!0}}"
-        curr_str += "\\fi" * (len(intervals) - 1)
+        curr_str += "\\fi" * ifdim_count
         curr_str += "#1}"
         output_strs.append(curr_str)
 
