@@ -73,11 +73,13 @@ def warn_unfinished_validators(df, detailed_warnings):
         if num_done > EXPECTED_NUMBER_OF_CHECKPOINTS:
             too_many[v] = num_done
     if len(unfinished) > 0:
-        print("WARNING: the following validators haven't finished")
+        print(f"WARNING: there are {len(unfinished)} unfinished validators")
         if detailed_warnings:
             print(json.dumps(unfinished, indent=4, sort_keys=True))
     if len(too_many) > 0:
-        print("WARNING: the following validators have more entries than expected")
+        print(
+            f"WARNING: there are {len(too_many)} validators with more entries than expected"
+        )
         if detailed_warnings:
             print(json.dumps(too_many, indent=4, sort_keys=True))
 
@@ -113,7 +115,6 @@ def process_df(args, exp_group):
 
     print("finding unfinished validators")
     warn_unfinished_validators(df, args.detailed_warnings)
-    print_validators_with_nan(df)
     df = remove_nan_inf_scores(df)
     print_validators_with_nan(df, assert_none=True)
 
