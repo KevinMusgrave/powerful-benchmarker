@@ -3,6 +3,8 @@ import json
 import os
 import sys
 
+import numpy as np
+
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import derive, utils
@@ -45,13 +47,19 @@ def filter_validators(df):
 
 
 def process_acc_validator(df):
+    sizes_before = df.groupby(["validator", "validator_args"]).size()
     accs = get_all_acc(df)
     df = df.merge(accs, on=exp_specific_columns(df, all_acc_score_column_names()))
     assert_acc_rows_are_correct(df)
+    sizes_after = df.groupby(["validator", "validator_args"]).size()
+    mismatch_mask = sizes_before != sizes_after
+    if np.sum(mismatch_mask) > 0:
+        print("WARNING: sizes before and after don't match in process_acc_validator")
+        # raise ValueError(f"sizes before and after don't match\n\n{sizes_before[mismatch_mask]}\n\n{sizes_after[mismatch_mask]}")
     return df
 
 
-def warn_unfinished_validators(df):
+def warn_unfinished_validators(df, detailed_warnings):
     df = unify_validator_columns(df)
     unfinished = {}
     too_many = {}
@@ -63,10 +71,12 @@ def warn_unfinished_validators(df):
             too_many[v] = num_done
     if len(unfinished) > 0:
         print("WARNING: the following validators haven't finished")
-        print(json.dumps(unfinished, indent=4, sort_keys=True))
+        if detailed_warnings:
+            print(json.dumps(unfinished, indent=4, sort_keys=True))
     if len(too_many) > 0:
         print("WARNING: the following validators have more entries than expected")
-        print(json.dumps(too_many, indent=4, sort_keys=True))
+        if detailed_warnings:
+            print(json.dumps(too_many, indent=4, sort_keys=True))
 
 
 def process_df(args, exp_group):
@@ -99,7 +109,7 @@ def process_df(args, exp_group):
     df = derive.add_derived_scores(df)
 
     print("finding unfinished validators")
-    warn_unfinished_validators(df)
+    warn_unfinished_validators(df, args.detailed_warnings)
     print_validators_with_nan(df)
     df = remove_nan_inf_scores(df)
     print_validators_with_nan(df, assert_none=True)
@@ -118,5 +128,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
+    parser.add_argument("--detailed_warnings", action="store_true")
     args = parser.parse_args()
     main(args)
