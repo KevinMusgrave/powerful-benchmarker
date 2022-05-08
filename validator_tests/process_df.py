@@ -53,9 +53,12 @@ def process_acc_validator(df):
     assert_acc_rows_are_correct(df)
     sizes_after = df.groupby(["validator", "validator_args"]).size()
     mismatch_mask = sizes_before != sizes_after
+    greater_than_mask = sizes_after > sizes_before
     if np.sum(mismatch_mask) > 0:
         print("WARNING: sizes before and after don't match in process_acc_validator")
         # raise ValueError(f"sizes before and after don't match\n\n{sizes_before[mismatch_mask]}\n\n{sizes_after[mismatch_mask]}")
+    if np.sum(greater_than_mask) > 0:
+        raise ValueError("sizes_after has values greater than sizes_before")
     return df
 
 
