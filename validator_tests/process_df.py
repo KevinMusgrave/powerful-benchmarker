@@ -46,19 +46,22 @@ def filter_validators(df):
     ]
 
 
-def process_acc_validator(df):
-    sizes_before = df.groupby(["validator", "validator_args"]).size()
+def process_acc_validator(df, detailed_warnings):
+    v_keys = ["validator", "validator_args"]
+    sizes_before = df.groupby(v_keys).size().reset_index(name="before")
     accs = get_all_acc(df)
     df = df.merge(accs, on=exp_specific_columns(df, all_acc_score_column_names()))
     assert_acc_rows_are_correct(df)
-    sizes_after = df.groupby(["validator", "validator_args"]).size()
-    mismatch_mask = sizes_before != sizes_after
-    greater_than_mask = sizes_after > sizes_before
+    sizes_after = df.groupby(v_keys).size().reset_index(name="after")
+    sizes_before = sizes_before.merge(sizes_after, on=v_keys)
+    mismatch_mask = sizes_before["before"] != sizes_before["after"]
+    greater_than_mask = sizes_before["before"] < sizes_before["after"]
     if np.sum(mismatch_mask) > 0:
         print("WARNING: sizes before and after don't match in process_acc_validator")
-        # raise ValueError(f"sizes before and after don't match\n\n{sizes_before[mismatch_mask]}\n\n{sizes_after[mismatch_mask]}")
+        if detailed_warnings:
+            print(sizes_before[mismatch_mask])
     if np.sum(greater_than_mask) > 0:
-        raise ValueError("sizes_after has values greater than sizes_before")
+        raise ValueError("sizes after has values greater than sizes before")
     return df
 
 
@@ -99,7 +102,7 @@ def process_df(args, exp_group):
     df = filter_validators(df)
 
     print("processing accuracies")
-    df = process_acc_validator(df)
+    df = process_acc_validator(df, args.detailed_warnings)
     if len(df) == 0:
         print("accuracies have not been computed yet. Exiting")
         return
