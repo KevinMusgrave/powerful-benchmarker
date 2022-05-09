@@ -121,7 +121,7 @@ def process_df(args, exp_group):
     df = remove_nan_inf_scores(df)
     print_validators_with_nan(df, assert_none=True)
 
-    print(f"processed df:\n{df}")
+    print("saving df")
     df.to_pickle(filename)
 
 
