@@ -240,7 +240,7 @@ def tasks_match(e1, e2):
 # combined across feature layers etc
 def get_exp_groups_with_matching_tasks(exp_folder, exp_groups):
     num_exp_groups = len(exp_groups)
-    combined_exp_groups, combined_dfs = [], []
+    combined_exp_groups = []
     for i in range(num_exp_groups):
         curr_exp_groups, curr_dfs = [], []
         e1 = exp_groups[i]
@@ -257,10 +257,8 @@ def get_exp_groups_with_matching_tasks(exp_folder, exp_groups):
                 continue
             assert df1["task"].unique() == df2["task"].unique()
             curr_exp_groups.append(e2)
-            curr_dfs.append(df2)
 
         if len(curr_exp_groups) > 0:
             combined_exp_groups.append((e1, *curr_exp_groups))
-            combined_dfs.append(pd.concat([df1, *curr_dfs], axis=0))
 
-    return combined_dfs, combined_exp_groups
+    return combined_exp_groups

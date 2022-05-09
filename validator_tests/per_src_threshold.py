@@ -48,6 +48,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
-    create_main.add_topN_args(parser)
+    create_main.add_main_args(parser)
     args = parser.parse_args()
     create_main.main(args, get_fn(args), get_fn(args))

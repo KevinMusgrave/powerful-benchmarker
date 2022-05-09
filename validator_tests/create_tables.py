@@ -81,7 +81,7 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
     # topN here refers to the topN used in per_src_threshold.py
-    create_main.add_topN_args(parser)
+    create_main.add_main_args(parser)
     parser.add_argument("--output_folder", type=str, default="tables")
     args = parser.parse_args()
     create_main.main(args, create_tables, create_tables)
