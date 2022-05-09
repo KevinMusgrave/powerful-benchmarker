@@ -3,8 +3,8 @@ import pandas as pd
 import tqdm
 
 from powerful_benchmarker.utils.score_utils import (
-    pretrained_src_val_accuracy,
-    pretrained_target_train_accuracy,
+    pretrained_src_accuracy,
+    pretrained_target_accuracy,
 )
 
 from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, TARGET_ACCURACY
@@ -46,13 +46,13 @@ def per_threshold(df, pretrained_acc, domain_type, fn):
 
 
 def get_per_src_threshold(df, dataset, src_domain, fn):
-    pretrained_acc = pretrained_src_val_accuracy(dataset, src_domain)
+    pretrained_acc = pretrained_src_accuracy(dataset, src_domain, "val", "macro")
     return per_threshold(df, [pretrained_acc], ["src"], fn)
 
 
 def get_per_target_threshold(df, dataset, source_domain, target_domain, fn):
-    pretrained_acc = pretrained_target_train_accuracy(
-        dataset, source_domain, target_domain
+    pretrained_acc = pretrained_target_accuracy(
+        dataset, source_domain, target_domain, "train", "macro"
     )
     return per_threshold(df, [pretrained_acc], ["target"], fn)
 
