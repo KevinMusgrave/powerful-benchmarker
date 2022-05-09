@@ -82,6 +82,10 @@ def process_df(args, exp_group):
     df = get_all_dfs(exp_folder)
     if df is None:
         return
+
+    print("drop_irrelevant_columns")
+    df = drop_irrelevant_columns(df)
+
     print("convert_list_to_tuple")
     convert_list_to_tuple(df)
 
@@ -93,9 +97,6 @@ def process_df(args, exp_group):
     if len(df) == 0:
         print("accuracies have not been computed yet. Exiting")
         return
-
-    print("drop_irrelevant_columns")
-    df = drop_irrelevant_columns(df)
 
     print("add_task_column")
     df = add_task_column(df)
