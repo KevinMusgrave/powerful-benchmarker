@@ -242,7 +242,7 @@ def get_exp_groups_with_matching_tasks(exp_folder, exp_groups):
     num_exp_groups = len(exp_groups)
     combined_exp_groups = []
     for i in range(num_exp_groups):
-        curr_exp_groups, curr_dfs = [], []
+        curr_exp_groups = []
         e1 = exp_groups[i]
         if any(e1 in ceg for ceg in combined_exp_groups):
             continue
