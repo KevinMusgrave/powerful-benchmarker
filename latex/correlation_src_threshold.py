@@ -19,6 +19,7 @@ def preprocess_df(df):
 
 def postprocess_df(df):
     df = pd.concat(df, axis=0).reset_index(drop=True)
+    df = latex_utils.rename_validator_args(df)
     df = df.pivot(index=["validator", "validator_args"], columns="task")
     df = df.droplevel(0, axis=1)
     df = latex_utils.shortened_task_names(df)
@@ -28,7 +29,7 @@ def postprocess_df(df):
 
 def correlation_src_threshold(args, threshold):
     basename = f"correlation_{threshold}_src_threshold"
-    min_value_fn = lambda _: 50
+    min_value_fn = lambda _: 80
     max_value_fn = lambda _: 100
     operation_fn = absolute_value_greater_than
     interval_fn = absolute_value_interval_fn

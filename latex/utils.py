@@ -77,6 +77,10 @@ def validators_to_remove():
         "BNMSummed_layer_preds",
         "BNMSummedSrcVal_layer_features",
         "BNMSummedSrcVal_layer_preds",
+        "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_False",
+        "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_True",
+        "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_False",
+        "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_True",
         "Diversity_split_src_train",
         "Diversity_split_src_val",
         "Diversity_split_target_train",
@@ -112,11 +116,30 @@ def get_tag_prefix(basename):
     return basename
 
 
-# Feed the output of validator_args_delimited into this
-# def pretty_validator_args_dict(validator_args):
-#     {"average_macro_split_src_train": "Src train, Macro",
-#     "average_macro_split_src_val": "Src val, Macro",
-#     "average_macro_split_target_train": "Target train, Macro",
-#     "average_macro_split_target_val": "Target val, Macro",
-#     "average_micro_split_src_train": "Src train, Micro"
-#     "average_micro_split_src_val": "Src val, "}
+def pretty_validator_args_dict():
+    return {
+        "average micro split src train": "Source Train",
+        "average micro split src val": "Source Val",
+        "layer logits split src train": "Source Train",
+        "layer logits split src val": "Source Val",
+        "layer logits split target train": "Target Train",
+    }
+
+
+def rename_BNMSummed(df):
+    df.loc[
+        df["validator"] == "BNMSummed", "validator_args"
+    ] = "Source Train + Target Train"
+    df.loc[
+        df["validator"] == "BNMSummedSrcVal", "validator_args"
+    ] = "Source Val + Target Train"
+    df.validator.replace(
+        to_replace={"BNMSummed": "BNM", "BNMSummedSrcVal": "BNM"}, inplace=True
+    )
+
+
+def rename_validator_args(df):
+    df.validator_args.replace(to_replace=pretty_validator_args_dict(), inplace=True)
+    rename_BNMSummed(df)
+    return df
+
