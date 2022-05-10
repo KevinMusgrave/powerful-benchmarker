@@ -44,7 +44,7 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
         if min_num_past_threshold < topN:
             return
 
-    df = df.groupby([*group_by])[key].max().reset_index(name=key)
+    df = df.groupby(group_by)[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
     if per_adapter:
         group_by.remove("adapter")
