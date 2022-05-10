@@ -93,6 +93,25 @@ def filter_validators(df):
     return df.drop(columns=["unified_validator"])
 
 
+def get_tag_prefix(basename):
+    num_to_word = [
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+    ]
+    basename = basename.replace("_", "").replace(".", "")
+    for i in range(10):
+        basename = basename.replace(str(i), num_to_word[i])
+    return basename
+
+
 # Feed the output of validator_args_delimited into this
 # def pretty_validator_args_dict(validator_args):
 #     {"average_macro_split_src_train": "Src train, Macro",

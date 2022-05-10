@@ -47,7 +47,6 @@ def table_creator(
         df.append(curr_df)
 
     df = postprocess_df(df)
-    print(df)
     output_folder = os.path.join(
         args.output_folder, get_name_from_exp_groups(exp_groups)
     )
