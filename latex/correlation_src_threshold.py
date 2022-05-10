@@ -64,4 +64,11 @@ def correlation_src_threshold(args, threshold):
         "interval_fn": interval_fn,
         "num_steps": 10,
     }
-    table_creator(args, basename, preprocess_df, postprocess_df, color_map_tag_kwargs)
+    table_creator(
+        args,
+        basename,
+        preprocess_df,
+        postprocess_df,
+        color_map_tag_kwargs,
+        add_resizebox=True,
+    )

@@ -50,3 +50,19 @@ def add_source_only(df, accuracy_name):
         {x: y for x, y in zip(cols, src_only_accs)}, index=["Source only"]
     )
     return pd.concat([src_only_accs, df], axis=0)
+
+
+def resizebox(x):
+    x = x.replace("\\begin{tabular}", "\\resizebox{\\textwidth}{!}{\\begin{tabular}")
+    x = x.replace("\\end{tabular}", "\\end{tabular}}")
+    return x
+
+
+# Feed the output of validator_args_delimited into this
+# def pretty_validator_args_dict(validator_args):
+#     {"average_macro_split_src_train": "Src train, Macro",
+#     "average_macro_split_src_val": "Src val, Macro",
+#     "average_macro_split_target_train": "Target train, Macro",
+#     "average_macro_split_target_val": "Target val, Macro",
+#     "average_micro_split_src_train": "Src train, Micro"
+#     "average_micro_split_src_val": "Src val, "}
