@@ -151,6 +151,18 @@ def pretty_validator_args_dict():
         "exponent 0 layer logits normalize True split train": "Logits, L2 Normalized",
         "exponent 0 layer preds normalize False split train": "Preds",
         "exponent 0 layer preds normalize True split train": "Preds, L2 Normalized",
+        "T 0.01 layer features split target train": "Features, T=0.01",
+        "T 0.01 layer logits split target train": "Logits, T=0.01",
+        "T 0.01 layer preds split target train": "Preds, T=0.01",
+        "T 0.05 layer features split target train": "Features, T=0.05",
+        "T 0.05 layer logits split target train": "Logits, T=0.05",
+        "T 0.05 layer preds split target train": "Preds, T=0.05",
+        "T 0.1 layer features split target train": "Features, T=0.1",
+        "T 0.1 layer logits split target train": "Logits, T=0.1",
+        "T 0.1 layer preds split target train": "Preds, T=0.1",
+        "T 0.5 layer features split target train": "Features, T=0.5",
+        "T 0.5 layer logits split target train": "Logits, T=0.5",
+        "T 0.5 layer preds split target train": "Preds, T=0.5",
     }
 
 
