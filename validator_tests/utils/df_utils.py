@@ -124,12 +124,15 @@ def accuracy_name_split(name):
     return name.split("_")
 
 
-def unify_validator_columns(df):
+def unify_validator_columns(df, new_col_name="validator", drop_validator_args=True):
     new_col = df.apply(
         lambda x: validator_str(x["validator"], x["validator_args"]), axis=1
     )
-    df = df.assign(validator=new_col)
-    return df.drop(columns=["validator_args"])
+    new_col = {new_col_name: new_col}
+    df = df.assign(**new_col)
+    if drop_validator_args:
+        return df.drop(columns=["validator_args"])
+    return df
 
 
 def maybe_per_adapter(df, per_adapter):

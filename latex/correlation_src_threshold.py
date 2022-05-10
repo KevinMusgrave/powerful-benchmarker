@@ -7,6 +7,7 @@ from validator_tests.utils.utils import validator_args_delimited
 
 
 def preprocess_df(df):
+    df = latex_utils.filter_validators(df)
     df["validator_args"] = df.apply(
         lambda x: validator_args_delimited(x["validator_args"], delimiter=" ").replace(
             "_", " "
@@ -22,7 +23,7 @@ def remove_correlation_multiindex(df):
 
 
 def postprocess_df(df):
-    df = pd.concat(df, axis=0)
+    df = pd.concat(df, axis=0).reset_index(drop=True)
     print(df)
     df = df.pivot(index=["validator", "validator_args"], columns="task")
     df = remove_correlation_multiindex(df)
@@ -52,7 +53,7 @@ def get_tag_prefix(basename):
 
 def correlation_src_threshold(args, threshold):
     basename = f"correlation_{threshold}_src_threshold"
-    min_value_fn = lambda _: 10
+    min_value_fn = lambda _: 50
     max_value_fn = lambda _: 100
     operation_fn = absolute_value_greater_than
     interval_fn = absolute_value_interval_fn
@@ -62,7 +63,7 @@ def correlation_src_threshold(args, threshold):
         "max_value_fn": max_value_fn,
         "operation_fn": operation_fn,
         "interval_fn": interval_fn,
-        "num_steps": 10,
+        "num_steps": 11,
     }
     table_creator(
         args,

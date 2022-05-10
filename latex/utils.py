@@ -58,6 +58,41 @@ def resizebox(x):
     return x
 
 
+# assuming unified validator/validator_args
+def validators_to_remove():
+    return [
+        "Accuracy_average_macro_split_src_train",
+        "Accuracy_average_macro_split_src_val",
+        "Accuracy_average_macro_split_target_train",
+        "Accuracy_average_macro_split_target_val",
+        "Accuracy_average_micro_split_target_train",
+        "Accuracy_average_micro_split_target_val",
+        "BNM_layer_features_split_src_train",
+        "BNM_layer_features_split_src_val",
+        "BNM_layer_features_split_target_train",
+        "BNM_layer_preds_split_src_train",
+        "BNM_layer_preds_split_src_val",
+        "BNM_layer_preds_split_target_train",
+        "BNMSummed_layer_features",
+        "BNMSummed_layer_preds",
+        "BNMSummedSrcVal_layer_features",
+        "BNMSummedSrcVal_layer_preds",
+        "Diversity_split_src_train",
+        "Diversity_split_src_val",
+        "Diversity_split_target_train",
+        "DiversitySummed",
+    ]
+
+
+def filter_validators(df):
+    df = df_utils.unify_validator_columns(
+        df, new_col_name="unified_validator", drop_validator_args=False
+    )
+    df = df.reset_index(drop=True)
+    df = df.drop(df[df.unified_validator.isin(validators_to_remove())].index, axis=0)
+    return df.drop(columns=["unified_validator"])
+
+
 # Feed the output of validator_args_delimited into this
 # def pretty_validator_args_dict(validator_args):
 #     {"average_macro_split_src_train": "Src train, Macro",
