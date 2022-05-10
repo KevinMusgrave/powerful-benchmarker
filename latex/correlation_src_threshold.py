@@ -47,4 +47,5 @@ def correlation_src_threshold(args, threshold):
         postprocess_df,
         color_map_tag_kwargs,
         add_resizebox=True,
+        clines="skip-last;data",
     )

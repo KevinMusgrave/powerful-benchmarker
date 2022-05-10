@@ -19,7 +19,6 @@ def remove_accuracy_name_multiindex(df):
 
 def postprocess_df(df):
     df = pd.concat(df, axis=0)
-    print(df)
     df = df.pivot(index="adapter", columns="task")
     df, accuracy_name = remove_accuracy_name_multiindex(df)
     df = latex_utils.add_source_only(df, accuracy_name)
