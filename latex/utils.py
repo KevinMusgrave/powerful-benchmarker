@@ -77,14 +77,16 @@ def validators_to_remove():
         "BNMSummed_layer_preds",
         "BNMSummedSrcVal_layer_features",
         "BNMSummedSrcVal_layer_preds",
-        "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_False",
-        "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_True",
-        "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_False",
-        "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_True",
+        # "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_False",
+        # "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_True",
+        # "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_False",
+        # "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_True",
         "Diversity_split_src_train",
         "Diversity_split_src_val",
         "Diversity_split_target_train",
         "DiversitySummed",
+        # "MMD_exponent_0_layer_preds_normalize_True_split_train",
+        # "MMDPerClass_exponent_0_layer_preds_normalize_True_split_train"
     ]
 
 
@@ -123,23 +125,63 @@ def pretty_validator_args_dict():
         "layer logits split src train": "Source Train",
         "layer logits split src val": "Source Val",
         "layer logits split target train": "Target Train",
+        "layer features normalize False p 2.0 split train with src False": "Target Features",
+        "layer features normalize False p 2.0 split train with src True": "Source + Target Features",
+        "layer logits normalize False p 2.0 split train with src False": "Target Logits",
+        "layer logits normalize False p 2.0 split train with src True": "Source + Target Logits",
+        "layer features normalize True p 2.0 split train with src False": "Target Features, L2 Normalized",
+        "layer features normalize True p 2.0 split train with src True": "Source + Target Features, L2 Normalized",
+        "layer logits normalize True p 2.0 split train with src False": "Target Logits, L2 Normalized",
+        "layer logits normalize True p 2.0 split train with src True": "Source + Target Logits, L2 Normalized",
+        "layer features normalization None": "Features",
+        "layer features normalization max": "Features, max normalization",
+        "layer features normalization standardize": "Features, standardization",
+        "layer logits normalization None": "Logits",
+        "layer logits normalization max": "Logits, max normalization",
+        "layer logits normalization standardize": "Logits, standardization",
+        "layer preds normalization None": "Preds",
+        "layer preds normalization max": "Preds, max normalization",
+        "layer preds normalization standardize": "Preds, standardization",
+        "split src train": "Source Train",
+        "split src val": "Source Val",
+        "split target train": "Target Train",
+        "exponent 0 layer features normalize False split train": "Features",
+        "exponent 0 layer features normalize True split train": "Features, L2 Normalized",
+        "exponent 0 layer logits normalize False split train": "Logits",
+        "exponent 0 layer logits normalize True split train": "Logits, L2 Normalized",
+        "exponent 0 layer preds normalize False split train": "Preds",
+        "exponent 0 layer preds normalize True split train": "Preds, L2 Normalized",
     }
 
 
-def rename_BNMSummed(df):
+def pretty_validator_dict():
+    return {
+        "BNMSummed": "BNM",
+        "BNMSummedSrcVal": "BNM",
+        "ClassAMICentroidInit": "ClassAMI",
+        "DEVBinary": "DEV",
+        "EntropySummed": "Entropy",
+        "IMSummed": "IM",
+    }
+
+
+def rename_specific_validator_args(df):
     df.loc[
         df["validator"] == "BNMSummed", "validator_args"
     ] = "Source Train + Target Train"
     df.loc[
         df["validator"] == "BNMSummedSrcVal", "validator_args"
     ] = "Source Val + Target Train"
-    df.validator.replace(
-        to_replace={"BNMSummed": "BNM", "BNMSummedSrcVal": "BNM"}, inplace=True
-    )
+    df.loc[
+        df["validator"] == "EntropySummed", "validator_args"
+    ] = "Source Train + Target Train"
+    df.loc[
+        df["validator"] == "IMSummed", "validator_args"
+    ] = "Source Train + Target Train"
 
 
 def rename_validator_args(df):
     df.validator_args.replace(to_replace=pretty_validator_args_dict(), inplace=True)
-    rename_BNMSummed(df)
+    rename_specific_validator_args(df)
+    df.validator.replace(to_replace=pretty_validator_dict(), inplace=True)
     return df
-
