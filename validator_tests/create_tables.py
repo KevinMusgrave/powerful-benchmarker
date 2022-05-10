@@ -46,11 +46,15 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
 
     df = df.groupby([*group_by])[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
+    if per_adapter:
+        group_by.remove("adapter")
+        df = df.pivot(index=group_by, columns="adapter")
+        df = df.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
     to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold)
 
 
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
-    for per_adapter in [False]:
+    for per_adapter in [False, True]:
         topN = args.topN_per_adapter if per_adapter else args.topN
         per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups)
         if per_src is None:
@@ -58,7 +62,7 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         curr_folder = os.path.join(
             tables_folder, get_name_from_df(per_src, assert_one_task=True)
         )
-        for src_threshold in [0, 0.8, 0.9]:
+        for src_threshold in [0, 0.9]:
             best_validators(
                 per_src,
                 "predicted_best_acc",
