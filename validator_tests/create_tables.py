@@ -39,9 +39,10 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     if per_adapter:
         group_by += ["adapter"]
     df = df[df["src_threshold"] == src_threshold]
-    min_num_past_threshold = df["num_past_threshold"].min()
-    if min_num_past_threshold < topN:
-        raise ValueError(f"{min_num_past_threshold} < {topN}")
+    if key == "predicted_best_acc":
+        min_num_past_threshold = df["num_past_threshold"].min()
+        if min_num_past_threshold < topN:
+            return
 
     df = df.groupby([*group_by])[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
@@ -57,7 +58,7 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         curr_folder = os.path.join(
             tables_folder, get_name_from_df(per_src, assert_one_task=True)
         )
-        for src_threshold in [0, 0.9]:
+        for src_threshold in [0, 0.8, 0.9]:
             best_validators(
                 per_src,
                 "predicted_best_acc",
