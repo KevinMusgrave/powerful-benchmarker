@@ -4,7 +4,7 @@ ALL_DFS_FILENAME = "all_dfs.pkl"
 PER_SRC_FILENAME = "per_src_threshold.pkl"
 PER_SRC_PER_ADAPTER_FILENAME = "per_src_threshold_per_adapter.pkl"
 PROCESSED_DF_FILENAME = "all_dfs_processed.pkl"
-TARGET_ACCURACY = "target_train_macro"
+TARGET_ACCURACY = "target_train_micro"
 NUM_ADAPTERS = 10
 EXPECTED_NUMBER_OF_CHECKPOINTS = NUM_ADAPTERS * 100 * 20
 

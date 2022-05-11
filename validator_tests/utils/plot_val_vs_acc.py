@@ -62,7 +62,7 @@ def score_vs_target_accuracy(curr_plots_folder, curr_df, filename):
         "score",
         TARGET_ACCURACY,
         filename,
-        "src_val_macro",
+        "src_val_micro",
     )
 
 

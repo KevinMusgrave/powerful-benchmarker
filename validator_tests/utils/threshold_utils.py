@@ -16,7 +16,7 @@ def filter_by_acc(df, min_acc, domain_type):
         split = "val"
     elif domain_type == "target":
         split = "train"
-    return df[df[f"{domain_type}_{split}_macro"] >= min_acc]
+    return df[df[f"{domain_type}_{split}_micro"] >= min_acc]
 
 
 def domain_type_str(domain_type):
@@ -46,13 +46,13 @@ def per_threshold(df, pretrained_acc, domain_type, fn):
 
 
 def get_per_src_threshold(df, dataset, src_domain, fn):
-    pretrained_acc = pretrained_src_accuracy(dataset, src_domain, "val", "macro")
+    pretrained_acc = pretrained_src_accuracy(dataset, src_domain, "val", "micro")
     return per_threshold(df, [pretrained_acc], ["src"], fn)
 
 
 def get_per_target_threshold(df, dataset, source_domain, target_domain, fn):
     pretrained_acc = pretrained_target_accuracy(
-        dataset, source_domain, target_domain, "train", "macro"
+        dataset, source_domain, target_domain, "train", "micro"
     )
     return per_threshold(df, [pretrained_acc], ["target"], fn)
 
