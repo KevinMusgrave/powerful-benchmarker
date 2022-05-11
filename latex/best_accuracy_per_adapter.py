@@ -34,4 +34,11 @@ def best_accuracy_per_adapter(args):
         "tag_prefix": f"{basename.replace('_', '')}",
         "min_value_fn": min_value_fn,
     }
-    table_creator(args, basename, preprocess_df, postprocess_df, color_map_tag_kwargs)
+    table_creator(
+        args,
+        basename,
+        preprocess_df,
+        postprocess_df,
+        color_map_tag_kwargs,
+        add_resizebox=True,
+    )
