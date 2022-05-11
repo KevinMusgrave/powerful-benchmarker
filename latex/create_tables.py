@@ -12,8 +12,12 @@ def main(args):
     best_accuracy_per_adapter(args)
     correlation_src_threshold(args, threshold=0)
     correlation_src_threshold(args, threshold=0.9)
+    correlation_src_threshold(args, threshold=0, per_adapter=True)
+    correlation_src_threshold(args, threshold=0.9, per_adapter=True)
     predicted_best_acc(args, topN=1, threshold=0)
     predicted_best_acc(args, topN=1, threshold=0.9)
+    predicted_best_acc(args, topN=1, threshold=0, per_adapter=True)
+    predicted_best_acc(args, topN=1, threshold=0.9, per_adapter=True)
 
 
 if __name__ == "__main__":

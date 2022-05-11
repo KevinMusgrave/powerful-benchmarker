@@ -1,10 +1,13 @@
 from latex import utils as latex_utils
-from latex.correlation_src_threshold import postprocess_df, preprocess_df
+from latex.correlation_src_threshold import get_postprocess_df, preprocess_df
 from latex.table_creator import table_creator
 
 
-def predicted_best_acc(args, topN, threshold):
-    basename = f"predicted_best_acc_top{topN}_{threshold}_src_threshold"
+def predicted_best_acc(args, topN, threshold, per_adapter=False):
+    per_adapter_str = "per_adapter_" if per_adapter else ""
+    basename = (
+        f"predicted_best_acc_top{topN}_{per_adapter_str}{threshold}_src_threshold"
+    )
     min_value_fn = lambda _: 80
     max_value_fn = lambda _: 100
     color_map_tag_kwargs = {
@@ -17,7 +20,7 @@ def predicted_best_acc(args, topN, threshold):
         args,
         basename,
         preprocess_df,
-        postprocess_df,
+        get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
         add_resizebox=True,
         clines="skip-last;data",

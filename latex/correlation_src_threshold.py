@@ -17,18 +17,25 @@ def preprocess_df(df):
     return df
 
 
-def postprocess_df(df):
-    df = pd.concat(df, axis=0).reset_index(drop=True)
-    df = latex_utils.rename_validator_args(df)
-    df = df.pivot(index=["validator", "validator_args"], columns="task")
-    df = df.droplevel(0, axis=1)
-    df = latex_utils.shortened_task_names(df)
-    df = (df * 100).round(1)
-    return df
+def get_postprocess_df(per_adapter):
+    def fn(df):
+        df = pd.concat(df, axis=0).reset_index(drop=True)
+        df = latex_utils.rename_validator_args(df)
+        if per_adapter:
+            df = df.groupby(["validator", "validator_args"]).mean()
+        else:
+            df = df.pivot(index=["validator", "validator_args"], columns="task")
+            df = df.droplevel(0, axis=1)
+            df = latex_utils.shortened_task_names(df)
+        df = (df * 100).round(1)
+        return df
+
+    return fn
 
 
-def correlation_src_threshold(args, threshold):
-    basename = f"correlation_{threshold}_src_threshold"
+def correlation_src_threshold(args, threshold, per_adapter=False):
+    per_adapter_str = "per_adapter_" if per_adapter else ""
+    basename = f"correlation_{per_adapter_str}{threshold}_src_threshold"
     min_value_fn = lambda _: 80
     max_value_fn = lambda _: 100
     operation_fn = absolute_value_greater_than
@@ -45,7 +52,7 @@ def correlation_src_threshold(args, threshold):
         args,
         basename,
         preprocess_df,
-        postprocess_df,
+        get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
         add_resizebox=True,
         clines="skip-last;data",
