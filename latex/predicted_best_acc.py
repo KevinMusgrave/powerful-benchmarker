@@ -1,5 +1,5 @@
 from latex import utils as latex_utils
-from latex.correlation_src_threshold import get_postprocess_df, preprocess_df
+from latex.correlation_src_threshold import get_postprocess_df, get_preprocess_df
 from latex.table_creator import table_creator
 
 
@@ -19,7 +19,7 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
     table_creator(
         args,
         basename,
-        preprocess_df,
+        get_preprocess_df(per_adapter),
         get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
         add_resizebox=True,

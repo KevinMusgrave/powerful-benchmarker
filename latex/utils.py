@@ -36,6 +36,10 @@ def convert_adapter_name(df):
     df["adapter"] = df["adapter"].str.replace("Config", "")
 
 
+def convert_adapter_column_names(df):
+    df.columns = df.columns.str.replace("Config", "")
+
+
 def add_source_only(df, accuracy_name):
     cols = df.columns.values
     _, split, average = df_utils.accuracy_name_split(accuracy_name)
