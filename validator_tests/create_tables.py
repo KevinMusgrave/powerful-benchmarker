@@ -8,7 +8,11 @@ from pytorch_adapt.utils import common_functions as c_f
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
-from validator_tests.utils.df_utils import get_name_from_df, get_per_src_threshold_df
+from validator_tests.utils.df_utils import (
+    get_acc_rows,
+    get_name_from_df,
+    get_per_src_threshold_df,
+)
 
 
 def best_accuracy_per_adapter(df, key, tables_folder):
@@ -20,24 +24,29 @@ def best_accuracy_per_adapter(df, key, tables_folder):
     df.to_pickle(f"{filename}.pkl")
 
 
-def to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold):
+def to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold=None):
     filename = f"{key}"
-    if key == "predicted_best_acc":
+    if key in ["predicted_best_acc", "highest_src_threshold_possible"]:
         filename += f"_top{topN}"
     if per_adapter:
         filename += "_per_adapter"
-    filename += f"_{src_threshold}_src_threshold"
+    if src_threshold is not None:
+        filename += f"_{src_threshold}_src_threshold"
     filename = os.path.join(folder, f"{filename}")
     df.to_csv(f"{filename}.csv", index=False)
     df.to_pickle(f"{filename}.pkl")
 
 
-def best_validators(df, key, folder, per_adapter, topN, src_threshold):
-    c_f.makedir_if_not_there(folder)
-
+def get_group_by(per_adapter):
     group_by = ["validator", "validator_args", "task"]
     if per_adapter:
         group_by += ["adapter"]
+    return group_by
+
+
+def best_validators(df, key, folder, per_adapter, topN, src_threshold):
+    c_f.makedir_if_not_there(folder)
+    group_by = get_group_by(per_adapter)
     df = df[df["src_threshold"] == src_threshold]
     if key == "predicted_best_acc":
         min_num_past_threshold = df["num_past_threshold"].min()
@@ -53,6 +62,20 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold)
 
 
+def highest_src_threshold_possible(df, folder, per_adapter, topN):
+    df = get_acc_rows(df, "target_train", "micro")
+    group_by = get_group_by(per_adapter) + ["predicted_best_acc"]
+    df = df.groupby(group_by)["src_threshold"].max().reset_index(name="src_threshold")
+    df = df[df["predicted_best_acc"] >= 1]
+    to_save = ["task", "predicted_best_acc", "src_threshold"]
+    if per_adapter:
+        to_save = ["adapter"] + to_save
+    df = df[to_save]
+    to_csv_and_pickle(
+        df, folder, "highest_src_threshold_possible", per_adapter, topN, None
+    )
+
+
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
     for per_adapter in [False, True]:
         topN = args.topN_per_adapter if per_adapter else args.topN
@@ -62,6 +85,7 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         curr_folder = os.path.join(
             tables_folder, get_name_from_df(per_src, assert_one_task=True)
         )
+        highest_src_threshold_possible(per_src, curr_folder, per_adapter, topN)
         for src_threshold in [0, 0.9]:
             best_validators(
                 per_src,
