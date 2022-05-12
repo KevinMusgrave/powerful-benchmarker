@@ -11,7 +11,7 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
     min_value_fn = lambda _: 80
     max_value_fn = lambda _: 100
     color_map_tag_kwargs = {
-        "tag_prefix": f"{latex_utils.get_tag_prefix(basename)}",
+        "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
         "max_value_fn": max_value_fn,
         "num_steps": 11,

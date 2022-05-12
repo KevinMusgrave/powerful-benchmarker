@@ -27,11 +27,11 @@ def postprocess_df(df):
     return df
 
 
-def best_accuracy_per_adapter(args):
-    basename = "best_accuracy_per_adapter"
+def best_accuracy_per_adapter(args, topN):
+    basename = f"best_accuracy_top{topN}_per_adapter"
     min_value_fn = lambda x: x.loc["Source only"]
     color_map_tag_kwargs = {
-        "tag_prefix": f"{basename.replace('_', '')}",
+        "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
     }
     table_creator(
