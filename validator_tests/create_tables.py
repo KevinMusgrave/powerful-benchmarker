@@ -88,10 +88,10 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         curr_folder = os.path.join(
             tables_folder, get_name_from_df(per_src, assert_one_task=True)
         )
-        highest_src_threshold_possible(per_src, curr_folder, per_adapter, topN)
+        highest_src_threshold_possible(per_src.copy(), curr_folder, per_adapter, topN)
         for src_threshold in [0, 0.9]:
             best_validators(
-                per_src,
+                per_src.copy(),
                 "predicted_best_acc",
                 curr_folder,
                 per_adapter,
@@ -99,7 +99,12 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
                 src_threshold,
             )
             best_validators(
-                per_src, "correlation", curr_folder, per_adapter, topN, src_threshold
+                per_src.copy(),
+                "correlation",
+                curr_folder,
+                per_adapter,
+                topN,
+                src_threshold,
             )
 
 
