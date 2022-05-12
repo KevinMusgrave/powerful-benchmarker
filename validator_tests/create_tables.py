@@ -24,9 +24,18 @@ def best_accuracy_per_adapter(df, key, tables_folder):
     df.to_pickle(f"{filename}.pkl")
 
 
+def best_accuracy_topN(df, folder, per_adapter, topN):
+    df = df[df["src_threshold"] == 0]
+    to_save = ["task", "best_acc"]
+    if per_adapter:
+        to_save = ["adapter"] + to_save
+    df = df[to_save].drop_duplicates()
+    to_csv_and_pickle(df, folder, "best_accuracy", per_adapter, topN)
+
+
 def to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold=None):
     filename = f"{key}"
-    if key in ["predicted_best_acc", "highest_src_threshold_possible"]:
+    if key in ["predicted_best_acc", "highest_src_threshold_possible", "best_accuracy"]:
         filename += f"_top{topN}"
     if per_adapter:
         filename += "_per_adapter"
@@ -88,6 +97,7 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         curr_folder = os.path.join(
             tables_folder, get_name_from_df(per_src, assert_one_task=True)
         )
+        best_accuracy_topN(per_src.copy(), curr_folder, per_adapter, topN)
         highest_src_threshold_possible(per_src.copy(), curr_folder, per_adapter, topN)
         for src_threshold in [0, 0.9]:
             best_validators(
