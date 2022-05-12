@@ -30,6 +30,7 @@ def best_accuracy_topN(df, folder, per_adapter, topN):
     if per_adapter:
         to_save = ["adapter"] + to_save
     df = df[to_save].drop_duplicates()
+    df = df.rename(columns={"best_acc": TARGET_ACCURACY})
     to_csv_and_pickle(df, folder, "best_accuracy", per_adapter, topN)
 
 
