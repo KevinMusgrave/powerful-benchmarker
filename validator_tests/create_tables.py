@@ -44,15 +44,17 @@ def get_group_by(per_adapter):
     return group_by
 
 
+def ignore_num_past_threshold_less_than_topN(df, key, topN):
+    # ignore rows where num_past_threshold is less than topN
+    df.loc[df["num_past_threshold"] < topN, key] = float("nan")
+
+
 def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     c_f.makedir_if_not_there(folder)
     group_by = get_group_by(per_adapter)
     df = df[df["src_threshold"] == src_threshold]
     if key == "predicted_best_acc":
-        min_num_past_threshold = df["num_past_threshold"].min()
-        if min_num_past_threshold < topN:
-            return
-
+        ignore_num_past_threshold_less_than_topN(df, key, topN)
     df = df.groupby(group_by)[key].max().reset_index(name=key)
     df = df.sort_values(by=[key], ascending=False)
     if per_adapter:
@@ -64,6 +66,7 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
 
 def highest_src_threshold_possible(df, folder, per_adapter, topN):
     df = get_acc_rows(df, "target_train", "micro")
+    ignore_num_past_threshold_less_than_topN(df, "predicted_best_acc", topN)
     group_by = get_group_by(per_adapter) + ["predicted_best_acc"]
     df = df.groupby(group_by)["src_threshold"].max().reset_index(name="src_threshold")
     df = df[df["predicted_best_acc"] >= 1]
