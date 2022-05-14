@@ -235,7 +235,7 @@ def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_
         # because they are unfairly focusing on a smaller subset.
         # So this check only applies when num_past_threshold >= nlargest
         strict_rows = per_x[per_x["num_past_threshold"] >= nlargest]
-        if strict_rows[new_name].max() > (1 + 1e-8):
+        if strict_rows[new_name].max() > (1 + 1e-2):
             print(strict_rows.loc[strict_rows[new_name].idxmax()])
             raise ValueError
 
