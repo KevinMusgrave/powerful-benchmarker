@@ -155,14 +155,9 @@ def get_all_per_task_validator_adapter(nlargest):
 
 
 def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
-    top_rows = (
-        df.sort_values([sort_by], ascending=False).groupby(group_by).head(nlargest)
-    )
-    return (
-        top_rows.groupby(group_by)[TARGET_ACCURACY]
-        .mean()
-        .reset_index(name=new_col_name)
-    )
+    ranked = df.groupby(group_by)[sort_by].rank(method="min", ascending=False)
+    df = df[ranked <= nlargest]
+    return df.groupby(group_by)[TARGET_ACCURACY].mean().reset_index(name=new_col_name)
 
 
 def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_groups):
