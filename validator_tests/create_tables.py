@@ -33,17 +33,28 @@ def best_accuracy_per_adapter(df, tables_folder):
 
 def best_accuracy_topN(df, folder, per_adapter, topN):
     df = df[df["src_threshold"] == 0]
-    to_save = ["task", "best_acc"]
-    if per_adapter:
-        to_save = ["adapter"] + to_save
-    df = df[to_save].drop_duplicates()
-    df = df.rename(columns={"best_acc": TARGET_ACCURACY})
-    to_csv_and_pickle(df, folder, "best_accuracy", per_adapter, topN)
+    for suffix in ["", "_val"]:
+        split = TARGET_ACCURACY if suffix == "" else TARGET_VAL_ACCURACY
+        best_str = f"best_acc{suffix}"
+        best_std_str = f"{best_str}_std"
+        to_save = ["task", best_str, best_std_str]
+        if per_adapter:
+            to_save = ["adapter"] + to_save
+        curr_df = df[to_save].drop_duplicates()
+        curr_df = curr_df.rename(columns={best_str: split})
+        to_csv_and_pickle(curr_df, folder, f"best_accuracy{suffix}", per_adapter, topN)
 
 
 def to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold=None):
     filename = f"{key}"
-    if key in ["predicted_best_acc", "highest_src_threshold_possible", "best_accuracy"]:
+    if any(
+        key.startswith(k)
+        for k in [
+            "predicted_best_acc",
+            "highest_src_threshold_possible",
+            "best_accuracy",
+        ]
+    ):
         filename += f"_top{topN}"
     if per_adapter:
         filename += "_per_adapter"
