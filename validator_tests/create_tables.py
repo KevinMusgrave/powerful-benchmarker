@@ -96,7 +96,7 @@ def highest_src_threshold_possible(df, folder, per_adapter, topN):
     df = get_acc_rows(df, "target_train", "micro")
     ignore_num_past_threshold_less_than_topN(df, "predicted_best_acc", topN)
     group_by = get_group_by(per_adapter) + ["predicted_best_acc"]
-    df = df.groupby(group_by)["src_threshold"].max().reset_index(name="src_threshold")
+    df = df.groupby(group_by, as_index=False)["src_threshold"].max()
     df = df[df["predicted_best_acc"] >= 1]
     to_save = ["task", "predicted_best_acc", "src_threshold"]
     if per_adapter:
@@ -119,22 +119,23 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         best_accuracy_topN(per_src.copy(), curr_folder, per_adapter, topN)
         highest_src_threshold_possible(per_src.copy(), curr_folder, per_adapter, topN)
         for src_threshold in [0, 0.9]:
-            best_validators(
-                per_src.copy(),
-                "predicted_best_acc",
-                curr_folder,
-                per_adapter,
-                topN,
-                src_threshold,
-            )
-            best_validators(
-                per_src.copy(),
-                "correlation",
-                curr_folder,
-                per_adapter,
-                topN,
-                src_threshold,
-            )
+            for suffix in ["", "_val"]:
+                best_validators(
+                    per_src.copy(),
+                    f"predicted_best_acc{suffix}",
+                    curr_folder,
+                    per_adapter,
+                    topN,
+                    src_threshold,
+                )
+                best_validators(
+                    per_src.copy(),
+                    f"correlation{suffix}",
+                    curr_folder,
+                    per_adapter,
+                    topN,
+                    src_threshold,
+                )
 
 
 def create_tables(exp_folder, exp_groups, tables_folder, df):
