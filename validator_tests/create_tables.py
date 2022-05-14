@@ -22,11 +22,10 @@ from validator_tests.utils.df_utils import (
 def best_accuracy_per_adapter(df, tables_folder):
     folder = os.path.join(tables_folder, get_name_from_df(df, assert_one_task=True))
     c_f.makedir_if_not_there(folder)
-    # get best checkpoint by target train set
-    df = df.loc[df.groupby(["adapter", "task"])[TARGET_ACCURACY].idxmax()]
     for suffix in ["", "_val"]:
         split = TARGET_ACCURACY if suffix == "" else TARGET_VAL_ACCURACY
-        curr_df = df[["adapter", "task", split]]
+        curr_df = df.groupby(["adapter", "task"], as_index=False)[split].max()
+        curr_df = curr_df[["adapter", "task", split]]
         filename = os.path.join(folder, f"best_accuracy_per_adapter{suffix}")
         curr_df.to_csv(f"{filename}.csv", index=False)
         curr_df.to_pickle(f"{filename}.pkl")
