@@ -41,7 +41,9 @@ def best_accuracy_topN(df, folder, per_adapter, topN):
         if per_adapter:
             to_save = ["adapter"] + to_save
         curr_df = df[to_save].drop_duplicates()
-        curr_df = curr_df.rename(columns={best_str: split})
+        curr_df = curr_df.rename(
+            columns={best_str: split, best_std_str: f"{split}_std"}
+        )
         to_csv_and_pickle(curr_df, folder, f"best_accuracy{suffix}", per_adapter, topN)
 
 

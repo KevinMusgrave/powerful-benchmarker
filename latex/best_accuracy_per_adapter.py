@@ -11,9 +11,10 @@ def preprocess_df(df):
 
 def remove_accuracy_name_multiindex(df):
     accuracy_name = df.columns.levels[0]
-    assert len(accuracy_name) == 1
+    assert len(accuracy_name) == 2
+    accuracy_name = [x for x in accuracy_name if not x.endswith("_std")]
     accuracy_name = accuracy_name[0]
-    df = df.droplevel(0, axis=1)
+    df = df[accuracy_name]
     return df, accuracy_name
 
 
