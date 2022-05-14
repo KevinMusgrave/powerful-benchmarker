@@ -112,9 +112,19 @@ def add_EntropySummed(df):
     return _add_src_and_target(df, "Entropy")
 
 
+def add_EntropySummedSrcVal(df):
+    return _add_src_and_target(
+        df, "Entropy", src_split="val", new_name="EntropySummedSrcVal"
+    )
+
+
 def add_DiversitySummed(df):
     return _add_src_and_target(df, "Diversity")
 
 
 def add_IMSummed(df):
     return _add_src_and_target(df, "IM")
+
+
+def add_IMSummedSrcVal(df):
+    return _add_src_and_target(df, "IM", src_split="val", new_name="IMSummedSrcVal")
