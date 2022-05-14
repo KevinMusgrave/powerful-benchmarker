@@ -35,7 +35,7 @@ def main(args, fn1, fn2):
             df = []
             for e in e_group:
                 df.append(get_processed_df(os.path.join(args.exp_folder, e)))
-            df = pd.concat(df, axis=0)
+            df = pd.concat(df, axis=0, ignore_index=True)
             fn2(args.exp_folder, e_group, output_folder, df)
 
 

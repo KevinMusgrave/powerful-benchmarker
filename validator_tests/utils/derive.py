@@ -45,7 +45,7 @@ def add_IM(df):
     )
     im = im.drop(columns=["entropy_score", "diversity_score"])
 
-    return pd.concat([df, im], axis=0)
+    return pd.concat([df, im], axis=0, ignore_index=True)
 
 
 def add_NegSND(df):
@@ -57,7 +57,7 @@ def add_NegSND(df):
     )
     x = x.assign(score=-x["SND_score"], validator="NegSND")
     x = x.drop(columns=["SND_score"])
-    return pd.concat([df, x], axis=0)
+    return pd.concat([df, x], axis=0, ignore_index=True)
 
 
 def _add_src_and_target(df, validator_name, src_split="train", new_name=None):
@@ -93,7 +93,7 @@ def _add_src_and_target(df, validator_name, src_split="train", new_name=None):
         validator=new_name,
     )
     summed = summed.drop(columns=[src_score_name, target_score_name])
-    return pd.concat([df, summed], axis=0)
+    return pd.concat([df, summed], axis=0, ignore_index=True)
 
 
 def add_BNMSummed(df):
