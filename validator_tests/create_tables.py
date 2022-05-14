@@ -7,7 +7,11 @@ from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
-from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
+from validator_tests.utils.constants import (
+    TARGET_ACCURACY,
+    TARGET_VAL_ACCURACY,
+    add_exp_group_args,
+)
 from validator_tests.utils.df_utils import (
     get_acc_rows,
     get_name_from_df,
@@ -15,13 +19,17 @@ from validator_tests.utils.df_utils import (
 )
 
 
-def best_accuracy_per_adapter(df, key, tables_folder):
+def best_accuracy_per_adapter(df, tables_folder):
     folder = os.path.join(tables_folder, get_name_from_df(df, assert_one_task=True))
     c_f.makedir_if_not_there(folder)
-    df = df.groupby(["adapter", "task"])[key].max().reset_index(name=key)
-    filename = os.path.join(folder, f"best_accuracy_per_adapter")
-    df.to_csv(f"{filename}.csv", index=False)
-    df.to_pickle(f"{filename}.pkl")
+    # get best checkpoint by target train set
+    df = df.loc[df.groupby(["adapter", "task"])[TARGET_ACCURACY].idxmax()]
+    for suffix in ["", "_val"]:
+        split = TARGET_ACCURACY if suffix == "" else TARGET_VAL_ACCURACY
+        curr_df = df[["adapter", "task", split]]
+        filename = os.path.join(folder, f"best_accuracy_per_adapter{suffix}")
+        curr_df.to_csv(f"{filename}.csv", index=False)
+        curr_df.to_pickle(f"{filename}.pkl")
 
 
 def best_accuracy_topN(df, folder, per_adapter, topN):
@@ -120,7 +128,7 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
 
 
 def create_tables(exp_folder, exp_groups, tables_folder, df):
-    best_accuracy_per_adapter(df, TARGET_ACCURACY, tables_folder)
+    best_accuracy_per_adapter(df, tables_folder)
     create_best_validators_tables(exp_folder, exp_groups, tables_folder)
 
 
