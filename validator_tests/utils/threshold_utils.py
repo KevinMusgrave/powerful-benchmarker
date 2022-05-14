@@ -113,7 +113,7 @@ def get_corr(group_by):
 def get_predicted_best_acc(group_by, nlargest):
     def fn(df):
         return get_avg_top_n_acc_by_group(
-            df, group_by, nlargest, "score", "predicted_best_acc"
+            df, group_by, nlargest, "score", "predicted_best_acc_raw"
         )
 
     return fn
@@ -157,7 +157,12 @@ def get_all_per_task_validator_adapter(nlargest):
 def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
     ranked = df.groupby(group_by)[sort_by].rank(method="min", ascending=False)
     df = df[ranked <= nlargest]
-    return df.groupby(group_by)[TARGET_ACCURACY].mean().reset_index(name=new_col_name)
+    return (
+        df.groupby(group_by)[TARGET_ACCURACY]
+        .agg(["mean", "std"])
+        .reset_index()
+        .rename(columns={"mean": new_col_name, "std": f"{new_col_name}_std"})
+    )
 
 
 def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_groups):
@@ -180,7 +185,12 @@ def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_
         df, group_by, nlargest, TARGET_ACCURACY, "best_acc"
     )
     per_x = per_x.merge(best_acc, on=group_by)
-    per_x["predicted_best_acc"] = per_x["predicted_best_acc"] / per_x["best_acc"]
+    per_x["predicted_best_acc"] = per_x["predicted_best_acc_raw"] / per_x["best_acc"]
+
+    # https://math.stackexchange.com/a/2793257
+    per_x["predicted_best_acc_std"] = (
+        per_x["predicted_best_acc_raw_std"] / per_x["best_acc"]
+    )
 
     # The rows with num_past_threshold < nlargest can have predicted_best_acc > 1
     # because they are unfairly focusing on a smaller subset.
