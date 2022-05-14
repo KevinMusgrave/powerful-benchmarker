@@ -15,8 +15,10 @@ def add_derived_scores(df):
         add_BNMSummedSrcVal,
         add_BSPSummed,
         add_EntropySummed,
+        add_EntropySummedSrcVal,
         add_DiversitySummed,
         add_IMSummed,
+        add_IMSummedSrcVal,
     ]:
         df = x(df)
     return df

@@ -81,10 +81,14 @@ def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     c_f.makedir_if_not_there(folder)
     group_by = get_group_by(per_adapter)
     df = df[df["src_threshold"] == src_threshold]
-    if key == "predicted_best_acc":
+    if key.startswith("predicted_best_acc"):
         ignore_num_past_threshold_less_than_topN(df, key, topN)
-    df = df.groupby(group_by)[key].max().reset_index(name=key)
+    df = df.loc[df.groupby(group_by)[key].idxmax().dropna()]
     df = df.sort_values(by=[key], ascending=False)
+    columns = group_by + [key]
+    if key.startswith("predicted_best_acc"):
+        columns += [f"{key}_std"]
+    df = df[columns]
     if per_adapter:
         group_by.remove("adapter")
         df = df.pivot(index=group_by, columns="adapter")
