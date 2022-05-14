@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from validator_tests.utils.constants import TARGET_ACCURACY
+from validator_tests.utils.constants import TARGET_ACCURACY, TARGET_VAL_ACCURACY
 from validator_tests.utils.threshold_utils import (
     get_avg_top_n_acc_by_group,
     group_by_task,
@@ -36,6 +36,7 @@ class TestThresholdUtils(unittest.TestCase):
             **{
                 "score": np.random.randn(len(df)),
                 TARGET_ACCURACY: np.random.randn(len(df)),
+                TARGET_VAL_ACCURACY: np.random.randn(len(df)),
             }
         )
 

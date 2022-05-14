@@ -7,7 +7,11 @@ from powerful_benchmarker.utils.score_utils import (
     pretrained_target_accuracy,
 )
 
-from .constants import EXPECTED_NUMBER_OF_CHECKPOINTS, TARGET_ACCURACY
+from .constants import (
+    EXPECTED_NUMBER_OF_CHECKPOINTS,
+    TARGET_ACCURACY,
+    TARGET_VAL_ACCURACY,
+)
 from .df_utils import get_sorted_unique
 
 
@@ -154,15 +158,34 @@ def get_all_per_task_validator_adapter(nlargest):
     return get_all(group_by_task_validator(per_adapter=True), nlargest)
 
 
-def get_avg_top_n_acc_by_group(df, group_by, nlargest, sort_by, new_col_name):
+def get_avg_top_n_acc_by_group(
+    df, group_by, nlargest, sort_by, new_col_name, sort_by_is_output=False
+):
     ranked = df.groupby(group_by)[sort_by].rank(method="min", ascending=False)
     df = df[ranked <= nlargest]
-    return (
-        df.groupby(group_by)[TARGET_ACCURACY]
-        .agg(["mean", "std"])
-        .reset_index()
-        .rename(columns={"mean": new_col_name, "std": f"{new_col_name}_std"})
-    )
+    df = df.groupby(group_by, as_index=False)
+    if sort_by_is_output:
+        df = df.agg({sort_by: ["mean", "std"]})
+        df.columns = df.columns.map("".join)
+        return df.rename(
+            columns={
+                f"{sort_by}mean": new_col_name,
+                f"{sort_by}std": f"{new_col_name}_std",
+            }
+        )
+    else:
+        df = df.agg(
+            {TARGET_ACCURACY: ["mean", "std"], TARGET_VAL_ACCURACY: ["mean", "std"]}
+        )
+        df.columns = df.columns.map("".join)
+        return df.rename(
+            columns={
+                f"{TARGET_ACCURACY}mean": new_col_name,
+                f"{TARGET_ACCURACY}std": f"{new_col_name}_std",
+                f"{TARGET_VAL_ACCURACY}mean": f"{new_col_name}_val",
+                f"{TARGET_VAL_ACCURACY}std": f"{new_col_name}_val_std",
+            }
+        )
 
 
 def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_groups):
@@ -181,22 +204,33 @@ def convert_predicted_best_acc_to_rel(df, per_x, per_adapter, nlargest, num_exp_
         raise ValueError
 
     group_by = group_by_task(per_adapter=per_adapter)
-    best_acc = get_avg_top_n_acc_by_group(
-        df, group_by, nlargest, TARGET_ACCURACY, "best_acc"
-    )
-    per_x = per_x.merge(best_acc, on=group_by)
-    per_x["predicted_best_acc"] = per_x["predicted_best_acc_raw"] / per_x["best_acc"]
 
-    # https://math.stackexchange.com/a/2793257
-    per_x["predicted_best_acc_std"] = (
-        per_x["predicted_best_acc_raw_std"] / per_x["best_acc"]
-    )
+    for suffix in ["", "_val"]:
+        sort_by_key = TARGET_ACCURACY if suffix == "" else TARGET_VAL_ACCURACY
+        best_acc = get_avg_top_n_acc_by_group(
+            df,
+            group_by,
+            nlargest,
+            sort_by_key,
+            f"best_acc{suffix}",
+            sort_by_is_output=True,
+        )
+        per_x = per_x.merge(best_acc, on=group_by)
 
-    # The rows with num_past_threshold < nlargest can have predicted_best_acc > 1
-    # because they are unfairly focusing on a smaller subset.
-    # So this check only applies when num_past_threshold >= nlargest
-    strict_rows = per_x[per_x["num_past_threshold"] >= nlargest]
-    if strict_rows["predicted_best_acc"].max() > (1 + 1e-8):
-        print(strict_rows.loc[strict_rows["predicted_best_acc"].idxmax()])
-        raise ValueError
+    for suffix in ["", "_val"]:
+        new_name = f"predicted_best_acc{suffix}"
+        raw = f"predicted_best_acc_raw{suffix}"
+        best_str = f"best_acc{suffix}"
+        per_x[new_name] = per_x[raw] / per_x[best_str]
+        # https://math.stackexchange.com/a/2793257
+        per_x[f"{new_name}_std"] = per_x[f"{raw}_std"] / per_x[best_str]
+
+        # The rows with num_past_threshold < nlargest can have predicted_best_acc > 1
+        # because they are unfairly focusing on a smaller subset.
+        # So this check only applies when num_past_threshold >= nlargest
+        strict_rows = per_x[per_x["num_past_threshold"] >= nlargest]
+        if strict_rows[new_name].max() > (1 + 1e-8):
+            print(strict_rows.loc[strict_rows[new_name].idxmax()])
+            raise ValueError
+
     return per_x
