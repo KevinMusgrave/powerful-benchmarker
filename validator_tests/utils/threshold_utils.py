@@ -99,17 +99,23 @@ def get_per_threshold(df, fn):
 
 def get_corr(group_by):
     def fn(df):
-        curr_df = (
-            df.groupby(group_by)[["score", TARGET_ACCURACY]]
-            .corr(method="spearman")
-            .iloc[0::2, -1]
-        )
-        return (
-            curr_df.reset_index()
-            .drop([f"level_{len(group_by)}"], axis=1)
-            .rename(columns={TARGET_ACCURACY: "correlation"})
-            .dropna()
-        )
+        output = []
+        for suffix in ["", "_val"]:
+            split = TARGET_ACCURACY if suffix == "" else TARGET_VAL_ACCURACY
+            curr_df = (
+                df.groupby(group_by)[["score", split]]
+                .corr(method="spearman")
+                .iloc[0::2, -1]
+            )
+            curr_df = (
+                curr_df.reset_index()
+                .drop([f"level_{len(group_by)}"], axis=1)
+                .rename(columns={split: f"correlation{suffix}"})
+                .dropna()
+            )
+            output.append(curr_df)
+
+        return output[0].merge(output[1], on=group_by)
 
     return fn
 
