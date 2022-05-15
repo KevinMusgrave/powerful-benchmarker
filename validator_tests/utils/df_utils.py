@@ -77,8 +77,11 @@ def assert_acc_rows_are_correct(df):
     for split in SPLIT_NAMES:
         for average in ["micro", "macro"]:
             curr = get_acc_rows(df, split, average)
-            if not curr["score"].equals(curr[acc_score_column_name(split, average)]):
+            acc_column = curr[acc_score_column_name(split, average)]
+            if not curr["score"].equals(acc_column):
                 raise ValueError("These columns should be equal")
+            if acc_column.max() > 1:
+                raise ValueError("max accuracy should be <= 1")
 
 
 def drop_irrelevant_columns(df):
