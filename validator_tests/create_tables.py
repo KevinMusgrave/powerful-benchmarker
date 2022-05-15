@@ -107,7 +107,7 @@ def highest_src_threshold_possible(df, folder, per_adapter, topN):
     ignore_num_past_threshold_less_than_topN(df, "predicted_best_acc", topN)
     group_by = get_group_by(per_adapter) + ["predicted_best_acc"]
     df = df.groupby(group_by, as_index=False)["src_threshold"].max()
-    df = df[df["predicted_best_acc"] >= 1]
+    df = df[df["predicted_best_acc"] == 1]
     to_save = ["task", "predicted_best_acc", "src_threshold"]
     if per_adapter:
         to_save = ["adapter"] + to_save
