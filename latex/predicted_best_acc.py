@@ -3,6 +3,32 @@ from latex.correlation_src_threshold import get_postprocess_df, get_preprocess_d
 from latex.table_creator import table_creator
 
 
+def std_condition(std, c):
+    endwith_std = c.endswith("_std")
+    return (std and endwith_std) or (not std and not endwith_std)
+
+
+def get_preprocess_df_(per_adapter, std=False):
+    fn2 = get_preprocess_df(per_adapter)
+
+    def fn(df):
+
+        if per_adapter:
+            for c in df.columns.levels[0]:
+                if std_condition(std, c):
+                    df = df[c].reset_index()
+                    break
+        else:
+            columns = []
+            for c in df.columns:
+                if (not c.startswith("predicted_best_acc")) or std_condition(std, c):
+                    columns.append(c)
+            df = df[columns]
+        return fn2(df)
+
+    return fn
+
+
 def predicted_best_acc(args, topN, threshold, per_adapter=False):
     per_adapter_str = "per_adapter_" if per_adapter else ""
     basename = (
@@ -19,7 +45,7 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
     table_creator(
         args,
         basename,
-        get_preprocess_df(per_adapter),
+        get_preprocess_df_(per_adapter),
         get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
         add_resizebox=True,
