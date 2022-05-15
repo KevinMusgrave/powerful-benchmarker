@@ -177,7 +177,9 @@ def pretty_validator_dict():
         "ClassAMICentroidInit": "ClassAMI",
         "DEVBinary": "DEV",
         "EntropySummed": "Entropy",
+        "EntropySummedSrcVal": "Entropy",
         "IMSummed": "IM",
+        "IMSummedSrcVal": "IM",
     }
 
 
@@ -192,8 +194,14 @@ def rename_specific_validator_args(df):
         df["validator"] == "EntropySummed", "validator_args"
     ] = "Source Train + Target Train"
     df.loc[
+        df["validator"] == "EntropySummedSrcVal", "validator_args"
+    ] = "Source Val + Target Train"
+    df.loc[
         df["validator"] == "IMSummed", "validator_args"
     ] = "Source Train + Target Train"
+    df.loc[
+        df["validator"] == "IMSummedSrcVal", "validator_args"
+    ] = "Source Val + Target Train"
 
 
 def rename_validator_args(df):

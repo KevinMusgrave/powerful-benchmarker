@@ -49,6 +49,7 @@ def highest_src_threshold_possible(args, topN, topN_per_adapter):
 
     df = pd.concat([df1, df2], axis=0)
     df = (df * 100).astype(int)
+    df.index.name = None
 
     basename = (
         f"highest_src_threshold_possible_top{topN}_top{topN_per_adapter}_per_adapter"
