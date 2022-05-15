@@ -8,7 +8,7 @@ def std_condition(std, c):
     return (std and endwith_std) or (not std and not endwith_std)
 
 
-def get_preprocess_df_(per_adapter, std=False):
+def get_preprocess_df_wrapper(per_adapter, std=False):
     fn2 = get_preprocess_df(per_adapter)
 
     def fn(df):
@@ -45,7 +45,7 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
     table_creator(
         args,
         basename,
-        get_preprocess_df_(per_adapter),
+        get_preprocess_df_wrapper(per_adapter),
         get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
         add_resizebox=True,

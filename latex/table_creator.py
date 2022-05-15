@@ -9,13 +9,24 @@ from validator_tests.utils import utils
 from validator_tests.utils.df_utils import get_name_from_exp_groups
 
 
-def save_to_latex(df, folder, filename, color_map_tag_kwargs, add_resizebox, clines):
+def save_to_latex(
+    df,
+    folder,
+    filename,
+    color_map_tag_kwargs,
+    add_resizebox,
+    clines,
+    highlight_max=True,
+):
     c_f.makedir_if_not_there(folder)
-    color_map_tags = create_color_map_tags(df, **color_map_tag_kwargs)
+    tags_dict, color_map_tags = None, ""
+    if color_map_tag_kwargs:
+        color_map_tags = create_color_map_tags(df, **color_map_tag_kwargs)
+        tags_dict = get_tags_dict(color_map_tag_kwargs["tag_prefix"], df.columns.values)
 
-    tags_dict = get_tags_dict(color_map_tag_kwargs["tag_prefix"], df.columns.values)
-
-    df_style = df.style.highlight_max(props="textbf:--rwrap")
+    df_style = df.style
+    if highlight_max:
+        df_style = df.style.highlight_max(props="textbf:--rwrap")
     latex_str = df_style.format(
         tags_dict,
         escape="latex",
@@ -23,8 +34,9 @@ def save_to_latex(df, folder, filename, color_map_tag_kwargs, add_resizebox, cli
     ).to_latex(hrules=True, position_float="centering", clines=clines)
     full_path = os.path.join(folder, f"{filename}.txt")
 
-    newlines = "\n" * 10
-    latex_str = f"{color_map_tags}{newlines}{latex_str}"
+    if color_map_tags:
+        newlines = "\n" * 10
+        latex_str = f"{color_map_tags}{newlines}{latex_str}"
     if add_resizebox:
         latex_str = resizebox(latex_str)
     with open(full_path, "w") as text_file:
@@ -36,9 +48,10 @@ def table_creator(
     basename,
     preprocess_df,
     postprocess_df,
-    color_map_tag_kwargs,
+    color_map_tag_kwargs=None,
     add_resizebox=False,
     clines=None,
+    do_save_to_latex=True,
 ):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
     df = []
@@ -52,6 +65,9 @@ def table_creator(
     output_folder = os.path.join(
         args.output_folder, get_name_from_exp_groups(exp_groups)
     )
-    save_to_latex(
-        df, output_folder, basename, color_map_tag_kwargs, add_resizebox, clines
-    )
+    if do_save_to_latex:
+        save_to_latex(
+            df, output_folder, basename, color_map_tag_kwargs, add_resizebox, clines
+        )
+    else:
+        return df, output_folder

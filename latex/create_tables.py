@@ -4,11 +4,13 @@ import sys
 sys.path.insert(0, ".")
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
 from latex.correlation_src_threshold import correlation_src_threshold
+from latex.highest_src_threshold_possible import highest_src_threshold_possible
 from latex.predicted_best_acc import predicted_best_acc
 from validator_tests.utils.constants import add_exp_group_args
 
 
 def main(args):
+    highest_src_threshold_possible(args, topN=1, topN_per_adapter=1)
     for topN in [1, 20]:
         best_accuracy_per_adapter(args, topN=topN)
 
