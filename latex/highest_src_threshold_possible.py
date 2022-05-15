@@ -47,10 +47,19 @@ def highest_src_threshold_possible(args, topN, topN_per_adapter):
         do_save_to_latex=False,
     )
 
-    df = pd.concat([df1, df2], axis=0).reset_index()
+    df = pd.concat([df1, df2], axis=0)
+    df = (df * 100).astype(int)
+
     basename = (
         f"highest_src_threshold_possible_top{topN}_top{topN_per_adapter}_per_adapter"
     )
+
+    caption = (
+        "The highest source validation accuracy that can be used as a filter, "
+        "without removing the top target train set accuracy. "
+        "Smallest values per task are bolded."
+    )
+
     save_to_latex(
         df,
         output_folder,
@@ -59,4 +68,7 @@ def highest_src_threshold_possible(args, topN, topN_per_adapter):
         add_resizebox=True,
         clines=None,
         highlight_max=False,
+        caption=caption,
+        highlight_min=True,
+        label=basename,
     )

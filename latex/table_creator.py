@@ -15,8 +15,9 @@ def save_to_latex(
     filename,
     color_map_tag_kwargs,
     add_resizebox,
-    clines,
     highlight_max=True,
+    highlight_min=False,
+    **kwargs,
 ):
     c_f.makedir_if_not_there(folder)
     tags_dict, color_map_tags = None, ""
@@ -27,11 +28,13 @@ def save_to_latex(
     df_style = df.style
     if highlight_max:
         df_style = df.style.highlight_max(props="textbf:--rwrap")
+    if highlight_min:
+        df_style = df.style.highlight_min(props="textbf:--rwrap")
     latex_str = df_style.format(
         tags_dict,
         escape="latex",
         na_rep="-",
-    ).to_latex(hrules=True, position_float="centering", clines=clines)
+    ).to_latex(hrules=True, position_float="centering", **kwargs)
     full_path = os.path.join(folder, f"{filename}.txt")
 
     if color_map_tags:
@@ -50,8 +53,8 @@ def table_creator(
     postprocess_df,
     color_map_tag_kwargs=None,
     add_resizebox=False,
-    clines=None,
     do_save_to_latex=True,
+    **kwargs,
 ):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
     df = []
@@ -67,7 +70,13 @@ def table_creator(
     )
     if do_save_to_latex:
         save_to_latex(
-            df, output_folder, basename, color_map_tag_kwargs, add_resizebox, clines
+            df,
+            output_folder,
+            basename,
+            color_map_tag_kwargs,
+            add_resizebox,
+            label=basename,
+            **kwargs,
         )
     else:
         return df, output_folder

@@ -35,6 +35,7 @@ def best_accuracy_per_adapter(args, topN):
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
     }
+    caption = f"The average of the top {topN} accuracies per UDA algorithm on the target training set."
     table_creator(
         args,
         basename,
@@ -42,4 +43,5 @@ def best_accuracy_per_adapter(args, topN):
         postprocess_df,
         color_map_tag_kwargs,
         add_resizebox=True,
+        caption=caption,
     )
