@@ -81,20 +81,24 @@ def ignore_num_past_threshold_less_than_topN(df, key, topN):
 
 def best_validators(df, key, folder, per_adapter, topN, src_threshold):
     c_f.makedir_if_not_there(folder)
+    is_predicted_best_acc = key.startswith("predicted_best_acc")
     group_by = get_group_by(per_adapter)
     df = df[df["src_threshold"] == src_threshold]
-    if key.startswith("predicted_best_acc"):
+    if is_predicted_best_acc:
         ignore_num_past_threshold_less_than_topN(df, key, topN)
     df = df.loc[df.groupby(group_by)[key].idxmax().dropna()]
     df = df.sort_values(by=[key], ascending=False)
     columns = group_by + [key]
-    if key.startswith("predicted_best_acc"):
+    if is_predicted_best_acc:
         columns += [f"{key}_std"]
     df = df[columns]
     if per_adapter:
         group_by.remove("adapter")
         df = df.pivot(index=group_by, columns="adapter")
-        df = df.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
+        if is_predicted_best_acc:
+            df.columns.names = (None, None)
+        else:
+            df = df.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
     to_csv_and_pickle(df, folder, key, per_adapter, topN, src_threshold)
 
 
