@@ -17,6 +17,9 @@ from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 
 def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, df, per_feature_layer):
     if args.scatter:
+        kwargs = {}
+        if args.scatter_no_color:
+            kwargs["c"] = None
         plot_val_vs_acc(
             df,
             plots_folder,
@@ -24,6 +27,7 @@ def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, df, per_feature_la
             per_feature_layer=per_feature_layer,
             validator_set=args.scatter_plot_validator_set,
             src_threshold=args.scatter_src_threshold,
+            **kwargs
         )
     if args.heatmap:
         per_src = get_per_src_threshold_df(exp_folder, False, args.topN, exp_groups)
@@ -65,5 +69,6 @@ if __name__ == "__main__":
     parser.add_argument("--scatter", action="store_true")
     parser.add_argument("--heatmap", action="store_true")
     parser.add_argument("--scatter_src_threshold", type=float)
+    parser.add_argument("--scatter_no_color", action="store_true")
     args = parser.parse_args()
     create_main.main(args, fn1, fn2)

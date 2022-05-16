@@ -60,17 +60,22 @@ def scatter_plot(
     fig.clf()
 
 
-def score_vs_target_accuracy(curr_plots_folder, curr_df, filename):
-    scatter_plot(
-        curr_plots_folder,
-        curr_df,
-        "score",
-        TARGET_ACCURACY,
-        filename,
-        "src_val_micro",
-        x_label="Validation Score",
-        y_label="Target Train Accuracy",
-    )
+def get_score_vs_target_accuracy_fn(**kwargs):
+    def fn(curr_plots_folder, curr_df, filename):
+        input_kwargs = {
+            "plots_folder": curr_plots_folder,
+            "df": curr_df,
+            "x": "score",
+            "y": TARGET_ACCURACY,
+            "filename": filename,
+            "c": "src_val_micro",
+            "x_label": "Validation Score",
+            "y_label": "Target Train Accuracy",
+        }
+        input_kwargs.update(kwargs)
+        scatter_plot(**input_kwargs)
+
+    return fn
 
 
 def plot_val_vs_acc(
@@ -80,6 +85,7 @@ def plot_val_vs_acc(
     per_feature_layer,
     validator_set=None,
     src_threshold=None,
+    **kwargs,
 ):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
 
@@ -111,7 +117,7 @@ def plot_val_vs_acc(
     plot_loop(
         df,
         plots_folder,
-        score_vs_target_accuracy,
+        get_score_vs_target_accuracy_fn(**kwargs),
         filter_by=filter_by,
         sub_folder_components=sub_folder_components,
         filename_components=["validator", "validator_args"],
