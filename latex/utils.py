@@ -92,6 +92,18 @@ def validators_to_remove():
         # "MMD_exponent_0_layer_preds_normalize_True_split_train",
         "MMDPerClass_exponent_0_layer_preds_normalize_False_split_train",
         "MMDPerClass_exponent_0_layer_preds_normalize_True_split_train",
+        "NegSND_T_0.01_layer_features_split_target_train",
+        "NegSND_T_0.05_layer_features_split_target_train",
+        "NegSND_T_0.1_layer_features_split_target_train",
+        "NegSND_T_0.5_layer_features_split_target_train",
+        "NegSND_T_0.01_layer_logits_split_target_train",
+        "NegSND_T_0.05_layer_logits_split_target_train",
+        "NegSND_T_0.1_layer_logits_split_target_train",
+        "NegSND_T_0.5_layer_logits_split_target_train",
+        "NegSND_T_0.01_layer_preds_split_target_train",
+        "NegSND_T_0.05_layer_preds_split_target_train",
+        "NegSND_T_0.1_layer_preds_split_target_train",
+        "NegSND_T_0.5_layer_preds_split_target_train",
     ]
 
 
