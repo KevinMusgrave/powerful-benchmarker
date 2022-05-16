@@ -33,6 +33,8 @@ def get_postprocess_df(per_adapter):
             df = df.droplevel(0, axis=1)
             df = latex_utils.shortened_task_names(df)
         df = (df * 100).round(1)
+        df.columns.names = (None,)
+        df.index.names = (None, None)
         return df
 
     return fn

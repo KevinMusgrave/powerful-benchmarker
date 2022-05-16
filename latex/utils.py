@@ -90,7 +90,8 @@ def validators_to_remove():
         "Diversity_split_target_train",
         "DiversitySummed",
         # "MMD_exponent_0_layer_preds_normalize_True_split_train",
-        # "MMDPerClass_exponent_0_layer_preds_normalize_True_split_train"
+        "MMDPerClass_exponent_0_layer_preds_normalize_False_split_train",
+        "MMDPerClass_exponent_0_layer_preds_normalize_True_split_train",
     ]
 
 
