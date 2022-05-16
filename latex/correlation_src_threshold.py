@@ -43,7 +43,7 @@ def get_postprocess_df(per_adapter):
 def correlation_src_threshold(args, threshold, per_adapter=False):
     per_adapter_str = "per_adapter_" if per_adapter else ""
     basename = f"correlation_{per_adapter_str}{threshold}_src_threshold"
-    min_value_fn = lambda _: 80
+    min_value_fn = lambda x: x.loc[("Accuracy", "Source Val")]
     max_value_fn = lambda _: 100
     operation_fn = absolute_value_greater_than
     interval_fn = absolute_value_interval_fn

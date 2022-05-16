@@ -23,6 +23,8 @@ def scatter_plot(
     show_x_label=True,
     show_y_label=True,
     colorbar=True,
+    x_label=None,
+    y_label=None,
 ):
     sns.set(font_scale=font_scale, style="whitegrid", rc={"figure.figsize": figsize})
     if colorbar:
@@ -38,9 +40,9 @@ def scatter_plot(
         if colobar_label:
             cbar.set_label(colobar_label)
         if show_x_label:
-            plt.xlabel(x)
+            plt.xlabel(x if x_label is None else x_label)
         if show_y_label:
-            plt.ylabel(y)
+            plt.ylabel(y if y_label is None else y_label)
         if log_x:
             plt.xscale("symlog")
         fig = plt
@@ -63,6 +65,8 @@ def score_vs_target_accuracy(curr_plots_folder, curr_df, filename):
         TARGET_ACCURACY,
         filename,
         "src_val_micro",
+        x_label="Validation Score",
+        y_label="Target Train Accuracy"
     )
 
 

@@ -1,0 +1,1 @@
+python validator_tests/create_plots.py --scatter --scatter_plot_validator_set DEVBinary --run_combined --exp_group_prefix officehome

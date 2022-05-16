@@ -34,12 +34,12 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
     basename = (
         f"predicted_best_acc_top{topN}_{per_adapter_str}{threshold}_src_threshold"
     )
-    min_value_fn = lambda _: 80
-    max_value_fn = lambda _: 100
+    min_value_fn = lambda x: x.loc[("Accuracy", "Source Val")]
+    # max_value_fn = lambda _: 100
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
-        "max_value_fn": max_value_fn,
+        # "max_value_fn": max_value_fn,
         "num_steps": 11,
     }
 
