@@ -43,9 +43,10 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         "num_steps": 11,
     }
 
+    threshold_str = int(threshold * 100)
     caption = (
         f"The average relative accuracy of the top {topN} checkpoints selected by each validator, "
-        "after removing all checkpoints that have less than 87\\% relative source validation accuracy."
+        f"after removing all checkpoints that have less than {threshold_str}\\% relative source validation accuracy."
     )
 
     table_creator(

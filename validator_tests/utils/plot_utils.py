@@ -7,7 +7,7 @@ from .df_utils import domains_str, maybe_per_adapter
 from .utils import validator_args_delimited
 
 
-def create_name(filters, components):
+def create_name(filters, components, suffix=""):
     s = ""
     for k in components:
         curr_val = filters[k]
@@ -20,6 +20,7 @@ def create_name(filters, components):
         else:
             x = curr_val
         s = x if s == "" else f"{s}_{x}"
+    s += suffix
     return s
 
 
@@ -41,6 +42,7 @@ def plot_loop(
     filter_by,
     sub_folder_components,
     filename_components,
+    filename_suffix="",
     filename=None,
     per_adapter=True,
     validator_set=None,
@@ -87,5 +89,7 @@ def plot_loop(
                                     create_name(filters, sub_folder_components),
                                 )
                                 if len(filename_components) > 0:
-                                    filename = create_name(filters, filename_components)
+                                    filename = create_name(
+                                        filters, filename_components, filename_suffix
+                                    )
                                 plot_fn(curr_plots_folder, curr_df, filename)

@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 
+from powerful_benchmarker.utils.score_utils import pretrained_src_accuracy
+
+from . import df_utils, threshold_utils
 from .constants import TARGET_ACCURACY
 from .plot_utils import plot_loop
 
@@ -66,12 +69,17 @@ def score_vs_target_accuracy(curr_plots_folder, curr_df, filename):
         filename,
         "src_val_micro",
         x_label="Validation Score",
-        y_label="Target Train Accuracy"
+        y_label="Target Train Accuracy",
     )
 
 
 def plot_val_vs_acc(
-    df, plots_folder, per_adapter, per_feature_layer, validator_set=None
+    df,
+    plots_folder,
+    per_adapter,
+    per_feature_layer,
+    validator_set=None,
+    src_threshold=None,
 ):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
 
@@ -92,6 +100,14 @@ def plot_val_vs_acc(
         filter_by.append("feature_layer")
         sub_folder_components.append("feature_layer")
 
+    filename_suffix = ""
+    if src_threshold is not None:
+        dataset = df_utils.get_sorted_unique(df, "dataset", assert_one=True)[0]
+        src_domains = df_utils.get_sorted_unique(df, "src_domains", assert_one=True)[0]
+        min_acc = pretrained_src_accuracy(dataset, src_domains, "val", "micro")
+        df = threshold_utils.filter_by_acc(df, min_acc * src_threshold, "src")
+        filename_suffix = f"{src_threshold}_src_threshold"
+
     plot_loop(
         df,
         plots_folder,
@@ -99,6 +115,7 @@ def plot_val_vs_acc(
         filter_by=filter_by,
         sub_folder_components=sub_folder_components,
         filename_components=["validator", "validator_args"],
+        filename_suffix=filename_suffix,
         per_adapter=per_adapter,
         validator_set=validator_set,
     )
