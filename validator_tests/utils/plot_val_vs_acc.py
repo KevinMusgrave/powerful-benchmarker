@@ -70,7 +70,7 @@ def get_score_vs_target_accuracy_fn(**kwargs):
             "filename": filename,
             "c": "src_val_micro",
             "x_label": "Validation Score",
-            "y_label": "Target Train Accuracy",
+            "y_label": "Target Accuracy",
         }
         input_kwargs.update(kwargs)
         scatter_plot(**input_kwargs)
