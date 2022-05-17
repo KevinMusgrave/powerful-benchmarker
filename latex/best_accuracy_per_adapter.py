@@ -35,7 +35,10 @@ def best_accuracy_per_adapter(args, topN):
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
     }
-    caption = f"The average of the top {topN} accuracies per UDA algorithm on the target training set."
+    caption = ("For each algorithm/task pair, we sorted model checkpoints by target accuracy, "
+                f"and each cell in this table is the average accuracy of the top {topN} checkpoints. "
+                "Green cells have an average accuracy greater than than the source-only model. "
+                "A stronger green color indicates higher accuracy. The highest values per column are bolded.")
     table_creator(
         args,
         basename,
