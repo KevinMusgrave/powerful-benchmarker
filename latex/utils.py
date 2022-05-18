@@ -249,6 +249,26 @@ def adapter_names():
     return ["ATDOC", "BNM", "BSP", "CDAN", "DANN", "GVB", "IM", "MCC", "MCD", "MMD"]
 
 
+def adapter_final_str_hook(x):
+    old = (
+        "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llrrrrrrrrrrrrrrrrrrr}\n\\toprule"
+    )
+    new = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llr|rrrrrr|rrrrrrrrrrrr}\n\\toprule\n & & \\multicolumn{1}{c|}{} & \\multicolumn{6}{c|}{Office31} & \\multicolumn{12}{c}{OfficeHome} \\\\"
+    return x.replace(old, new)
+
+
+def validator_per_adapter_final_str_hook(x):
+    old = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llrrrrrrrrrrrr}\n\\toprule"
+    new = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llrrrrrrrrrr|rr}\n\\toprule"
+    return x.replace(old, new)
+
+
+def validator_final_str_hook(x):
+    old = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llrrrrrrrrrrrrrrrrrrrrr}\n\\toprule"
+    new = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llr|rrrrrr|rrrrrrrrrrrr|rr}\n\\toprule\n & & \\multicolumn{1}{c|}{} & \\multicolumn{6}{c|}{Office31} & \\multicolumn{12}{c|}{OfficeHome} & & \\\\"
+    return x.replace(old, new)
+
+
 # def combine_mean_std_column(df):
 #     df["Mean"] = df["Mean"].astype(str) + "\\pm" + df["Std"].astype(str)
 #     df = df.drop(columns=["Std"])

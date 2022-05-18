@@ -82,6 +82,12 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         highlight_max_subset = list(latex_utils.shortened_task_name_dict().values())
     highlight_max_subset += ["Mean"]
 
+    final_str_hook = (
+        latex_utils.validator_per_adapter_final_str_hook
+        if per_adapter
+        else latex_utils.validator_final_str_hook
+    )
+
     table_creator(
         args,
         basename,
@@ -93,5 +99,6 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         caption=caption,
         highlight_min=True,
         highlight_max_subset=highlight_max_subset,
-        highlight_min_subset=["Std"]
+        highlight_min_subset=["Std"],
+        final_str_hook=final_str_hook,
     )

@@ -19,6 +19,7 @@ def save_to_latex(
     highlight_min=False,
     highlight_max_subset=None,
     highlight_min_subset=None,
+    final_str_hook=None,
     **kwargs,
 ):
     c_f.makedir_if_not_there(folder)
@@ -29,9 +30,13 @@ def save_to_latex(
 
     df_style = df.style
     if highlight_max:
-        df_style = df_style.highlight_max(subset=highlight_max_subset, props="textbf:--rwrap")
+        df_style = df_style.highlight_max(
+            subset=highlight_max_subset, props="textbf:--rwrap"
+        )
     if highlight_min:
-        df_style = df_style.highlight_min(subset=highlight_min_subset, props="textbf:--rwrap")
+        df_style = df_style.highlight_min(
+            subset=highlight_min_subset, props="textbf:--rwrap"
+        )
     latex_str = df_style.format(
         tags_dict,
         escape="latex",
@@ -44,6 +49,8 @@ def save_to_latex(
         latex_str = f"{color_map_tags}{newlines}{latex_str}"
     if add_resizebox:
         latex_str = resizebox(latex_str)
+    if final_str_hook:
+        latex_str = final_str_hook(latex_str)
     with open(full_path, "w") as text_file:
         text_file.write(latex_str)
 
