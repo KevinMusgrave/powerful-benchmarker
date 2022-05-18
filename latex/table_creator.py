@@ -17,6 +17,8 @@ def save_to_latex(
     add_resizebox,
     highlight_max=True,
     highlight_min=False,
+    highlight_max_subset=None,
+    highlight_min_subset=None,
     **kwargs,
 ):
     c_f.makedir_if_not_there(folder)
@@ -27,9 +29,9 @@ def save_to_latex(
 
     df_style = df.style
     if highlight_max:
-        df_style = df.style.highlight_max(props="textbf:--rwrap")
+        df_style = df_style.highlight_max(subset=highlight_max_subset, props="textbf:--rwrap")
     if highlight_min:
-        df_style = df.style.highlight_min(props="textbf:--rwrap")
+        df_style = df_style.highlight_min(subset=highlight_min_subset, props="textbf:--rwrap")
     latex_str = df_style.format(
         tags_dict,
         escape="latex",

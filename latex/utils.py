@@ -245,6 +245,10 @@ def add_mean_std_column(df):
     return df
 
 
+def adapter_names():
+    return ["ATDOC", "BNM", "BSP", "CDAN", "DANN", "GVB", "IM", "MCC", "MCD", "MMD"]
+
+
 # def combine_mean_std_column(df):
 #     df["Mean"] = df["Mean"].astype(str) + "\\pm" + df["Std"].astype(str)
 #     df = df.drop(columns=["Std"])

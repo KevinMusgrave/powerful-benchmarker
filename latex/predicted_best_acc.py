@@ -76,6 +76,12 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         "A stronger green color indicates higher accuracy."
     )
 
+    if per_adapter:
+        highlight_max_subset = latex_utils.adapter_names()
+    else:
+        highlight_max_subset = list(latex_utils.shortened_task_name_dict().values())
+    highlight_max_subset += ["Mean"]
+
     table_creator(
         args,
         basename,
@@ -85,4 +91,7 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         add_resizebox=True,
         clines="skip-last;data",
         caption=caption,
+        highlight_min=True,
+        highlight_max_subset=highlight_max_subset,
+        highlight_min_subset=["Std"]
     )
