@@ -32,6 +32,7 @@ def get_postprocess_df(per_adapter):
             df = df.pivot(index=["validator", "validator_args"], columns="task")
             df = df.droplevel(0, axis=1)
             df = latex_utils.shortened_task_names(df)
+        df = latex_utils.add_mean_std_column(df)
         df = (df * 100).round(1)
         df.columns.names = (None,)
         df.index.names = (None, None)
@@ -43,8 +44,8 @@ def get_postprocess_df(per_adapter):
 def correlation_src_threshold(args, threshold, per_adapter=False):
     per_adapter_str = "per_adapter_" if per_adapter else ""
     basename = f"correlation_{per_adapter_str}{threshold}_src_threshold"
-    min_value_fn = lambda x: x.loc[("Accuracy", "Source Val")]
-    max_value_fn = lambda _: 100
+    min_value_fn = lambda x, _: x.loc[("Accuracy", "Source Val")]
+    max_value_fn = lambda *_: 100
     operation_fn = absolute_value_greater_than
     interval_fn = absolute_value_interval_fn
     color_map_tag_kwargs = {

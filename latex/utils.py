@@ -237,3 +237,19 @@ def rename_validator_args(df):
     rename_specific_validator_args(df)
     df.validator.replace(to_replace=pretty_validator_dict(), inplace=True)
     return df
+
+
+def add_mean_std_column(df):
+    df = df.assign(Mean=df.mean(axis=1))
+    df = df.assign(Std=df.std(axis=1))
+    return df
+
+
+# def combine_mean_std_column(df):
+#     df["Mean"] = df["Mean"].astype(str) + "\\pm" + df["Std"].astype(str)
+#     df = df.drop(columns=["Std"])
+#     return df
+
+# def get_mean_from_mean_column(df):
+#     print(df)
+#     return df.str.split("\\pm").str[0].astype(float)

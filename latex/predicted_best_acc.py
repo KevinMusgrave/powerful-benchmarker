@@ -1,4 +1,5 @@
 from latex import utils as latex_utils
+from latex.color_map_tags import default_interval_fn, reverse_interval_fn
 from latex.correlation_src_threshold import get_postprocess_df, get_preprocess_df
 from latex.table_creator import table_creator
 
@@ -29,18 +30,42 @@ def get_preprocess_df_wrapper(per_adapter, std=False):
     return fn
 
 
+def interval_fn(min_value, max_value, num_steps, column_name):
+    if column_name == "Std":
+        return reverse_interval_fn(min_value, max_value, num_steps, column_name)
+    return default_interval_fn(min_value, max_value, num_steps, column_name)
+
+
+def operation_fn(lower_bound, column_name):
+    if column_name == "Std":
+        return "<"
+    return ">"
+
+
+def min_value_fn(curr_df, column_name):
+    if column_name == "Std":
+        return curr_df.min()
+    return curr_df.loc[("Accuracy", "Source Val")]
+
+
+def max_value_fn(curr_df, column_name):
+    if column_name == "Std":
+        return curr_df.loc[("Accuracy", "Source Val")]
+    return curr_df.max()
+
+
 def predicted_best_acc(args, topN, threshold, per_adapter=False):
     per_adapter_str = "per_adapter_" if per_adapter else ""
     basename = (
         f"predicted_best_acc_top{topN}_{per_adapter_str}{threshold}_src_threshold"
     )
-    min_value_fn = lambda x: x.loc[("Accuracy", "Source Val")]
-    # max_value_fn = lambda _: 100
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
-        # "max_value_fn": max_value_fn,
+        "max_value_fn": max_value_fn,
         "num_steps": 11,
+        "interval_fn": interval_fn,
+        "operation_fn": operation_fn,
     }
 
     threshold_str = int(threshold * 100)

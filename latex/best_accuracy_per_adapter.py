@@ -30,7 +30,7 @@ def postprocess_df(df):
 
 def best_accuracy_per_adapter(args, topN):
     basename = f"best_accuracy_top{topN}_per_adapter"
-    min_value_fn = lambda x: x.loc["Source only"]
+    min_value_fn = lambda x, _: x.loc["Source only"]
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,

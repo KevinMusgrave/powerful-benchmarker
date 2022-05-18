@@ -12,27 +12,30 @@ def format_tag_and_float(prefix, column_name):
     return return_fn
 
 
-def default_operation_fn(_):
+def default_operation_fn(*_):
     return ">"
 
 
 # operation fn
-def absolute_value_greater_than(lower_bound):
+def absolute_value_greater_than(lower_bound, *_):
     if lower_bound >= 0:
         return ">"
     return "<"
 
 
-def default_interval_fn(min_value, max_value, num_steps):
+def default_interval_fn(min_value, max_value, num_steps, *_):
     intervals = np.linspace(min_value, max_value, num_steps)
     return [intervals[::-1]]
 
 
-# operation fn
-def absolute_value_interval_fn(min_value, max_value, num_steps):
+def absolute_value_interval_fn(min_value, max_value, num_steps, *_):
     intervals = np.linspace(min_value, max_value, num_steps)
     intervals = intervals[::-1]
     return [intervals, intervals * -1]
+
+
+def reverse_interval_fn(*args):
+    return [default_interval_fn(*args)[0][::-1]]
 
 
 def create_color_map_tags(
@@ -51,9 +54,13 @@ def create_color_map_tags(
         interval_fn = default_interval_fn
     for column_name in df.columns.values:
         curr_df = df[column_name]
-        min_value = 0 if min_value_fn is None else min_value_fn(curr_df)
-        max_value = curr_df.max() if max_value_fn is None else max_value_fn(curr_df)
-        intervals_list = interval_fn(min_value, max_value, num_steps)
+        min_value = 0 if min_value_fn is None else min_value_fn(curr_df, column_name)
+        max_value = (
+            curr_df.max()
+            if max_value_fn is None
+            else max_value_fn(curr_df, column_name)
+        )
+        intervals_list = interval_fn(min_value, max_value, num_steps, column_name)
 
         curr_str = f"\\def{format_tag(tag_prefix, column_name)}" + "#1{"
         ifdim_count = 0
@@ -62,7 +69,7 @@ def create_color_map_tags(
                 if i == 0:
                     continue
                 greenness = (10 - i + 1) * 10
-                operation = operation_fn(lower_bound)
+                operation = operation_fn(lower_bound, column_name)
                 curr_str += (
                     f"\\ifdim#1pt{operation}{lower_bound:.1f}"
                     + f"pt\\cellcolor{{lime!{greenness}}}\\else"
