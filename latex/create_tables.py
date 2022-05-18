@@ -15,7 +15,7 @@ def main(args):
     for topN in [20]:
         best_accuracy_per_adapter(args, topN=topN)
 
-    for threshold in [0, 0.87]:
+    for threshold in [0, 0.5]:
         for per_adapter in [False, True]:
             correlation_src_threshold(
                 args, threshold=threshold, per_adapter=per_adapter
