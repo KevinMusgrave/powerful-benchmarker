@@ -40,6 +40,21 @@ def convert_adapter_column_names(df):
     df.columns = df.columns.str.replace("Config", "")
 
 
+# assumes datasets are ordered MNIST, Office31, OfficeHome
+def add_dataset_multiindex_column(df):
+    new_cols = []
+    for full_name, short_name in shortened_task_name_dict().items():
+        if full_name.startswith("mnist"):
+            top_level = ""
+        elif full_name.startswith("office31"):
+            top_level = "Office31"
+        elif full_name.startswith("officehome"):
+            top_level = "OfficeHome"
+        new_cols.append((top_level, short_name))
+
+    df.columns = pd.MultiIndex.from_tuples(new_cols)
+
+
 def add_source_only(df, accuracy_name):
     cols = df.columns.values
     _, split, average = df_utils.accuracy_name_split(accuracy_name)

@@ -60,7 +60,7 @@ def highest_src_threshold_possible(args, topN, topN_per_adapter):
         f"as possible, without removing any of the top {topN_per_adapter} checkpoints (sorted by target accuracy). "
         "For example, for the GVB/WD pair, all checkpoints with relative accuracy less than 73\% can be discarded "
         f"without losing any of the top {topN_per_adapter} target accuracies. "
-        f"The ``All\" row uses the top {topN} checkpoints from all algorithms grouped together."
+        f'The ``All" row uses the top {topN} checkpoints from all algorithms grouped together.'
     )
 
     save_to_latex(
