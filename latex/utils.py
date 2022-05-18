@@ -251,9 +251,9 @@ def adapter_names():
 
 def adapter_final_str_hook(x):
     old = (
-        "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llrrrrrrrrrrrrrrrrrrr}\n\\toprule"
+        "\\resizebox{\\textwidth}{!}{\\begin{tabular}{lrrrrrrrrrrrrrrrrrrr}\n\\toprule"
     )
-    new = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llr|rrrrrr|rrrrrrrrrrrr}\n\\toprule\n & & \\multicolumn{1}{c|}{} & \\multicolumn{6}{c|}{Office31} & \\multicolumn{12}{c}{OfficeHome} \\\\"
+    new = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{lr|rrrrrr|rrrrrrrrrrrr}\n\\toprule\n & \\multicolumn{1}{c|}{} & \\multicolumn{6}{c|}{Office31} & \\multicolumn{12}{c}{OfficeHome} \\\\"
     return x.replace(old, new)
 
 

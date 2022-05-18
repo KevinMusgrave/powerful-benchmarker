@@ -71,7 +71,8 @@ def highest_src_threshold_possible(args, topN, topN_per_adapter):
         add_resizebox=True,
         clines=None,
         highlight_max=False,
-        caption=caption,
         highlight_min=True,
+        caption=caption,
         label=basename,
+        final_str_hook=latex_utils.adapter_final_str_hook,
     )

@@ -49,4 +49,5 @@ def best_accuracy_per_adapter(args, topN):
         color_map_tag_kwargs,
         add_resizebox=True,
         caption=caption,
+        final_str_hook=latex_utils.adapter_final_str_hook,
     )
