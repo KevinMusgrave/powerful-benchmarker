@@ -69,10 +69,17 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
     }
 
     threshold_str = int(threshold * 100)
-    caption = (
-        f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA. "
-        "Green cells have better performance than the Source Val Accuracy validator."
-    )
+
+    if per_adapter:
+        caption = (
+            f"The Average Top {topN} RTA of each validator/algorithm pair, after removing checkpoints with < {threshold_str}\% RSVA. "
+            "Green cells have better performance than the Source Val Accuracy validator."
+        )
+    else:
+        caption = (
+            f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA. "
+            "Green cells have better performance than the Source Val Accuracy validator."
+        )
 
     if per_adapter:
         highlight_max_subset = latex_utils.adapter_names()
