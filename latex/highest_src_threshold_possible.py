@@ -29,17 +29,17 @@ def get_postprocess_df(per_adapter):
 
 
 def highest_src_threshold_possible(args, topN, topN_per_adapter):
-    basename = f"highest_src_threshold_possible_top{topN}"
-    df1, _ = table_creator(
-        args,
-        basename,
-        get_preprocess_df(False),
-        get_postprocess_df(False),
-        do_save_to_latex=False,
-    )
+    # basename = f"highest_src_threshold_possible_top{topN}"
+    # df1, _ = table_creator(
+    #     args,
+    #     basename,
+    #     get_preprocess_df(False),
+    #     get_postprocess_df(False),
+    #     do_save_to_latex=False,
+    # )
 
     basename = f"highest_src_threshold_possible_top{topN_per_adapter}_per_adapter"
-    df2, output_folder = table_creator(
+    df, output_folder = table_creator(
         args,
         basename,
         get_preprocess_df(True),
@@ -47,13 +47,11 @@ def highest_src_threshold_possible(args, topN, topN_per_adapter):
         do_save_to_latex=False,
     )
 
-    df = pd.concat([df1, df2], axis=0)
+    # df = pd.concat([df1, df2], axis=0)
     df = (df * 100).astype(int)
     df.index.name = None
 
-    basename = (
-        f"highest_src_threshold_possible_top{topN}_top{topN_per_adapter}_per_adapter"
-    )
+    basename = f"highest_src_threshold_possible_top{topN_per_adapter}_per_adapter"
 
     caption = (
         "For each algorithm/task pair, we raised the relative source validation accuracy threshold as high "
