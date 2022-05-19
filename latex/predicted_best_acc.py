@@ -70,10 +70,8 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
 
     threshold_str = int(threshold * 100)
     caption = (
-        f"The average relative accuracy of the top {topN} checkpoints selected by each validator, "
-        f"after removing all checkpoints that have less than {threshold_str}\\% relative source validation accuracy. "
-        "Green cells have better performance than the Source Val Accuracy validator. "
-        "A stronger green color indicates higher accuracy."
+        f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA. "
+        "Green cells have better performance than the Source Val Accuracy validator."
     )
 
     if per_adapter:

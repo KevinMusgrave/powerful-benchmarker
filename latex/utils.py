@@ -96,15 +96,19 @@ def validators_to_remove():
         "BNMSummed_layer_preds",
         "BNMSummedSrcVal_layer_features",
         "BNMSummedSrcVal_layer_preds",
-        # "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_False",
-        # "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_True",
-        # "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_False",
-        # "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_True",
+        "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_True",
+        "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_True",
+        "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_False",
+        "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_False",
         "Diversity_split_src_train",
         "Diversity_split_src_val",
         "Diversity_split_target_train",
         "DiversitySummed",
-        # "MMD_exponent_0_layer_preds_normalize_True_split_train",
+        "MMD_exponent_0_layer_features_normalize_True_split_train",
+        "MMD_exponent_0_layer_logits_normalize_True_split_train",
+        "MMD_exponent_0_layer_preds_normalize_True_split_train",
+        "MMDPerClass_exponent_0_layer_features_normalize_True_split_train",
+        "MMDPerClass_exponent_0_layer_logits_normalize_True_split_train",
         "MMDPerClass_exponent_0_layer_preds_normalize_False_split_train",
         "MMDPerClass_exponent_0_layer_preds_normalize_True_split_train",
         "NegSND_T_0.01_layer_features_split_target_train",
@@ -119,6 +123,9 @@ def validators_to_remove():
         "NegSND_T_0.05_layer_preds_split_target_train",
         "NegSND_T_0.1_layer_preds_split_target_train",
         "NegSND_T_0.5_layer_preds_split_target_train",
+        "SND_T_0.01_layer_features_split_target_train",
+        "SND_T_0.01_layer_logits_split_target_train",
+        "SND_T_0.01_layer_preds_split_target_train",
     ]
 
 
@@ -156,7 +163,7 @@ def pretty_validator_args_dict():
         "average micro split src val": "Source Val",
         "layer logits split src train": "Source Train",
         "layer logits split src val": "Source Val",
-        "layer logits split target train": "Target Train",
+        "layer logits split target train": "Target",
         "layer features normalize False p 2.0 split train with src False": "Target Features",
         "layer features normalize False p 2.0 split train with src True": "Source + Target Features",
         "layer logits normalize False p 2.0 split train with src False": "Target Logits",
@@ -176,25 +183,25 @@ def pretty_validator_args_dict():
         "layer preds normalization standardize": "Preds, standardization",
         "split src train": "Source Train",
         "split src val": "Source Val",
-        "split target train": "Target Train",
+        "split target train": "Target",
         "exponent 0 layer features normalize False split train": "Features",
         "exponent 0 layer features normalize True split train": "Features, L2 Normalized",
         "exponent 0 layer logits normalize False split train": "Logits",
         "exponent 0 layer logits normalize True split train": "Logits, L2 Normalized",
         "exponent 0 layer preds normalize False split train": "Preds",
         "exponent 0 layer preds normalize True split train": "Preds, L2 Normalized",
-        "T 0.01 layer features split target train": "Features, T=0.01",
-        "T 0.01 layer logits split target train": "Logits, T=0.01",
-        "T 0.01 layer preds split target train": "Preds, T=0.01",
-        "T 0.05 layer features split target train": "Features, T=0.05",
-        "T 0.05 layer logits split target train": "Logits, T=0.05",
-        "T 0.05 layer preds split target train": "Preds, T=0.05",
-        "T 0.1 layer features split target train": "Features, T=0.1",
-        "T 0.1 layer logits split target train": "Logits, T=0.1",
-        "T 0.1 layer preds split target train": "Preds, T=0.1",
-        "T 0.5 layer features split target train": "Features, T=0.5",
-        "T 0.5 layer logits split target train": "Logits, T=0.5",
-        "T 0.5 layer preds split target train": "Preds, T=0.5",
+        "T 0.01 layer features split target train": "Features, \\tau=0.01",
+        "T 0.01 layer logits split target train": "Logits, \\tau=0.01",
+        "T 0.01 layer preds split target train": "Preds, \\tau=0.01",
+        "T 0.05 layer features split target train": "Features, \\tau=0.05",
+        "T 0.05 layer logits split target train": "Logits, \\tau=0.05",
+        "T 0.05 layer preds split target train": "Preds, \\tau=0.05",
+        "T 0.1 layer features split target train": "Features, \\tau=0.1",
+        "T 0.1 layer logits split target train": "Logits, \\tau=0.1",
+        "T 0.1 layer preds split target train": "Preds, \\tau=0.1",
+        "T 0.5 layer features split target train": "Features, \\tau=0.5",
+        "T 0.5 layer logits split target train": "Logits, \\tau=0.5",
+        "T 0.5 layer preds split target train": "Preds, \\tau=0.5",
     }
 
 
@@ -212,24 +219,20 @@ def pretty_validator_dict():
 
 
 def rename_specific_validator_args(df):
-    df.loc[
-        df["validator"] == "BNMSummed", "validator_args"
-    ] = "Source Train + Target Train"
+    df.loc[df["validator"] == "BNMSummed", "validator_args"] = "Source Train + Target"
     df.loc[
         df["validator"] == "BNMSummedSrcVal", "validator_args"
-    ] = "Source Val + Target Train"
+    ] = "Source Val + Target"
     df.loc[
         df["validator"] == "EntropySummed", "validator_args"
-    ] = "Source Train + Target Train"
+    ] = "Source Train + Target"
     df.loc[
         df["validator"] == "EntropySummedSrcVal", "validator_args"
-    ] = "Source Val + Target Train"
-    df.loc[
-        df["validator"] == "IMSummed", "validator_args"
-    ] = "Source Train + Target Train"
+    ] = "Source Val + Target"
+    df.loc[df["validator"] == "IMSummed", "validator_args"] = "Source Train + Target"
     df.loc[
         df["validator"] == "IMSummedSrcVal", "validator_args"
-    ] = "Source Val + Target Train"
+    ] = "Source Val + Target"
 
 
 def rename_validator_args(df):
