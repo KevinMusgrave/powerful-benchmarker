@@ -72,13 +72,15 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
 
     if per_adapter:
         caption = (
-            f"The Average Top {topN} RTA of each validator/algorithm pair, after removing checkpoints with < {threshold_str}\% RSVA. "
-            "Green cells have better performance than the Source Val Accuracy validator."
+            f"The Average Top {topN} RTA of each validator/algorithm pair, after removing checkpoints with < {threshold_str}\% RSVA (see equations \\ref{{AverageTop20RTA_equation}} and \\ref{{RSVA_equation}}. "
+            "Green cells have better performance than the Source Val Accuracy validator. "
+            "The best value per column is bolded. The Mean and Std columns are the mean and standard deviation of all algorithm columns."
         )
     else:
         caption = (
-            f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA. "
-            "Green cells have better performance than the Source Val Accuracy validator."
+            f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA (see equations \\ref{{TopN_RTA_equation}} and \\ref{{RSVA_equation}}). "
+            "Green cells have better performance than the Source Val Accuracy validator. The best value per column is bolded. "
+            "The Mean and Std columns are the mean and standard deviation of all task columns."
         )
 
     if per_adapter:
