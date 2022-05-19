@@ -233,6 +233,14 @@ def rename_specific_validator_args(df):
     df.loc[
         df["validator"] == "IMSummedSrcVal", "validator_args"
     ] = "Source Val + Target"
+    df.loc[
+        (
+            (df["validator_args"].str.contains("max normalization"))
+            | (df["validator_args"].str.contains("standardization"))
+        )
+        & (df["validator"] == "DEVBinary"),
+        "validator",
+    ] = "DEVN"
 
 
 def rename_validator_args(df):

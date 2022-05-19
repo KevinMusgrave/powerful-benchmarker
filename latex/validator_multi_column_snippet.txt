@@ -1,3 +1,0 @@
-\resizebox{\textwidth}{!}{\begin{tabular}{llr|rrrrrr|rrrrrrrrrrrr|rr}
-\toprule
- & & \multicolumn{1}{c|}{} & \multicolumn{6}{c|}{Office31} & \multicolumn{12}{c|}{OfficeHome} & & \\
