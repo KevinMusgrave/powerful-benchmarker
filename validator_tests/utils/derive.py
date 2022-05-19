@@ -7,14 +7,6 @@ from .df_utils import (
 )
 
 
-def default_operation_fn(src, target):
-    return src + target
-
-
-def subract(src, target):
-    return target - src
-
-
 def add_derived_scores(df):
     for x in [
         add_IM,
@@ -27,10 +19,6 @@ def add_derived_scores(df):
         add_DiversitySummed,
         add_IMSummed,
         add_IMSummedSrcVal,
-        add_BNMSubtracted,
-        add_BNMSubtractedSrcVal,
-        add_EntropySubtracted,
-        add_EntropySubtractedSrcVal,
     ]:
         df = x(df)
     return df
@@ -74,9 +62,7 @@ def add_NegSND(df):
     return pd.concat([df, x], axis=0, ignore_index=True)
 
 
-def _add_src_and_target(
-    df, validator_name, src_split="train", new_name=None, operation_fn=None
-):
+def _add_src_and_target(df, validator_name, src_split="train", new_name=None):
     x = df[df["validator"] == validator_name]
     src = x[x["validator_args"].str.contains(f'"split": "src_{src_split}"')]
     target = x[x["validator_args"].str.contains('"split": "target_train"')]
@@ -104,11 +90,8 @@ def _add_src_and_target(
     if new_name is None:
         new_name = f"{validator_name}Summed"
 
-    if operation_fn is None:
-        operation_fn = default_operation_fn
-
     summed = summed.assign(
-        score=default_operation_fn(summed[src_score_name], summed[target_score_name]),
+        score=summed[src_score_name] + summed[target_score_name],
         validator=new_name,
     )
     summed = summed.drop(columns=[src_score_name, target_score_name])
@@ -147,31 +130,3 @@ def add_IMSummed(df):
 
 def add_IMSummedSrcVal(df):
     return _add_src_and_target(df, "IM", src_split="val", new_name="IMSummedSrcVal")
-
-
-def add_BNMSubtracted(df):
-    return _add_src_and_target(
-        df, "BNM", new_name="BNMSubtracted", operation_fn=subract
-    )
-
-
-def add_BNMSubtractedSrcVal(df):
-    return _add_src_and_target(
-        df, "BNM", src_split="val", new_name="BNMSubtractedSrcVal", operation_fn=subract
-    )
-
-
-def add_EntropySubtracted(df):
-    return _add_src_and_target(
-        df, "Entropy", new_name="EntropySubtracted", operation_fn=subract
-    )
-
-
-def add_EntropySubtractedSrcVal(df):
-    return _add_src_and_target(
-        df,
-        "Entropy",
-        src_split="val",
-        new_name="EntropySubtractedSrcVal",
-        operation_fn=subract,
-    )
