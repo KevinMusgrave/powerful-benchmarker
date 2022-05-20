@@ -21,8 +21,6 @@ warnings.filterwarnings(
     message="Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.",
 )
 
-from collections import defaultdict
-
 import joblib
 import numpy as np
 import optuna
@@ -62,6 +60,7 @@ def evaluate_best_model(cfg, exp_path):
 
     for k in ["dataset", "adapter", "feature_layer"]:
         setattr(cfg, k, original_cfg[k])
+    trial = optuna.trial.FixedTrial(original_cfg["trial_params"])
 
     scores = {}
     for d in cfg.target_domains:
@@ -75,7 +74,7 @@ def evaluate_best_model(cfg, exp_path):
             _,
             _,
             _,
-        ) = get_adapter_datasets_etc(cfg, exp_path, cfg.validator, [d])
+        ) = get_adapter_datasets_etc(cfg, exp_path, cfg.validator, [d], trial)
         adapter = framework(adapter, checkpoint_fn=checkpoint_fn)
         validator = validator.validator  # don't need ScoreHistory
         scores[d] = main_utils.evaluate(
@@ -92,7 +91,7 @@ def get_adapter_datasets_etc(
     exp_path,
     validator_name,
     target_domains,
-    trial=None,
+    trial,
     num_fixed_params=0,
 ):
     if cfg.pretrain_on_src:
@@ -130,16 +129,10 @@ def get_adapter_datasets_etc(
         num_classes=num_classes,
         feature_layer=cfg.feature_layer,
     )
-    if trial is not None:
-        optimizers = configerer.get_optimizers(
-            cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
-        )
-        before_training_starts = configerer.get_before_training_starts_hook(
-            cfg.optimizer
-        )
-    else:
-        optimizers = defaultdict()
-        before_training_starts = None
+    optimizers = configerer.get_optimizers(
+        cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
+    )
+    before_training_starts = configerer.get_before_training_starts_hook(cfg.optimizer)
 
     adapter = configerer.get_new_adapter(
         models,
@@ -153,7 +146,7 @@ def get_adapter_datasets_etc(
     if framework is None:
         framework = Ignite
 
-    if trial is not None and (len(trial.params) - num_fixed_params) > 5:
+    if (len(trial.params) - num_fixed_params) > 5:
         raise ValueError("Should only optimize 5 hyperparams")
 
     return (
