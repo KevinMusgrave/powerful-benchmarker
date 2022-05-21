@@ -63,6 +63,7 @@ def table_creator(
     color_map_tag_kwargs=None,
     add_resizebox=False,
     do_save_to_latex=True,
+    caption_hook=None,
     **kwargs,
 ):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
@@ -79,8 +80,11 @@ def table_creator(
     )
     if do_save_to_latex:
         if isinstance(df, dict):
+            original_caption = kwargs.pop("caption", None)
             for k, x in df.items():
                 curr_basename = f"{basename}_{k}"
+                if caption_hook:
+                    caption = caption_hook(original_caption, k)
                 save_to_latex(
                     x,
                     output_folder,
@@ -88,6 +92,7 @@ def table_creator(
                     color_map_tag_kwargs,
                     add_resizebox,
                     label=curr_basename,
+                    caption=caption,
                     **kwargs,
                 )
         else:

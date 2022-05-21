@@ -1,3 +1,5 @@
+import re
+
 from latex import utils as latex_utils
 from latex.color_map_tags import default_interval_fn, reverse_interval_fn
 from latex.correlation_src_threshold import get_postprocess_df, get_preprocess_df
@@ -54,6 +56,37 @@ def max_value_fn(curr_df, column_name):
     return curr_df.max()
 
 
+def get_caption(topN, threshold, per_adapter, with_equation_ref=True):
+    threshold_str = int(threshold * 100)
+    equation_ref = ""
+    if threshold_str == 0:
+        threshold_phrase = f", without removing any checkpoints"
+    else:
+        threshold_phrase = f", after removing checkpoints with < {threshold_str}\% RSVA"
+    if with_equation_ref:
+        if per_adapter:
+            equation_ref = "(see equations \\ref{AverageTop20RTA_equation} and \\ref{RSVA_equation})"
+        else:
+            equation_ref = (
+                "(see equations \\ref{TopN_RTA_equation} and \\ref{RSVA_equation})"
+            )
+
+    if per_adapter:
+        caption = (
+            f"The Average Top {topN} RTA of each validator/algorithm pair{threshold_phrase} {equation_ref}. "
+            "Green cells have better performance than the Source Val Accuracy validator. "
+            "The best value per column is bolded. The Mean and Std columns are the mean and standard deviation of all algorithm columns."
+        )
+    else:
+        caption = (
+            f"The Top {topN} RTA of each validator/task pair{threshold_phrase} {equation_ref}. "
+            "Green cells have better performance than the Source Val Accuracy validator. The best value per column is bolded. "
+            "The Mean and Std columns are the mean and standard deviation of all task columns."
+        )
+    # https://stackoverflow.com/a/18878970
+    return re.sub('\s+([?.!"](?:\s|$))', r"\1", caption)
+
+
 def predicted_best_acc(args, topN, threshold, per_adapter=False):
     per_adapter_str = "per_adapter_" if per_adapter else ""
     basename = (
@@ -68,21 +101,7 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         "operation_fn": operation_fn,
     }
 
-    threshold_str = int(threshold * 100)
-
-    if per_adapter:
-        caption = (
-            f"The Average Top {topN} RTA of each validator/algorithm pair, after removing checkpoints with < {threshold_str}\% RSVA (see equations \\ref{{AverageTop20RTA_equation}} and \\ref{{RSVA_equation}}. "
-            "Green cells have better performance than the Source Val Accuracy validator. "
-            "The best value per column is bolded. The Mean and Std columns are the mean and standard deviation of all algorithm columns."
-        )
-    else:
-        caption = (
-            f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA (see equations \\ref{{TopN_RTA_equation}} and \\ref{{RSVA_equation}}). "
-            "Green cells have better performance than the Source Val Accuracy validator. The best value per column is bolded. "
-            "The Mean and Std columns are the mean and standard deviation of all task columns."
-        )
-
+    caption = get_caption(topN, threshold, per_adapter)
     if per_adapter:
         highlight_max_subset = latex_utils.adapter_names()
     else:

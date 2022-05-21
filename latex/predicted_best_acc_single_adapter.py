@@ -3,6 +3,7 @@ import pandas as pd
 from latex import utils as latex_utils
 from latex.correlation_src_threshold import get_preprocess_df
 from latex.predicted_best_acc import (
+    get_caption,
     interval_fn,
     max_value_fn,
     min_value_fn,
@@ -42,6 +43,10 @@ def postprocess_df(df):
     return df_dict
 
 
+def caption_hook(caption, k):
+    return caption.replace("pair", f"pair for \\textbf{{{k}}}")
+
+
 def predicted_best_acc_single_adapter(args, topN, threshold):
     basename = f"predicted_best_acc_top{topN}_per_adapter_{threshold}_src_threshold"
     color_map_tag_kwargs = {
@@ -55,11 +60,7 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
 
     threshold_str = int(threshold * 100)
 
-    caption = (
-        f"The Top {topN} RTA of each validator/task pair, after removing checkpoints with < {threshold_str}\% RSVA. "
-        "Green cells have better performance than the Source Val Accuracy validator. The best value per column is bolded. "
-        "The Mean and Std columns are the mean and standard deviation of all task columns."
-    )
+    caption = get_caption(topN, threshold, per_adapter=False, with_equation_ref=False)
 
     highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
         "Mean"
@@ -80,4 +81,5 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
         highlight_max_subset=highlight_max_subset,
         highlight_min_subset=["Std"],
         final_str_hook=final_str_hook,
+        caption_hook=caption_hook,
     )
