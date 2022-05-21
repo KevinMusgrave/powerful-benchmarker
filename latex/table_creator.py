@@ -42,7 +42,7 @@ def save_to_latex(
         escape="latex",
         na_rep="-",
     ).to_latex(hrules=True, position_float="centering", **kwargs)
-    full_path = os.path.join(folder, f"{filename}.txt")
+    full_path = os.path.join(folder, f"{filename}.tex")
 
     if color_map_tags:
         newlines = "\n" * 10
@@ -92,12 +92,12 @@ def table_creator(
                 )
         else:
             save_to_latex(
-                x,
+                df,
                 output_folder,
-                curr_basename,
+                basename,
                 color_map_tag_kwargs,
                 add_resizebox,
-                label=curr_basename,
+                label=basename,
                 **kwargs,
             )
     else:
