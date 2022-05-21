@@ -128,7 +128,7 @@ def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
         )
         best_accuracy_topN(per_src.copy(), curr_folder, per_adapter, topN)
         highest_src_threshold_possible(per_src.copy(), curr_folder, per_adapter, topN)
-        for src_threshold in [0, 0.5]:
+        for src_threshold in [0, 0.5, 0.9]:
             for suffix in ["", "_val"]:
                 best_validators(
                     per_src.copy(),

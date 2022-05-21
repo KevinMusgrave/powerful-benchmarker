@@ -78,14 +78,27 @@ def table_creator(
         args.output_folder, get_name_from_exp_groups(exp_groups)
     )
     if do_save_to_latex:
-        save_to_latex(
-            df,
-            output_folder,
-            basename,
-            color_map_tag_kwargs,
-            add_resizebox,
-            label=basename,
-            **kwargs,
-        )
+        if isinstance(df, dict):
+            for k, x in df.items():
+                curr_basename = f"{basename}_{k}"
+                save_to_latex(
+                    x,
+                    output_folder,
+                    curr_basename,
+                    color_map_tag_kwargs,
+                    add_resizebox,
+                    label=curr_basename,
+                    **kwargs,
+                )
+        else:
+            save_to_latex(
+                x,
+                output_folder,
+                curr_basename,
+                color_map_tag_kwargs,
+                add_resizebox,
+                label=curr_basename,
+                **kwargs,
+            )
     else:
         return df, output_folder
