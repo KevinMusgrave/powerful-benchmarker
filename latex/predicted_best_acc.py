@@ -110,6 +110,10 @@ def get_final_str_hook(per_adapter):
     )
 
 
+def remove_whitespace_before_punctuation(x):
+    return re.sub('\s+([?.!",](?:\s|$))', r"\1", x)
+
+
 def get_caption(
     topN, threshold, per_adapter, with_equation_ref=True, short_caption=False
 ):
@@ -128,9 +132,9 @@ def get_caption(
             )
 
     if per_adapter:
-        caption = f"The Average Top {topN} RTA of each validator/algorithm pair{threshold_phrase} {equation_ref}."
+        caption = f"The Average Top {topN} RTA of each validator/algorithm pair {threshold_phrase} {equation_ref}."
     else:
-        caption = f"The Top {topN} RTA of each validator/task pair{threshold_phrase} {equation_ref}."
+        caption = f"The Top {topN} RTA of each validator/task pair {threshold_phrase} {equation_ref}."
 
     if not short_caption:
         mean_std_str = "algorithm" if per_adapter else "task"
@@ -140,7 +144,7 @@ def get_caption(
         )
 
     # https://stackoverflow.com/a/18878970
-    return re.sub('\s+([?.!"](?:\s|$))', r"\1", caption)
+    return remove_whitespace_before_punctuation(caption)
 
 
 def predicted_best_acc(args, topN, threshold, per_adapter=False):
