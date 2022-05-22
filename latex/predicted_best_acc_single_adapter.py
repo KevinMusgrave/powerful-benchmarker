@@ -47,12 +47,6 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
-def final_str_hook(x):
-    old = "\\begin{table}"
-    new = "\\begin{table}[H]"
-    return latex_utils.validator_final_str_hook(x.replace(old, new))
-
-
 def predicted_best_acc_single_adapter(args, topN, threshold):
     basename = f"predicted_best_acc_top{topN}_per_adapter_{threshold}_src_threshold"
     color_map_tag_kwargs = {
@@ -86,6 +80,7 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
         highlight_min=True,
         highlight_max_subset=highlight_max_subset,
         highlight_min_subset=["Std"],
-        final_str_hook=final_str_hook,
+        final_str_hook=latex_utils.validator_final_str_hook,
         caption_hook=caption_hook,
+        position="H",
     )

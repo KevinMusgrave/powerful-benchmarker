@@ -251,8 +251,8 @@ def rename_validator_args(df):
 
 
 def add_mean_std_column(df):
-    df = df.assign(Mean=df.mean(axis=1))
-    df = df.assign(Std=df.std(axis=1))
+    df = df.assign(Mean=df.mean(axis=1, skipna=False))
+    df = df.assign(Std=df.std(axis=1, skipna=False))
     return df
 
 
@@ -278,13 +278,3 @@ def validator_final_str_hook(x):
     old = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llrrrrrrrrrrrrrrrrrrrrr}\n\\toprule"
     new = "\\resizebox{\\textwidth}{!}{\\begin{tabular}{llr|rrrrrr|rrrrrrrrrrrr|rr}\n\\toprule\n & & \\multicolumn{1}{c|}{} & \\multicolumn{6}{c|}{Office31} & \\multicolumn{12}{c|}{OfficeHome} & & \\\\"
     return x.replace(old, new)
-
-
-# def combine_mean_std_column(df):
-#     df["Mean"] = df["Mean"].astype(str) + "\\pm" + df["Std"].astype(str)
-#     df = df.drop(columns=["Std"])
-#     return df
-
-# def get_mean_from_mean_column(df):
-#     print(df)
-#     return df.str.split("\\pm").str[0].astype(float)

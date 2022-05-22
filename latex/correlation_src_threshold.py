@@ -73,4 +73,5 @@ def correlation_src_threshold(args, threshold, per_adapter=False):
         highlight_max_subset=highlight_max_subset,
         highlight_min_subset=["Std"],
         final_str_hook=final_str_hook,
+        position="H",
     )

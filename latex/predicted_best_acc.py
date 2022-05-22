@@ -34,7 +34,7 @@ def get_postprocess_df(per_adapter):
         df = pd.concat(df, axis=0).reset_index(drop=True)
         df = latex_utils.rename_validator_args(df)
         if per_adapter:
-            df = df.groupby(["validator", "validator_args"]).mean()
+            df = df.groupby(["validator", "validator_args"], dropna=False).mean()
         else:
             df = df.pivot(index=["validator", "validator_args"], columns="task")
             df = df.droplevel(0, axis=1)
