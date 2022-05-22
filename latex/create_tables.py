@@ -12,7 +12,8 @@ from validator_tests.utils.constants import add_exp_group_args
 
 def main(args):
     highest_src_threshold_possible(args, topN=200, topN_per_adapter=20)
-    for topN in [20]:
+    highest_src_threshold_possible(args, topN=2000, topN_per_adapter=200)
+    for topN in [20, 200]:
         best_accuracy_per_adapter(args, topN=topN)
 
     for threshold in [0, 0.5, 0.9]:
@@ -20,7 +21,7 @@ def main(args):
             correlation_src_threshold(
                 args, threshold=threshold, per_adapter=per_adapter
             )
-            topN_bounds = [20] if per_adapter else [200]
+            topN_bounds = [20, 200] if per_adapter else [200, 2000]
             for topN in topN_bounds:
                 predicted_best_acc(
                     args, topN=topN, threshold=threshold, per_adapter=per_adapter
