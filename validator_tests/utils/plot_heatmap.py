@@ -9,7 +9,6 @@ from .df_utils import unify_validator_columns
 
 def plot_fn(df, plots_folder, filename, index, columns, values, **kwargs):
     sns.set(rc={"figure.figsize": (40, 30)})
-    plots_folder = os.path.join(plots_folder, "heatmaps")
     c_f.makedir_if_not_there(plots_folder)
 
     df = df[[index, columns, values]]

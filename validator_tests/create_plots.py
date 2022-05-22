@@ -33,15 +33,12 @@ def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, df, per_feature_la
     if args.heatmap:
         per_src = get_per_src_threshold_df(exp_folder, False, args.topN, exp_groups)
         curr_plots_folder = os.path.join(
-            plots_folder, get_name_from_df(per_src, assert_one_task=True)
+            plots_folder, "heatmaps", get_name_from_df(per_src, assert_one_task=True)
         )
         plot_heatmap(per_src, curr_plots_folder, args.topN)
 
         per_src = get_per_src_threshold_df(
             exp_folder, True, args.topN_per_adapter, exp_groups
-        )
-        curr_plots_folder = os.path.join(
-            plots_folder, get_name_from_df(per_src, assert_one_task=True)
         )
         plot_heatmap_per_adapter(per_src, curr_plots_folder, args.topN_per_adapter)
         plot_heatmap_average_across_adapters(
