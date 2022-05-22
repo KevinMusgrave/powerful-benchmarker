@@ -85,6 +85,7 @@ def plot_val_vs_acc(
     per_feature_layer,
     validator_set=None,
     src_threshold=None,
+    adapter=None,
     **kwargs,
 ):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
@@ -124,4 +125,5 @@ def plot_val_vs_acc(
         filename_suffix=filename_suffix,
         per_adapter=per_adapter,
         validator_set=validator_set,
+        adapter=adapter,
     )

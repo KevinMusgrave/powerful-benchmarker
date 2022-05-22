@@ -46,13 +46,16 @@ def plot_loop(
     filename=None,
     per_adapter=True,
     validator_set=None,
+    adapter=None,
 ):
     finished = []
     if not per_adapter and "adapter" in filter_by:
         raise ValueError("Can't do per_adapter=False and filter by adapter")
     adapters = maybe_per_adapter(df, per_adapter)
     validator_set = c_f.default(validator_set, df["validator"].unique())
-    for adapter in adapters:
+    for curr_adapter in adapters:
+        if adapter and curr_adapter != adapter:
+            continue
         for dataset in df["dataset"].unique():
             for src_domains in df["src_domains"].unique():
                 for target_domains in df["target_domains"].unique():
@@ -68,7 +71,7 @@ def plot_loop(
                             )
                             for args in tqdm.tqdm(df["validator_args"].unique()):
                                 filters = {
-                                    "adapter": adapter,
+                                    "adapter": curr_adapter,
                                     "dataset": dataset,
                                     "src_domains": src_domains,
                                     "target_domains": target_domains,

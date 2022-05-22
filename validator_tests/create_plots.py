@@ -27,6 +27,7 @@ def scatter_and_heatmap(exp_folder, exp_groups, plots_folder, df, per_feature_la
             per_feature_layer=per_feature_layer,
             validator_set=args.scatter_plot_validator_set,
             src_threshold=args.scatter_src_threshold,
+            adapter=args.adapter,
             **kwargs
         )
     if args.heatmap:
@@ -71,5 +72,6 @@ if __name__ == "__main__":
     parser.add_argument("--scatter_src_threshold", type=float)
     parser.add_argument("--scatter_no_color", action="store_true")
     parser.add_argument("--scatter_per_adapter", action="store_true")
+    parser.add_argument("--adapter", type=str)
     args = parser.parse_args()
     create_main.main(args, fn1, fn2)
