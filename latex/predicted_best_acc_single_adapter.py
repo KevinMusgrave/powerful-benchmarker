@@ -60,7 +60,9 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
 
     threshold_str = int(threshold * 100)
 
-    caption = get_caption(topN, threshold, per_adapter=False, with_equation_ref=False)
+    caption = get_caption(
+        topN, threshold, per_adapter=False, with_equation_ref=False, short_caption=True
+    )
 
     highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
         "Mean"

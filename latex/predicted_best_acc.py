@@ -56,7 +56,9 @@ def max_value_fn(curr_df, column_name):
     return curr_df.max()
 
 
-def get_caption(topN, threshold, per_adapter, with_equation_ref=True):
+def get_caption(
+    topN, threshold, per_adapter, with_equation_ref=True, short_caption=False
+):
     threshold_str = int(threshold * 100)
     equation_ref = ""
     if threshold_str == 0:
@@ -72,17 +74,17 @@ def get_caption(topN, threshold, per_adapter, with_equation_ref=True):
             )
 
     if per_adapter:
-        caption = (
-            f"The Average Top {topN} RTA of each validator/algorithm pair{threshold_phrase} {equation_ref}. "
-            "Green cells have better performance than the Source Val Accuracy validator. "
-            "The best value per column is bolded. The Mean and Std columns are the mean and standard deviation of all algorithm columns."
-        )
+        caption = f"The Average Top {topN} RTA of each validator/algorithm pair{threshold_phrase} {equation_ref}."
     else:
-        caption = (
-            f"The Top {topN} RTA of each validator/task pair{threshold_phrase} {equation_ref}. "
-            "Green cells have better performance than the Source Val Accuracy validator. The best value per column is bolded. "
-            "The Mean and Std columns are the mean and standard deviation of all task columns."
+        caption = f"The Top {topN} RTA of each validator/task pair{threshold_phrase} {equation_ref}."
+
+    if not short_caption:
+        mean_std_str = "algorithm" if per_adapter else "task"
+        caption += (
+            " Green cells have better performance than the Source Val Accuracy validator. "
+            f"The best value per column is bolded. The Mean and Std columns are the mean and standard deviation of all {mean_std_str} columns."
         )
+
     # https://stackoverflow.com/a/18878970
     return re.sub('\s+([?.!"](?:\s|$))', r"\1", caption)
 
