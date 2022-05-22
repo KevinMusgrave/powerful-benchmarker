@@ -47,6 +47,12 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
+def final_str_hook(x):
+    old = "\\begin{table}"
+    new = "\\begin{table}[H]"
+    return latex_utils.validator_final_str_hook(x.replace(old, new))
+
+
 def predicted_best_acc_single_adapter(args, topN, threshold):
     basename = f"predicted_best_acc_top{topN}_per_adapter_{threshold}_src_threshold"
     color_map_tag_kwargs = {
@@ -67,8 +73,6 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
     highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
         "Mean"
     ]
-
-    final_str_hook = latex_utils.validator_final_str_hook
 
     table_creator(
         args,
