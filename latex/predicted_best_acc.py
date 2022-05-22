@@ -1,5 +1,6 @@
 import re
 
+import numpy as np
 import pandas as pd
 
 from latex import utils as latex_utils
@@ -34,7 +35,7 @@ def get_postprocess_df(per_adapter):
         df = pd.concat(df, axis=0).reset_index(drop=True)
         df = latex_utils.rename_validator_args(df)
         if per_adapter:
-            df = df.groupby(["validator", "validator_args"], dropna=False).mean()
+            df = df.groupby(["validator", "validator_args"], dropna=False).agg(np.mean)
         else:
             df = df.pivot(index=["validator", "validator_args"], columns="task")
             df = df.droplevel(0, axis=1)
