@@ -1,9 +1,9 @@
 import pandas as pd
 
 from latex import utils as latex_utils
-from latex.correlation_src_threshold import get_preprocess_df
 from latex.predicted_best_acc import (
     get_caption,
+    get_preprocess_df,
     interval_fn,
     max_value_fn,
     min_value_fn,
@@ -57,8 +57,6 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
         "interval_fn": interval_fn,
         "operation_fn": operation_fn,
     }
-
-    threshold_str = int(threshold * 100)
 
     caption = get_caption(
         topN, threshold, per_adapter=False, with_equation_ref=False, short_caption=True

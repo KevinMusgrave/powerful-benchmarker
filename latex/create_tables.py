@@ -4,6 +4,9 @@ import sys
 sys.path.insert(0, ".")
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
 from latex.correlation_src_threshold import correlation_src_threshold
+from latex.correlation_src_threshold_single_adapter import (
+    correlation_src_threshold_single_adapter,
+)
 from latex.highest_src_threshold_possible import highest_src_threshold_possible
 from latex.predicted_best_acc import predicted_best_acc
 from latex.predicted_best_acc_single_adapter import predicted_best_acc_single_adapter
@@ -21,6 +24,7 @@ def main(args):
             correlation_src_threshold(
                 args, threshold=threshold, per_adapter=per_adapter
             )
+            correlation_src_threshold_single_adapter(args, threshold=threshold)
             topN_bounds = [20, 200] if per_adapter else [200, 2000]
             for topN in topN_bounds:
                 predicted_best_acc(
