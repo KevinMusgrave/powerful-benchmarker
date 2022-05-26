@@ -40,6 +40,9 @@ def get_caption(threshold, per_adapter):
 
     caption = f"Spearman correlation between validation scores and target accuracies {per_str}{threshold_phrase}."
 
+    if per_adapter:
+        caption = f"Average {caption}"
+
     # https://stackoverflow.com/a/18878970
     return remove_whitespace_before_punctuation(caption)
 

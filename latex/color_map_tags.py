@@ -29,7 +29,7 @@ def default_interval_fn(min_value, max_value, num_steps, *_):
 
 
 def absolute_value_interval_fn(min_value, max_value, num_steps, *_):
-    intervals = np.linspace(min_value, max_value, num_steps)
+    intervals = np.linspace(np.abs(min_value), max_value, num_steps)
     intervals = intervals[::-1]
     return [intervals, intervals * -1]
 

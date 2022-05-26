@@ -1,12 +1,10 @@
 from latex import utils as latex_utils
-from latex.correlation_src_threshold import get_caption
-from latex.predicted_best_acc import (
-    get_preprocess_df,
-    interval_fn,
-    max_value_fn,
-    min_value_fn,
-    operation_fn,
+from latex.correlation_src_threshold import (
+    get_caption,
+    interval_fn_wrapper,
+    operation_fn_wrapper,
 )
+from latex.predicted_best_acc import get_preprocess_df, max_value_fn, min_value_fn
 from latex.predicted_best_acc_single_adapter import caption_hook, postprocess_df
 from latex.table_creator import table_creator
 
@@ -18,8 +16,8 @@ def correlation_src_threshold_single_adapter(args, threshold):
         "min_value_fn": min_value_fn,
         "max_value_fn": max_value_fn,
         "num_steps": 11,
-        "interval_fn": interval_fn,
-        "operation_fn": operation_fn,
+        "interval_fn": interval_fn_wrapper,
+        "operation_fn": operation_fn_wrapper,
     }
 
     caption = get_caption(threshold, per_adapter=False)
