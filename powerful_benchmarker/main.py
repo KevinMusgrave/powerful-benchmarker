@@ -58,7 +58,7 @@ def evaluate_best_model(cfg, exp_path):
     ) as f:
         original_cfg = json.load(f)
 
-    for k in ["dataset", "adapter", "feature_layer"]:
+    for k in ["dataset", "adapter", "feature_layer", "pretrain_on_src", "pretrain_lr"]:
         setattr(cfg, k, original_cfg[k])
     trial = optuna.trial.FixedTrial(original_cfg["trial_params"])
 
@@ -114,6 +114,7 @@ def get_adapter_datasets_etc(
         cfg.pretrain_on_src,
         cfg.dataset_folder,
         cfg.download_datasets,
+        cfg.evaluate,
     )
 
     dataloader_creator = main_utils.get_dataloader_creator(

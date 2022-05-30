@@ -132,8 +132,9 @@ def get_datasets(
     pretrain_on_src,
     folder,
     download,
+    evaluate,
 ):
-    if pretrain_on_src and len(target_domains) > 0:
+    if not evaluate and pretrain_on_src and len(target_domains) > 0:
         raise ValueError("target_domain must be [] if pretrain_on_src is True")
     if not set(src_domains).isdisjoint(target_domains):
         raise ValueError(
