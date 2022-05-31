@@ -14,6 +14,11 @@ def main(args):
             "exp_per_slurm_job": "4",
             "trials_per_exp": "100",
         },
+        {
+            "flags": "ClassSSCentroidInit",
+            "exp_per_slurm_job": "4",
+            "trials_per_exp": "100",
+        },
         {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},

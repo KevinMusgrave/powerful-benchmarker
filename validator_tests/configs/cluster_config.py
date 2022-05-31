@@ -109,3 +109,14 @@ class ClassSS(ClassAMI):
 class ClassSSCentroidInit(ClassSS):
     def get_centroid_init(self):
         return "label_centers"
+
+    def score(self, *args, **kwargs):
+        try:
+            return super().score(*args, **kwargs)
+        except ValueError as e:
+            if (
+                "Number of labels is 1. Valid values are 2 to n_samples - 1 (inclusive)"
+                in str(e)
+            ):
+                return float("nan")
+            raise
