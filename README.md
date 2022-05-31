@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ### Set paths in `constants.yaml`
 
 - `exp_folder`: experiments will be saved as sub-folders inside of `exp_folder`
-- `dataset_folder`: datasets will be downloaded here. For example, `<dataset_folder>/mnistm`.
+- `dataset_folder`: datasets will be downloaded here. For example, `<dataset_folder>/mnistm`
 - `conda_env`: (optional) the conda environment that will be activated for slurm jobs
 - `slurm_folder`: (optional) slurm logs will be saved to `<exp_folder>/.../<slurm_folder>`
 - `gdrive_folder`: (optional) the google drive folder to which logs can be uploaded
