@@ -2,7 +2,7 @@
  Powerful Benchmarker
 </h1>
 
-## [Benchmarking Validation Methods for Unsupervised Domain Adaptation]
+## Benchmarking Validation Methods for Unsupervised Domain Adaptation
 
 ### Installation
 
@@ -20,12 +20,14 @@ pip install -r requirements.txt
 ### Set paths in `constants.yaml`
 
 - `exp_folder`: experiments will be saved as sub-folders inside of `exp_folder`
-- `dataset_folder`: datasets will be downloaded here. For example, `<dataset_folder>/mnistm` and `<dataset_folder>/office31`
+- `dataset_folder`: datasets will be downloaded here. For example, `<dataset_folder>/mnistm`.
 - `conda_env`: (optional) the conda environment that will be activated for slurm jobs
 - `slurm_folder`: (optional) slurm logs will be saved to `<exp_folder>/.../<slurm_folder>`
 - `gdrive_folder`: (optional) the google drive folder to which logs can be uploaded
 
-### Training a source-only model
+### Getting started
+
+#### Training a source-only model
 
 Train a model on MNIST for 20 epochs:
 ```
@@ -40,6 +42,17 @@ Test the source-only model on MNIST and MNISTM:
 ```
 python powerful_benchmarker/main.py --exp_name test_experiment0 \
 --target_domains mnist mnistm --evaluate --validator oracle
+```
+
+#### Hyperparameter search for domain adaptation algorithms
+
+Train a model using DANN for 20 epochs, with 10 different random hyperparameter settings. Save features every 5 epochs.
+```
+python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
+--src_domains mnist --target_domains mnistm --adapter DANNConfig \
+--start_with_pretrained --feature_layer 6 \
+--max_epochs 20 --num_trials 10 --save_features \
+--val_interval 5
 ```
 
 ### Notebooks
