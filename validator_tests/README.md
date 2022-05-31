@@ -1,4 +1,4 @@
-# validator-tests
+## powerful-benchmarker/validator_tests
 
 
 ### Order of operations
@@ -7,11 +7,33 @@
 2. collect_dfs.py to gather all dataframe pkls into one dataframe pkl
 3. process_df.py
 4. per_src_threshold.py
-5. create_plots.py
 
 
+### main.py
+| Command-line argument | Description |
+| - | - |
+|`--exp_folder` |
+|`--exp_group` |
+|`--exp_name` |
+|`--validator` |
+|`--trial_range` |
+|`--skip_validator_errors` |
 
 
-### Memory usage
+### collect_dfs.py
+| Command-line argument | Description |
+| - | - |
+|`--exp_folder`|
+|`--slurm_folder`|
 
-Everything requires a minimum of 1.5 GB memory, see https://github.com/pytorch/pytorch/issues/12873.
+
+### process_df.py
+| Command-line argument | Description |
+| - | - |
+|`--exp_folder`|
+|`--detailed_warnings`|
+
+
+### run_validators.py
+| Command-line argument | Description |
+| - | - |

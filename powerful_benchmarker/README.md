@@ -1,5 +1,38 @@
 ## powerful-benchmarker/powerful_benchmarker
 
+### Getting started
+
+#### Training a source-only model
+
+Train a model on MNIST for 20 epochs:
+```
+python powerful_benchmarker/main.py --exp_name test_experiment0 --dataset mnist \
+--src_domains mnist --adapter PretrainerConfig \
+--download_datasets --num_trials 1 \
+--max_epochs 20 --pretrain_on_src --validator src_accuracy \
+--use_stat_getter
+```
+
+Test the source-only model on MNIST and MNISTM:
+```
+python powerful_benchmarker/main.py --exp_name test_experiment0 \
+--target_domains mnist mnistm --evaluate --validator oracle
+```
+
+#### Hyperparameter search for domain adaptation algorithms
+
+Train a model using DANN for 20 epochs, with 10 different random hyperparameter settings. Save features every 5 epochs.
+```
+python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
+--src_domains mnist --target_domains mnistm --adapter DANNConfig \
+--start_with_pretrained --feature_layer 6 \
+--max_epochs 20 --num_trials 10 --save_features \
+--val_interval 5
+```
+
+
+
+
 ### main.py
 | Command-line argument | Description |
 | - | - |
