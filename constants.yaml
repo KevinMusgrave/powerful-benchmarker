@@ -1,7 +1,9 @@
-experiment_folder: null
+exp_folder: null
 
 dataset_folder: null
 
 conda_env: null
 
 slurm_folder: null
+
+gdrive_folder: null

@@ -1,22 +1,17 @@
 black
+flake8
+h5py==3.6.0
 isort
-matplotlib
+nbqa
 optuna
-pandas
-plotly
-pytorch-adapt==0.0.42
-pytorch-ignite
-pytorch-metric-learning
+pytorch-adapt[ignite,record-keeper]==0.0.73
 PyYAML
-record-keeper
-scikit-learn
-scipy
+seaborn
 submitit
 tensorboard
 timm
-torchmetrics
 tqdm
 
---find-links https://download.pytorch.org/whl/cu113/torch_stable.html
-torch==1.10.1+cu113
-torchvision==0.11.2+cu113
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.10.1+cu111
+torchvision==0.11.2+cu111

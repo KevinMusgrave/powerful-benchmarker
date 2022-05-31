@@ -1,0 +1,7 @@
+num_trials: 100
+n_startup_trials: 100
+batch_size: 64
+
+save_features: true
+start_with_pretrained: true
+use_full_inference: true

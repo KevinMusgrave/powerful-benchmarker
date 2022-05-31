@@ -1,0 +1,4 @@
+dataset: office31
+max_epochs: 2000
+val_interval: 100
+num_workers: 5

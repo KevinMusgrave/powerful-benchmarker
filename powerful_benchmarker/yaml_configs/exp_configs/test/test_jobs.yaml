@@ -1,0 +1,16 @@
+common: &common --group_configs default fl3_adam_lr1 officehome
+A: &A --config_names dann mcc --gpus-per-node=4
+B: &B --config_names atdoc bsp --gpus-per-node=6
+C: &C --config_names cdan im --gpus-per-node=2
+
+
+commands:
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains clipart
+  - *B
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains clipart
+  - *C
+  - *common

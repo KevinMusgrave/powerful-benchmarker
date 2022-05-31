@@ -1,0 +1,1 @@
+python powerful_benchmarker/launch_multiple.py --exp_config officehome/officehome_fl3_adam_lr1 --slurm_config a100

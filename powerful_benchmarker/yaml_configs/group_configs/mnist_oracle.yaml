@@ -1,0 +1,10 @@
+dataset: mnist
+src_domains: [mnist]
+target_domains: [mnistm]
+validator: oracle
+max_epochs: 100
+val_interval: 1
+patience: 10
+num_workers: 2
+
+download_datasets: true

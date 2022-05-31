@@ -1,0 +1,4 @@
+wckey: ""
+cpus-per-task: 2
+gres: "gpu:2"
+time: "48:00:00"

@@ -1,0 +1,4 @@
+wckey: ""
+cpus-per-task: 2
+partition: a100
+gpus-per-node: 1
