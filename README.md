@@ -25,6 +25,18 @@ pip install -r requirements.txt
 - `slurm_folder`: (optional) slurm logs will be saved to `<exp_folder>/.../<slurm_folder>`
 - `gdrive_folder`: (optional) the google drive folder to which logs can be uploaded
 
+
+### Folder organization
+| Folder | Description |
+| - | - |
+| `latex` | Code for creating latex tables from experiment data.
+| `notebooks` | Jupyter notebooks
+| `powerful_benchmarker` | Code for hyperparameter searches for training models.
+| `scripts` | Various bash scripts, including scripts for uploading logs to google drive.
+| `unit_tests` | Tests to check if there are bugs.
+| `validator_tests` | Code for evaluating validation methods (validators).
+
+
 ### Getting started
 
 #### Training a source-only model
