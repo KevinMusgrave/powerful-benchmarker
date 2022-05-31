@@ -24,11 +24,11 @@
 |`--num_reproduce` | The best hyperparameters will be used to train this many more models. This is useful if you want to get the standard deviation of an algorithm's performance.
 |`--feature_layer` | If 0, then the output of the trunk (a.k.a. feature generator) is used as the "features". Higher numbers correspond with layers of the classifier model. For example, if set to 3, then the 3rd layer of the classifier model will be used as features. See the `set_feature_layer` function in [BaseConfig](https://github.com/KevinMusgrave/powerful-benchmarker/blob/dev/powerful_benchmarker/configs/base_config.py).
 |`--optimizer` | Either "SGD" or "Adam".
-|`--lr_multiplier` |
-|`--pretrain_lr` |
-|`--fixed_param_source` |
-|`--save_features` |
-|`--download_datasets` |
-|`--use_stat_getter` |
-|`--check_initial_score` |
-|`--use_full_inference` |
+|`--lr_multiplier` | The base learning rate will be multiplied by this amount for certain models or layers, depending on the adapter config.
+|`--pretrain_lr` | The learning rate used for training a source-only model.
+|`--fixed_param_source` | Hyperparameters will be loaded from the best trial of `<exp_folder>/<fixed_param_source>`. For example, when trying MCC-DANN, you may want to load the best hyperparameters from the DANN experiment, so that the search space is limited to only the MCC-related hyperparameters.
+|`--save_features` | Add this flag to save features every `val_interval` epochs. See [utils/ignite_save_features](https://github.com/KevinMusgrave/powerful-benchmarker/blob/dev/powerful_benchmarker/utils/ignite_save_features.py) for details.
+|`--download_datasets` | Add this flag to automatically download datasets to `dataset_folder` if they aren't already present.
+|`--use_stat_getter` | Add this flag to compute source and target accuracies every `val_interval` epochs. This is independent of `validator`.
+|`--check_initial_score` | Add this flag to compute a validation score before training begins. This is relevant only if `validator` is specified.
+|`--use_full_inference` | Add this flag to retrieve all available model features during each validation step. For example, without this flag, the inference step usually just returns "features" and "logits". But with this flag, it might also return discriminator logits, or the logits from multiple classifiers (it depends on the model architecture). This is particularly relevant if `save_features` is set.
