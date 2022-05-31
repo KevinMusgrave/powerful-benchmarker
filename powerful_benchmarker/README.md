@@ -32,3 +32,27 @@
 |`--use_stat_getter` | Add this flag to compute source and target accuracies every `val_interval` epochs. This is independent of `validator`.
 |`--check_initial_score` | Add this flag to compute a validation score before training begins. This is relevant only if `validator` is specified.
 |`--use_full_inference` | Add this flag to retrieve all available model features during each validation step. For example, without this flag, the inference step usually just returns "features" and "logits". But with this flag, it might also return discriminator logits, or the logits from multiple classifiers (it depends on the model architecture). This is particularly relevant if `save_features` is set.
+
+
+### launch_multiple.py
+| Command-line argument | Description |
+| - | - |
+|--exp_config | The name of the experiment config yaml file. For example, `mnist/mnist_fl3_adam_lr1` refers to [this yaml config file](https://github.com/KevinMusgrave/powerful-benchmarker/blob/dev/powerful_benchmarker/yaml_configs/exp_configs/mnist/mnist_fl3_adam_lr1.yaml).
+
+
+### launch_one.py
+| Command-line argument | Description |
+| - | - |
+|`--script_wrapper_timeout` | How many seconds an experiment folder can go unchanged before the experiment is killed and restarted. This can be useful if you have issues with your experiments occasionally hanging.
+|`--config_names` | A space delimited list of lowercase adapter names, e.g. `dann mcc`.
+|`--slurm_config` | The name of the slurm yaml config file containing slurm-related config options.
+|`--group_configs` | A space delimited list of yaml config file names containing experiment settings that ultimately get passed to `main.py`.
+|`--src_domains` | Source domain can be set in a group config, or via command line argument here.
+|`--target_domains` | Target domain can be set in a group config, or via command line argument here.
+
+
+### delete_experiment.py
+| Command-line argument | Description |
+| - | - |
+|`--adapter` | The adapter experiment to delete. For example, `dann` will find all folders matching `<exp_folder>/<exp_group>/dann`.
+|`--delete` | The found folders will be deleted only if this flag is used.
