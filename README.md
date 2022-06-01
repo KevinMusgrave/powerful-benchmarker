@@ -52,7 +52,7 @@ Or delete slurm logs for specific experiments groups. For example, delete slurm 
 ```
 python delete_slurm_logs.py --delete --exp_group_prefix officehome
 ```
-
+---
 ### kill_all.py
 Kill all model training jobs:
 ```
@@ -62,7 +62,7 @@ Or kill all validator test jobs:
 ```
 python kill_all.py --validator_tests
 ```
-
+---
 ### print_progress.py
 Print how many hyperparameter trials are done:
 ```
@@ -78,7 +78,7 @@ Save to `progress.txt` instead of printing to screen:
 ```
 python print_progress.py --save_to_file progress.txt
 ```
-
+---
 ### simple_slurm.py
 A simple way to run a program via slurm. 
 
@@ -93,7 +93,7 @@ Or run a program without considering experiment groups at all:
 python simple_slurm.py --command "python validator_tests/zip_dfs.py" --slurm_config_folder validator_tests \
 --slurm_config a100 --job_name=zip_dfs --cpus-per-task=16
 ```
-
+---
 ### upload_logs.py
 Upload slurm logs and experiment progress to a google drive folder at regular intervals (the default is every 2 hours):
 ```
