@@ -1,0 +1,3 @@
+python powerful_benchmarker/launch_multiple.py --exp_config test/stress_test --slurm_config a100 --partition hipri --gpus-per-node 2 --exp_group stress_test0
+python powerful_benchmarker/launch_multiple.py --exp_config test/stress_test --slurm_config a100 --partition lowpri --gpus-per-node 2 --exp_group stress_test1
+python powerful_benchmarker/launch_multiple.py --exp_config test/stress_test --slurm_config a100 --partition lowpri --gpus-per-node 2 --exp_group stress_test2
