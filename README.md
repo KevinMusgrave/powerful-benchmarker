@@ -32,12 +32,12 @@ Visit each folder to view its readme file.
 
 | Folder | Description |
 | - | - |
-| `latex` | Code for creating latex tables from experiment data.
-| `notebooks` | Jupyter notebooks
-| `powerful_benchmarker` | Code for hyperparameter searches for training models.
-| `scripts` | Various bash scripts, including scripts for uploading logs to google drive.
-| `unit_tests` | Tests to check if there are bugs.
-| `validator_tests` | Code for evaluating validation methods (validators).
+| [`latex`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/latex) | Code for creating latex tables from experiment data.
+| [`notebooks`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/notebooks) | Jupyter notebooks
+| [`powerful_benchmarker`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker) | Code for hyperparameter searches for training models.
+| [`scripts`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/scripts) | Various bash scripts, including scripts for uploading logs to google drive.
+| [`unit_tests`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/unit_tests) | Tests to check if there are bugs.
+| [`validator_tests`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/validator_tests) | Code for evaluating validation methods (validators).
 
 
 ## Useful top-level scripts
@@ -97,7 +97,7 @@ python simple_slurm.py --command "python validator_tests/zip_dfs.py" --slurm_con
 ### upload_logs.py
 Upload slurm logs and experiment progress to a google drive folder at regular intervals (the default is every 2 hours):
 ```
-python upload_logs.py.
+python upload_logs.py
 ```
 Set the google drive folder in `constants.yaml`.
 
