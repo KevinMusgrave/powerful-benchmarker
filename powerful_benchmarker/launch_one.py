@@ -110,17 +110,15 @@ def main(cfg, slurm_args):
         assert len(set(x[i] for x in exp_names)) == len(exp_names)
 
     gcfg = get_group_config(cfg)
-    exp_group_name = cfg.exp_group
-    if not exp_group_name:
-        exp_group_name = create_exp_group_name(
-            gcfg["dataset"],
-            gcfg["src_domains"],
-            gcfg["target_domains"],
-            [gcfg["feature_layer"]],
-            [gcfg["optimizer"]],
-            [gcfg["lr_multiplier"]],
-            gcfg.get("validator"),
-        )
+    exp_group_name = create_exp_group_name(
+        gcfg["dataset"],
+        gcfg["src_domains"],
+        gcfg["target_domains"],
+        [gcfg["feature_layer"]],
+        [gcfg["optimizer"]],
+        [gcfg["lr_multiplier"]],
+        gcfg.get("validator"),
+    )
     exp_folder = os.path.join(cfg.exp_folder, exp_group_name)
 
     if already_done(exp_folder, cfg.config_names):
@@ -146,7 +144,6 @@ if __name__ == "__main__":
     add_default_args(
         parser, ["exp_folder", "dataset_folder", "conda_env", "slurm_folder"]
     )
-    parser.add_argument("--exp_group", type=str, default=None)
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
     parser.add_argument("--slurm_config", type=str, required=True)
