@@ -110,15 +110,18 @@ def main(cfg, slurm_args):
         assert len(set(x[i] for x in exp_names)) == len(exp_names)
 
     gcfg = get_group_config(cfg)
-    exp_group_name = create_exp_group_name(
-        gcfg["dataset"],
-        gcfg["src_domains"],
-        gcfg["target_domains"],
-        [gcfg["feature_layer"]],
-        [gcfg["optimizer"]],
-        [gcfg["lr_multiplier"]],
-        gcfg.get("validator"),
-    )
+    if cfg.is_stress_test:
+        exp_group_name = "stress_test"
+    else:
+        exp_group_name = create_exp_group_name(
+            gcfg["dataset"],
+            gcfg["src_domains"],
+            gcfg["target_domains"],
+            [gcfg["feature_layer"]],
+            [gcfg["optimizer"]],
+            [gcfg["lr_multiplier"]],
+            gcfg.get("validator"),
+        )
     exp_folder = os.path.join(cfg.exp_folder, exp_group_name)
 
     if already_done(exp_folder, cfg.config_names):
@@ -127,7 +130,10 @@ def main(cfg, slurm_args):
 
     num_tasks = len(exp_names)
     executor = submitit.AutoExecutor(folder=os.path.join(exp_folder, cfg.slurm_folder))
-    job_name = f"{exp_group_name}_" + "_".join(cfg.config_names)
+    if cfg.is_stress_test:
+        job_name = exp_group_name
+    else:
+        job_name = f"{exp_group_name}_" + "_".join(cfg.config_names) 
     slurm_args["job_name"] = job_name
     executor.update_parameters(
         timeout_min=0,
@@ -144,6 +150,7 @@ if __name__ == "__main__":
     add_default_args(
         parser, ["exp_folder", "dataset_folder", "conda_env", "slurm_folder"]
     )
+    parser.add_argument("--is_stress_test", action="store_true")
     parser.add_argument("--script_wrapper_timeout", type=int, default=1200)
     parser.add_argument("--config_names", nargs="+", type=str, required=True)
     parser.add_argument("--slurm_config", type=str, required=True)
