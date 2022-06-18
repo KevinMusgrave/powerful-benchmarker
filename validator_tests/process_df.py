@@ -36,6 +36,7 @@ def filter_validators(df):
                 "DEVBinary",
                 "SND",
                 "ClassAMICentroidInit",
+                "ClassSSCentroidInit",
                 "MMD",
                 "MMDPerClass",
                 "BNM",
