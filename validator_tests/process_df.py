@@ -40,6 +40,7 @@ def filter_validators(df):
                 "MMD",
                 "MMDPerClass",
                 "BNM",
+                "MCC",
             ]
         )
     ]
