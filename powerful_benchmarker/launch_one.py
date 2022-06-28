@@ -133,7 +133,7 @@ def main(cfg, slurm_args):
     if cfg.is_stress_test:
         job_name = exp_group_name
     else:
-        job_name = f"{exp_group_name}_" + "_".join(cfg.config_names) 
+        job_name = f"{exp_group_name}_" + "_".join(cfg.config_names)
     slurm_args["job_name"] = job_name
     executor.update_parameters(
         timeout_min=0,
