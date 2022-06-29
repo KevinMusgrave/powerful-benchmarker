@@ -12,11 +12,11 @@ import logging
 import tqdm
 
 class Cars196(Dataset):
-    ims_url = 'http://imagenet.stanford.edu/internal/car196/car_ims.tgz'
+    ims_url = 'http://ai.stanford.edu/~jkrause/car196/car_ims.tgz'
     ims_filename = 'car_ims.tgz'
     ims_md5 = 'd5c8f0aa497503f355e17dc7886c3f14'
 
-    annos_url = 'http://imagenet.stanford.edu/internal/car196/cars_annos.mat'
+    annos_url = 'http://ai.stanford.edu/~jkrause/car196/cars_annos.mat'
     annos_filename = 'cars_annos.mat'
     annos_md5 = 'b407c6086d669747186bd1d764ff9dbc'
 
