@@ -23,6 +23,7 @@ def main(args):
         {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "MCC", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
+        {"flags": "NearestSource", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     ]
 
     if args.validators:
