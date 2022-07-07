@@ -64,12 +64,22 @@ class BaseConfig:
     ):
         self.num_classes = num_classes
 
-        kwargs = {"pretrained": start_with_pretrained}
-        G = getattr(pretrained_module, f"{dataset}G")(**kwargs)
+        if dataset != "mnist":
+            # use resnet pretrained on imagenet
+            Gkwargs = {"pretrained": start_with_pretrained or pretrain_on_src}
+            Ckwargs = {
+                "pretrained": start_with_pretrained,
+                "domain": main_utils.domain_len_assertion(src_domains),
+            }
+        else:
+            # use model pretrained on mnist
+            Gkwargs = {"pretrained": start_with_pretrained}
+            Ckwargs = {"pretrained": start_with_pretrained}
 
-        if start_with_pretrained and dataset != "mnist":
-            kwargs["domain"] = main_utils.domain_len_assertion(src_domains)
-        C = getattr(pretrained_module, f"{dataset}C")(**kwargs)
+        print("G kwargs", Gkwargs)
+        print("C kwargs", Ckwargs)
+        G = getattr(pretrained_module, f"{dataset}G")(**Gkwargs)
+        C = getattr(pretrained_module, f"{dataset}C")(**Ckwargs)
 
         models = {"G": G, "C": C}
         models, self.feature_size, framework = self.set_feature_layer(

@@ -9,6 +9,7 @@ import optuna
 from optuna.trial import TrialState
 from pytorch_adapt.datasets import DataloaderCreator
 from pytorch_adapt.datasets.getters import (
+    get_domainnet126,
     get_mnist_mnistm,
     get_office31,
     get_officehome,
@@ -145,6 +146,7 @@ def get_datasets(
         "mnist": get_mnist_mnistm,
         "office31": get_office31,
         "officehome": get_officehome,
+        "domainnet126": get_domainnet126,
     }[dataset]
     datasets = getter(
         src_domains,
