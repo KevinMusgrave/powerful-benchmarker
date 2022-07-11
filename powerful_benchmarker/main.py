@@ -125,7 +125,6 @@ def get_adapter_datasets_etc(
     models, framework = configerer.get_models(
         dataset=cfg.dataset,
         src_domains=cfg.src_domains,
-        start_with_pretrained=cfg.start_with_pretrained,
         pretrain_on_src=cfg.pretrain_on_src,
         num_classes=num_classes,
         feature_layer=cfg.feature_layer,
@@ -339,7 +338,6 @@ if __name__ == "__main__":
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--num_trials", type=int, default=10)
     parser.add_argument("--n_startup_trials", type=int, default=10)
-    parser.add_argument("--start_with_pretrained", action="store_true")
     parser.add_argument("--validator", type=str, default=None)
     parser.add_argument("--pretrain_on_src", action="store_true")
     parser.add_argument("--evaluate", action="store_true")

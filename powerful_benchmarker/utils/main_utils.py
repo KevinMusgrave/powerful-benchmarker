@@ -250,4 +250,6 @@ def num_classes(dataset_name):
 def domain_len_assertion(domain_list):
     if len(domain_list) > 1:
         raise ValueError("only 1 domain currently supported")
+    if len(domain_list) == 0:
+        return None
     return domain_list[0]

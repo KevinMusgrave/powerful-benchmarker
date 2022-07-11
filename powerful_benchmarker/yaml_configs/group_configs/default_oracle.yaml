@@ -3,5 +3,4 @@ n_startup_trials: 100
 batch_size: 64
 num_reproduce: 4
 
-start_with_pretrained: true
 use_stat_getter: true

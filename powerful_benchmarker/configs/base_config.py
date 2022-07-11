@@ -53,29 +53,36 @@ class BaseConfig:
 
         return before_training_starts
 
+    def get_model_kwargs(self, dataset, pretrain_on_src, src_domains):
+        # This is None if src_domains == []
+        src_domain = main_utils.domain_len_assertion(src_domains)
+        doing_uda = not pretrain_on_src
+        if dataset.startswith("domainnet"):
+            Gkwargs = {"pretrained": True}
+            if doing_uda:
+                Gkwargs["domain"] = src_domain
+            Ckwargs = {"pretrained": doing_uda, "domain": src_domain}
+        elif dataset in ["office31", "officehome"]:
+            Gkwargs = {"pretrained": True}
+            Ckwargs = {"pretrained": doing_uda, "domain": src_domain}
+        elif dataset == "mnist":
+            Gkwargs = {"pretrained": doing_uda}
+            Ckwargs = {"pretrained": doing_uda}
+        else:
+            raise ValueError
+
+        return Gkwargs, Ckwargs
+
     def get_models(
         self,
         dataset,
         src_domains,
-        start_with_pretrained,
         pretrain_on_src,
         num_classes,
         feature_layer,
     ):
         self.num_classes = num_classes
-
-        if dataset != "mnist":
-            # use resnet pretrained on imagenet
-            Gkwargs = {"pretrained": start_with_pretrained or pretrain_on_src}
-            Ckwargs = {
-                "pretrained": start_with_pretrained,
-                "domain": main_utils.domain_len_assertion(src_domains),
-            }
-        else:
-            # use model pretrained on mnist
-            Gkwargs = {"pretrained": start_with_pretrained}
-            Ckwargs = {"pretrained": start_with_pretrained}
-
+        Gkwargs, Ckwargs = self.get_model_kwargs(dataset, pretrain_on_src, src_domains)
         print("G kwargs", Gkwargs)
         print("C kwargs", Ckwargs)
         G = getattr(pretrained_module, f"{dataset}G")(**Gkwargs)
