@@ -1,6 +1,21 @@
-from pytorch_adapt.validators import NearestSourceValidator
+from pytorch_adapt.validators import NearestSourceL2Validator, NearestSourceValidator
 
 from .base_config import BaseConfig, get_split_and_layer
+
+
+def get_score(x, layer, device, validator):
+    src_features = get_split_and_layer(x, "src_val", layer, device)
+    src_preds = get_split_and_layer(x, "src_val", "preds", device)
+    src_labels = get_split_and_layer(x, "src_val", "labels", device)
+    target_features = get_split_and_layer(x, "target_train", layer, device)
+    return validator(
+        src_val={
+            layer: src_features,
+            "preds": src_preds,
+            "labels": src_labels,
+        },
+        target_train={layer: target_features},
+    )
 
 
 class NearestSource(BaseConfig):
@@ -16,18 +31,22 @@ class NearestSource(BaseConfig):
         )
 
     def score(self, x, exp_config, device):
-        src_features = get_split_and_layer(x, "src_val", self.layer, device)
-        src_preds = get_split_and_layer(x, "src_val", "preds", device)
-        src_labels = get_split_and_layer(x, "src_val", "labels", device)
-        target_features = get_split_and_layer(x, "target_train", self.layer, device)
-        return self.validator(
-            src_val={
-                self.layer: src_features,
-                "preds": src_preds,
-                "labels": src_labels,
-            },
-            target_train={self.layer: target_features},
-        )
+        return get_score(x, self.layer, device, self.validator)
 
     def expected_keys(self):
         return {"threshold", "weighted", "layer"}
+
+
+class NearestSourceL2(BaseConfig):
+    def __init__(self, config):
+        super().__init__(config)
+        self.layer = self.validator_args["layer"]
+        self.validator = NearestSourceL2Validator(
+            layer=self.layer,
+        )
+
+    def score(self, x, exp_config, device):
+        return get_score(x, self.layer, device, self.validator)
+
+    def expected_keys(self):
+        return {"layer"}

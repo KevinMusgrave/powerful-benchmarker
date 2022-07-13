@@ -41,6 +41,8 @@ def filter_validators(df):
                 "MMDPerClass",
                 "BNM",
                 "MCC",
+                "NearestSource",
+                "NearestSourceL2",
             ]
         )
     ]

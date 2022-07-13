@@ -98,11 +98,11 @@
 for domain in "clipart" "painting" "real" "sketch"
 do
 
-    exp_name=finetuned_domainnet126_${domain}
+    exp_name=pretrained_domainnet126_${domain}
 
     python powerful_benchmarker/main.py \
     --exp_name ${exp_name} --dataset domainnet126 \
-    --src_domains ${domain} --adapter FinetunerConfig \
+    --src_domains ${domain} --adapter PretrainerConfig \
     --num_trials 5 --batch_size 32 --num_workers 2 --n_startup_trials 5 \
     --max_epochs 100 --patience 10 --pretrain_on_src --validator src_accuracy \
     --optimizer SGD --pretrain_lr 0.01 --check_initial_score
