@@ -1,1 +1,1 @@
-python validator_tests/scripts/run.py --validators DEV DEVBinary MMD MMDPerClass --other_args "--exp_group_prefix office31" --slurm_config a100
+python validator_tests/scripts/run.py --exp_names im --validators Accuracy DEVBinary --other_args "--exp_group_prefix office31 --exp_group_excludes oracle" --slurm_config a100
