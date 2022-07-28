@@ -1,17 +1,5 @@
-import os
-
-import torch
 from pytorch_adapt.frameworks.ignite import CheckpointFnCreator
-from pytorch_adapt.layers import NLLLoss
-from pytorch_adapt.validators import (
-    AccuracyValidator,
-    DeepEmbeddedValidator,
-    DiversityValidator,
-    EntropyValidator,
-    MultipleValidators,
-    ScoreHistory,
-    SNDValidator,
-)
+from pytorch_adapt.validators import AccuracyValidator, ScoreHistory
 
 
 def src_accuracy(num_classes, average="macro", split="val"):
@@ -33,7 +21,6 @@ def get_validator(
     num_classes,
     validator_name,
     checkpoint_path,
-    feature_layer,
 ):
     if validator_name is None:
         return None, None

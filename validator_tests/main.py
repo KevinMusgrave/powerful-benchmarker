@@ -96,11 +96,19 @@ def get_and_save_scores(
 
 
 def get_validator_and_condition_fn(
-    validator_name, validator_args, trial_range, exp_folder, exp_group, exp_name
+    validator_name,
+    validator_args,
+    trial_range,
+    exp_folder,
+    exp_group,
+    exp_name,
+    use_trials_csv,
 ):
     validator = getattr(configs, validator_name)(validator_args)
     validator_args_str = utils.dict_to_str(validator.validator_args)
-    exp_folders = utils.get_exp_folders(os.path.join(exp_folder, exp_group), exp_name)
+    exp_folders = utils.get_exp_folders(
+        os.path.join(exp_folder, exp_group), exp_name, use_trials_csv
+    )
     condition_fn = utils.get_condition_fn(
         validator_name, validator_args_str, trial_range
     )
@@ -120,6 +128,7 @@ def main(args, validator_args):
         args.exp_folder,
         args.exp_group,
         args.exp_name,
+        args.use_trials_csv,
     )
     all_scores = []
     fn = get_and_save_scores(
@@ -141,6 +150,7 @@ if __name__ == "__main__":
     parser.add_argument("--validator", type=str, required=True)
     parser.add_argument("--trial_range", nargs="+", type=int, default=[])
     parser.add_argument("--skip_validator_errors", action="store_true")
+    parser.add_argument("--use_trials_csv", action="store_true")
     args, unknown_args = parser.parse_known_args()
     validator_args = convert_unknown_args(unknown_args)
     main(args, validator_args)

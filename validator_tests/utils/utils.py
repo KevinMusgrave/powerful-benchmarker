@@ -46,10 +46,14 @@ def dict_to_str(x):
     return json.dumps(x, sort_keys=True)
 
 
-def get_exp_folders(folder, name):
+def get_exp_folders(folder, name, use_trials_csv=True):
     exp_path = os.path.join(folder, name)
     if not os.path.isdir(exp_path):
         return []
+    if not use_trials_csv:
+        feature_folders = glob.glob(os.path.join(exp_path, "**", "features"))
+        return [os.path.dirname(os.path.normpath(x)) for x in feature_folders]
+
     trials_filename = os.path.join(exp_path, TRIALS_FILENAME)
     with open(trials_filename, "r") as f:
         trials_info = pd.read_csv(f)

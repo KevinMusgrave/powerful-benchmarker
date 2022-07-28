@@ -168,7 +168,6 @@ def save_study(study_path):
 
 def plot_visualizations(plot_path):
     def return_func(study, frozen_trial):
-        i = frozen_trial.number
         try:
             fig = optuna.visualization.plot_contour(study)
             fig.write_html(os.path.join(plot_path, f"contour_plot.html"))

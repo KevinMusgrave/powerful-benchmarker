@@ -43,6 +43,7 @@ class GANConfig(BaseConfig):
             "optimizers": optimizers,
             "misc": None,
             "before_training_starts": before_training_starts,
+            "inference_fn": inference_fn,
             "hook_kwargs": hook_kwargs,
         }
 

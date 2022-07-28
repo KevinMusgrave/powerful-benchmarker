@@ -103,7 +103,6 @@ def get_adapter_datasets_etc(
         num_classes,
         validator_name,
         checkpoint_path,
-        cfg.feature_layer,
     )
 
     configerer = getattr(configs, cfg.adapter)(trial)
