@@ -22,7 +22,7 @@ def collect_dfs(args, exp_group):
     if args.slurm_folder in exp_names:
         exp_names.remove(args.slurm_folder)
     for e in exp_names:
-        exp_folders = utils.get_exp_folders(exp_folder, e)
+        exp_folders = utils.get_exp_folders(exp_folder, e, use_glob=True)
         for ef in exp_folders:
             print(ef, flush=True)
             for v in args.validators:
