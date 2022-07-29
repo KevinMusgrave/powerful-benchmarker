@@ -120,6 +120,8 @@ def highest_src_threshold_possible(df, folder, per_adapter, topN):
 def create_best_validators_tables(exp_folder, exp_groups, tables_folder):
     for per_adapter in [False, True]:
         topN = args.topN_per_adapter if per_adapter else args.topN
+        if topN is None:
+            continue
         per_src = get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups)
         if per_src is None:
             continue
