@@ -37,8 +37,12 @@ def run(args, slurm_args, exp_group):
 def main(args, slurm_args):
     if not any(getattr(args, k) for k in exp_group_args()):
         run(args, slurm_args, None)
+        return
+    exp_groups = utils.get_exp_groups(args)
+    if args.all_in_one:
+        run(args, slurm_args, " ".join(exp_groups))
     else:
-        for e in utils.get_exp_groups(args):
+        for e in exp_groups:
             run(args, slurm_args, e)
 
 
@@ -49,6 +53,7 @@ if __name__ == "__main__":
     parser.add_argument("--command", type=str, required=True)
     parser.add_argument("--slurm_config_folder", type=str, required=True)
     parser.add_argument("--slurm_config", type=str, required=True)
+    parser.add_argument("--all_in_one", action="store_true")
     args, unknown_args = parser.parse_known_args()
     slurm_args = create_slurm_args(args, unknown_args, args.slurm_config_folder)
     main(args, slurm_args)

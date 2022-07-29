@@ -1,6 +1,11 @@
 import argparse
 import os
 import sys
+from functools import partialmethod
+
+import tqdm
+
+tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
@@ -16,6 +21,8 @@ from validator_tests.utils.threshold_utils import (
 
 
 def create_per_x_threshold(df, exp_folder, per_adapter, topN, exp_groups):
+    if topN is None:
+        return
     print(f"per_adapter = {per_adapter}")
     fn = (
         get_all_per_task_validator_adapter(topN)

@@ -42,5 +42,5 @@ def main(args, fn1, fn2):
 def add_main_args(parser):
     parser.add_argument("--run_single", action="store_true")
     parser.add_argument("--run_combined", action="store_true")
-    parser.add_argument("--topN", type=int, default=200)
-    parser.add_argument("--topN_per_adapter", type=int, default=20)
+    parser.add_argument("--topN", type=int, default=None)
+    parser.add_argument("--topN_per_adapter", type=int, default=None)
