@@ -1,11 +1,6 @@
 import argparse
 import os
 import sys
-from functools import partialmethod
-
-import tqdm
-
-tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
 
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
