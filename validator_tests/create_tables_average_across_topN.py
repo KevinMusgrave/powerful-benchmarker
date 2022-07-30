@@ -15,6 +15,16 @@ def agg(df):
     return df.groupby(["validator", "validator_args", "task"]).agg(["mean", "std"])
 
 
+def rename_columns(df, level):
+    return df.rename(
+        columns={
+            "mean": "predicted_best_acc",
+            "std": "predicted_best_acc_std",
+        },
+        level=level,
+    )
+
+
 def main(args):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
 
@@ -43,17 +53,12 @@ def main(args):
                         ["predicted_best_acc_std"], axis=1, level=0
                     ).droplevel(axis=1, level=0)
                     curr_df = agg(curr_df).swaplevel(axis=1).sort_index(axis=1, level=0)
+                    curr_df = rename_columns(curr_df, level=0)
                 else:
                     curr_df = curr_df.drop(columns=["predicted_best_acc_std"])
                     curr_df = agg(curr_df).droplevel(axis=1, level=0)
-                    curr_df = curr_df.rename(
-                        columns={
-                            "mean": "predicted_best_acc_mean",
-                            "std": "predicted_best_acc_std",
-                        }
-                    )
-
-                curr_df = curr_df.reset_index()
+                    curr_df = rename_columns(curr_df, level=0)
+                    curr_df = curr_df.reset_index()
 
                 filename = f"averaged_predicted_best_acc_top{'_'.join(topN_list)}_{per_adapter_str}{threshold}_src_threshold"
                 filename = os.path.join(folder, filename)
