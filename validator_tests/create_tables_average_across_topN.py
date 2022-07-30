@@ -46,10 +46,16 @@ def main(args):
                 else:
                     curr_df = curr_df.drop(columns=["predicted_best_acc_std"])
                     curr_df = agg(curr_df).droplevel(axis=1, level=0)
+                    curr_df = curr_df.rename(
+                        columns={
+                            "mean": "predicted_best_acc_mean",
+                            "std": "predicted_best_acc_std",
+                        }
+                    )
 
                 curr_df = curr_df.reset_index()
 
-                filename = f"averaged_predicted_best_acc_top{'_'.join(topN_list)}_{threshold}_src_threshold"
+                filename = f"averaged_predicted_best_acc_top{'_'.join(topN_list)}_{per_adapter_str}{threshold}_src_threshold"
                 filename = os.path.join(folder, filename)
                 curr_df.to_csv(f"{filename}.csv", index=False)
                 curr_df.to_pickle(f"{filename}.pkl")

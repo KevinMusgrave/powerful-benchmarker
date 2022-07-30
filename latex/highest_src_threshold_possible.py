@@ -28,7 +28,7 @@ def get_postprocess_df(per_adapter):
     return fn
 
 
-def highest_src_threshold_possible(args, topN, topN_per_adapter):
+def highest_src_threshold_possible(args, topN_per_adapter):
     # basename = f"highest_src_threshold_possible_top{topN}"
     # df1, _ = table_creator(
     #     args,
