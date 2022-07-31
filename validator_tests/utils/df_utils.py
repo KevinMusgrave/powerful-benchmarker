@@ -78,6 +78,8 @@ def assert_acc_rows_are_correct(df):
         for average in ["micro", "macro"]:
             curr = get_acc_rows(df, split, average)
             acc_column = curr[acc_score_column_name(split, average)]
+            if is_nan_or_inf(acc_column).any():
+                raise ValueError("NaN or inf found in accuracy rows")
             if not curr["score"].equals(acc_column):
                 raise ValueError("These columns should be equal")
             if acc_column.max() > 1:
@@ -160,9 +162,12 @@ def print_validators_with_nan(df, return_df=False, assert_none=False):
                 raise ValueError("There should be no scores with nan or inf")
 
 
+def is_nan_or_inf(df):
+    return np.isnan(df) | np.isinf(df)
+
+
 def remove_nan_inf_scores(df):
-    mask = np.isnan(df["score"]) | np.isinf(df["score"])
-    return df[~mask]
+    return df[~is_nan_or_inf(df["score"])]
 
 
 def remove_arg(df, to_remove):
