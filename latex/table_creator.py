@@ -78,6 +78,7 @@ def table_creator(
     output_folder = os.path.join(
         args.output_folder, get_name_from_exp_groups(exp_groups)
     )
+    # df.to_csv(os.path.join(output_folder, f"{basename}.csv"))
     if do_save_to_latex:
         if isinstance(df, dict):
             original_caption = kwargs.pop("caption", None)
