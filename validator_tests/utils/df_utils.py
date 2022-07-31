@@ -8,8 +8,6 @@ from powerful_benchmarker.utils.utils import create_exp_group_name
 
 from .constants import (
     ALL_DFS_FILENAME,
-    PER_SRC_FILENAME,
-    PER_SRC_PER_ADAPTER_FILENAME,
     PROCESSED_DF_FILENAME,
 )
 from .utils import dict_to_str, validator_str
@@ -207,20 +205,6 @@ def get_name_from_df(df, assert_one_task=False):
 def get_name_from_exp_groups(exp_groups):
     split_names = [i.split("_") for i in exp_groups]
     return "_".join("".join(sorted(list(set(i)))) for i in zip(*split_names))
-
-
-def get_per_src_basename(per_adapter, topN, df=None, exp_groups=None):
-    basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    exp_group = (
-        get_name_from_df(df) if df is not None else get_name_from_exp_groups(exp_groups)
-    )
-    return f"{exp_group}_top{topN}_{basename}"
-
-
-def get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups):
-    basename = get_per_src_basename(per_adapter, topN, exp_groups=exp_groups)
-    filename = os.path.join(exp_folder, basename)
-    return read_df(exp_folder, filename)
 
 
 def read_df(exp_folder, filename):
