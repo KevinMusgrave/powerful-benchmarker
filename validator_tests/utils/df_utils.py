@@ -6,10 +6,7 @@ import pandas as pd
 
 from powerful_benchmarker.utils.utils import create_exp_group_name
 
-from .constants import (
-    ALL_DFS_FILENAME,
-    PROCESSED_DF_FILENAME,
-)
+from .constants import ALL_DFS_FILENAME, PROCESSED_DF_FILENAME
 from .utils import dict_to_str, validator_str
 
 SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
