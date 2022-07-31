@@ -4,9 +4,9 @@ from latex.correlation_src_threshold import (
     interval_fn_wrapper,
     operation_fn_wrapper,
 )
-from latex.predicted_best_acc import get_preprocess_df, max_value_fn, min_value_fn
-from latex.predicted_best_acc_single_adapter import caption_hook, postprocess_df
 from latex.table_creator import table_creator
+from latex.trndcg import get_preprocess_df, max_value_fn, min_value_fn
+from latex.trndcg_single_adapter import caption_hook, postprocess_df
 
 
 def correlation_src_threshold_single_adapter(args, threshold):

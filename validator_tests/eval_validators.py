@@ -18,7 +18,7 @@ def save_df(folder, df, per_adapter):
     filename = "trndcg"
     keep = ["validator", "validator_args", "task", "trndcg"]
     if per_adapter:
-        filename += "per_adapter"
+        filename += "_per_adapter"
         keep += ["adapter"]
     df = df[keep]
 

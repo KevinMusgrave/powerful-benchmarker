@@ -2,40 +2,27 @@ import argparse
 import sys
 
 sys.path.insert(0, ".")
-from latex.averaged_predicted_best_acc import averaged_predicted_best_acc
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
 from latex.correlation_src_threshold import correlation_src_threshold
 from latex.correlation_src_threshold_single_adapter import (
     correlation_src_threshold_single_adapter,
 )
-from latex.highest_src_threshold_possible import highest_src_threshold_possible
-from latex.predicted_best_acc import predicted_best_acc
-from latex.predicted_best_acc_single_adapter import predicted_best_acc_single_adapter
+from latex.trndcg import trndcg
+from latex.trndcg_single_adapter import trndcg_single_adapter
 from validator_tests.utils.constants import add_exp_group_args
 
 
 def main(args):
-    highest_src_threshold_possible(args, topN_per_adapter=100)
-    for topN in [1, 10, 100]:
-        best_accuracy_per_adapter(args, topN=topN)
+    # best_accuracy_per_adapter(args, topN=topN)
 
-    for threshold in [0, 0.5]:
-        for per_adapter in [False, True]:
-            correlation_src_threshold(
-                args, threshold=threshold, per_adapter=per_adapter
-            )
-            correlation_src_threshold_single_adapter(args, threshold=threshold)
-            topN_bounds = [1, 10, 100] if per_adapter else [1, 10, 100, 1000]
-            averaged_predicted_best_acc(
-                args, topN_bounds, threshold, per_adapter=per_adapter
-            )
-
-            for topN in topN_bounds:
-                predicted_best_acc(
-                    args, topN=topN, threshold=threshold, per_adapter=per_adapter
-                )
-                if per_adapter:
-                    predicted_best_acc_single_adapter(args, topN, threshold)
+    for per_adapter in [False, True]:
+        # correlation_src_threshold(
+        #     args, threshold=threshold, per_adapter=per_adapter
+        # )
+        # correlation_src_threshold_single_adapter(args, threshold=threshold)
+        trndcg(args, per_adapter=per_adapter)
+        if per_adapter:
+            trndcg_single_adapter(args)
 
 
 if __name__ == "__main__":

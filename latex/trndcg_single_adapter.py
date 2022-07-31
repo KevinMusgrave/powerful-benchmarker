@@ -1,29 +1,15 @@
 import pandas as pd
 
 from latex import utils as latex_utils
-from latex.predicted_best_acc import (
+from latex.table_creator import table_creator
+from latex.trndcg import (
     get_caption,
     get_preprocess_df,
     interval_fn,
     max_value_fn,
     min_value_fn,
     operation_fn,
-    std_condition,
 )
-from latex.table_creator import table_creator
-
-
-def get_preprocess_df_wrapper(std=False):
-    fn2 = get_preprocess_df(per_adapter=True)
-
-    def fn(df):
-        for c in df.columns.levels[0]:
-            if std_condition(std, c):
-                df = df[c].reset_index()
-                break
-        return fn2(df)
-
-    return fn
 
 
 def postprocess_df(df):
@@ -47,8 +33,8 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
-def predicted_best_acc_single_adapter(args, topN, threshold):
-    basename = f"predicted_best_acc_top{topN}_per_adapter_{threshold}_src_threshold"
+def trndcg_single_adapter(args):
+    basename = f"trndcg_per_adapter"
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
@@ -59,7 +45,7 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
     }
 
     caption = get_caption(
-        topN, threshold, per_adapter=False, with_equation_ref=False, short_caption=True
+        per_adapter=False, with_equation_ref=False, short_caption=True
     )
 
     highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
@@ -69,7 +55,7 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
     table_creator(
         args,
         basename,
-        get_preprocess_df_wrapper(std=False),
+        get_preprocess_df(per_adapter=True),
         postprocess_df,
         color_map_tag_kwargs,
         add_resizebox=True,

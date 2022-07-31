@@ -1,6 +1,7 @@
 from latex import utils as latex_utils
 from latex.color_map_tags import absolute_value_greater_than, absolute_value_interval_fn
-from latex.predicted_best_acc import (
+from latex.table_creator import table_creator
+from latex.trndcg import (
     get_final_str_hook,
     get_highlight_max_subset,
     get_postprocess_df,
@@ -11,7 +12,6 @@ from latex.predicted_best_acc import (
     operation_fn,
     remove_whitespace_before_punctuation,
 )
-from latex.table_creator import table_creator
 
 
 def operation_fn_wrapper(lower_bound, column_name):
