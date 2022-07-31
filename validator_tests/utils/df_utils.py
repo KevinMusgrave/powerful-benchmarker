@@ -166,10 +166,6 @@ def is_nan_or_inf(df):
     return np.isnan(df) | np.isinf(df)
 
 
-def remove_nan_inf_scores(df):
-    return df[~is_nan_or_inf(df["score"])]
-
-
 def remove_arg(df, to_remove):
     x = json.loads(df["validator_args"])
     return dict_to_str({k: v for k, v in x.items() if k not in to_remove})
