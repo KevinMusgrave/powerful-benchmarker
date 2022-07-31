@@ -19,7 +19,8 @@ def tie_break_ndcg(scores, ranks, pow):
 
 
 # tied-rank normalized discounted cumulative gain
-def tr_ndcg_score(target_accuracies, validation_scores, pow):
+def trndcg_score(target_accuracies, validation_scores, pow):
+    assert len(target_accuracies) == len(validation_scores)
     target_accuracies = special_min_max_normalize(target_accuracies)
     sort_idx = np.argsort(validation_scores)[::-1]
     y = target_accuracies[sort_idx]

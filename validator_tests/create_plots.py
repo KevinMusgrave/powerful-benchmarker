@@ -8,7 +8,7 @@ from validator_tests.utils.constants import add_exp_group_args
 from validator_tests.utils.plot_val_vs_acc import plot_val_vs_acc
 
 
-def scatter(exp_folder, exp_groups, plots_folder, df, per_feature_layer):
+def scatter(plots_folder, df, per_feature_layer):
     kwargs = {}
     if args.scatter_no_color:
         kwargs["c"] = None
