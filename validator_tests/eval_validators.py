@@ -2,8 +2,10 @@ import argparse
 import os
 import sys
 
-sys.path.insert(0, ".")
 from pytorch_adapt.utils import common_functions as c_f
+from scipy.stats import spearmanr
+
+sys.path.insert(0, ".")
 
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
@@ -49,17 +51,15 @@ def group_by_task_validator(per_adapter):
     return ["validator", "validator_args"] + group_by_task(per_adapter)
 
 
-def get_weighted_spearman_score(output_folder, df, per_adapter):
+def get_correlation(output_folder, df, per_adapter, score_fn, name):
     new_df = df.groupby(group_by_task_validator(per_adapter))[
         [TARGET_ACCURACY, "score"]
-    ].apply(
-        lambda x: weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
-    )
-    new_df = new_df.reset_index(name="weighted_spearman")
+    ].apply(score_fn)
+    new_df = new_df.reset_index(name=name)
     df = assign_original_df_info(new_df, df)
 
-    filename = "weighted_spearman"
-    keep = ["validator", "validator_args", "task", "weighted_spearman"]
+    filename = name
+    keep = ["validator", "validator_args", "task", name]
     if per_adapter:
         filename += "_per_adapter"
         keep += ["adapter"]
@@ -72,6 +72,20 @@ def get_weighted_spearman_score(output_folder, df, per_adapter):
         to_save = to_save.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
 
     save_df(output_folder, df, to_save, filename)
+
+
+def get_weighted_spearman_score(output_folder, df, per_adapter):
+    def score_fn(x):
+        return weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
+
+    get_correlation(output_folder, df, per_adapter, score_fn, "weighted_spearman")
+
+
+def get_spearman_score(output_folder, df, per_adapter):
+    def score_fn(x):
+        return spearmanr(x[TARGET_ACCURACY].values, x["score"].values).correlation
+
+    get_correlation(output_folder, df, per_adapter, score_fn, "spearman")
 
 
 def get_best_accuracy_per_adapter(output_folder, df, nlargest):
@@ -107,6 +121,8 @@ def get_fn(args):
     def eval_validators(output_folder, df):
         get_weighted_spearman_score(output_folder, df, False)
         get_weighted_spearman_score(output_folder, df, True)
+        get_spearman_score(output_folder, df, False)
+        get_spearman_score(output_folder, df, True)
         get_best_accuracy_per_adapter(output_folder, df, args.nlargest)
 
     return eval_validators
