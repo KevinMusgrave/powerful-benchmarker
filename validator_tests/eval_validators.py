@@ -8,24 +8,17 @@ from pytorch_adapt.utils import common_functions as c_f
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
-from validator_tests.utils.df_utils import get_name_from_df, get_sorted_unique
+from validator_tests.utils.df_utils import (
+    add_task_column,
+    get_name_from_df,
+    get_sorted_unique,
+)
 from validator_tests.utils.weighted_spearman import weighted_spearman
 
 
-def save_df(folder, df, per_adapter):
-    folder = os.path.join(folder, get_name_from_df(df, assert_one_task=True))
+def save_df(folder, full_df, df, filename):
+    folder = os.path.join(folder, get_name_from_df(full_df, assert_one_task=True))
     c_f.makedir_if_not_there(folder)
-    filename = "weighted_spearman"
-    keep = ["validator", "validator_args", "task", "weighted_spearman"]
-    if per_adapter:
-        filename += "_per_adapter"
-        keep += ["adapter"]
-    df = df[keep]
-
-    if per_adapter:
-        df = df.pivot(index=["validator", "validator_args", "task"], columns="adapter")
-        df = df.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
-
     filename = os.path.join(folder, filename)
     df.to_csv(f"{filename}.csv", index=False)
     df.to_pickle(f"{filename}.pkl")
@@ -64,12 +57,56 @@ def get_weighted_spearman_score(output_folder, df, per_adapter):
     )
     new_df = new_df.reset_index(name="weighted_spearman")
     df = assign_original_df_info(new_df, df)
-    save_df(output_folder, df, per_adapter)
+
+    filename = "weighted_spearman"
+    keep = ["validator", "validator_args", "task", "weighted_spearman"]
+    if per_adapter:
+        filename += "_per_adapter"
+        keep += ["adapter"]
+    to_save = df[keep]
+
+    if per_adapter:
+        to_save = to_save.pivot(
+            index=["validator", "validator_args", "task"], columns="adapter"
+        )
+        to_save = to_save.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
+
+    save_df(output_folder, df, to_save, filename)
+
+
+def get_best_accuracy_per_adapter(output_folder, df, nlargest):
+    # Filtering by validator not actually necessary. I'm only doing it to remove duplicates
+    to_save = df[
+        (df["validator"] == "Accuracy")
+        & (df["validator_args"] == '{"average": "micro", "split": "target_train"}')
+    ]
+    groupby = group_by_task(per_adapter=True)
+    to_save = (
+        to_save.groupby(groupby + ["trial_num"])[TARGET_ACCURACY].max().reset_index()
+    )
+    ranked = to_save.groupby(groupby)[TARGET_ACCURACY].rank(
+        method="min", ascending=False
+    )
+    to_save = to_save[ranked <= nlargest]
+    to_save = to_save.groupby(groupby, as_index=False).agg(
+        {TARGET_ACCURACY: ["mean", "std"]}
+    )
+    to_save.columns = to_save.columns.map("".join)
+    to_save = to_save.rename(
+        columns={
+            f"{TARGET_ACCURACY}mean": TARGET_ACCURACY,
+            f"{TARGET_ACCURACY}std": f"{TARGET_ACCURACY}_std",
+        }
+    )
+    to_save = add_task_column(to_save)
+    to_save = to_save[["adapter", "task", TARGET_ACCURACY, f"{TARGET_ACCURACY}_std"]]
+    save_df(output_folder, df, to_save, "best_accuracy_per_adapter")
 
 
 def eval_validators(output_folder, df):
     get_weighted_spearman_score(output_folder, df, False)
     get_weighted_spearman_score(output_folder, df, True)
+    get_best_accuracy_per_adapter(output_folder, df, 5)
 
 
 if __name__ == "__main__":

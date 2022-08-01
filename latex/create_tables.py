@@ -13,7 +13,7 @@ from validator_tests.utils.constants import add_exp_group_args
 
 
 def main(args):
-    # best_accuracy_per_adapter(args, topN=topN)
+    best_accuracy_per_adapter(args)
 
     for per_adapter in [False, True]:
         # correlation_src_threshold(
