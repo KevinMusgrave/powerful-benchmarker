@@ -7,7 +7,7 @@ from pytorch_adapt.utils import common_functions as c_f
 sys.path.insert(0, ".")
 
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests.utils import create_main
+from validator_tests.utils import create_main, threshold_utils
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
 from validator_tests.utils.df_utils import (
     add_task_column,
@@ -50,7 +50,10 @@ def group_by_task_validator(per_adapter):
     return ["validator", "validator_args"] + group_by_task(per_adapter)
 
 
-def get_correlation(output_folder, df, per_adapter, score_fn, name):
+def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, name):
+    df = threshold_utils.filter_by_src_threshold(
+        df, src_threshold, filter_action="set_to_nan"
+    )
     new_df = df.groupby(group_by_task_validator(per_adapter))[
         [TARGET_ACCURACY, "score"]
     ].apply(score_fn)
@@ -73,18 +76,20 @@ def get_correlation(output_folder, df, per_adapter, score_fn, name):
     save_df(output_folder, df, to_save, filename)
 
 
-def get_weighted_spearman_score(output_folder, df, per_adapter):
+def get_weighted_spearman_score(output_folder, df, per_adapter, src_threshold):
     def score_fn(x):
         return weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
 
-    get_correlation(output_folder, df, per_adapter, score_fn, "weighted_spearman")
+    get_correlation(
+        output_folder, df, per_adapter, src_threshold, score_fn, "weighted_spearman"
+    )
 
 
-def get_spearman_score(output_folder, df, per_adapter):
+def get_spearman_score(output_folder, df, per_adapter, src_threshold):
     def score_fn(x):
         return spearman(x[TARGET_ACCURACY].values, x["score"].values)
 
-    get_correlation(output_folder, df, per_adapter, score_fn, "spearman")
+    get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, "spearman")
 
 
 def get_best_accuracy_per_adapter(output_folder, df, nlargest):
@@ -118,10 +123,10 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest):
 
 def get_fn(args):
     def eval_validators(output_folder, df):
-        get_weighted_spearman_score(output_folder, df, False)
-        get_weighted_spearman_score(output_folder, df, True)
-        get_spearman_score(output_folder, df, False)
-        get_spearman_score(output_folder, df, True)
+        get_weighted_spearman_score(output_folder, df, False, args.src_threshold)
+        get_weighted_spearman_score(output_folder, df, True, args.src_threshold)
+        get_spearman_score(output_folder, df, False, args.src_threshold)
+        get_spearman_score(output_folder, df, True, args.src_threshold)
         get_best_accuracy_per_adapter(output_folder, df, args.nlargest)
 
     return eval_validators
@@ -133,6 +138,7 @@ if __name__ == "__main__":
     add_exp_group_args(parser)
     parser.add_argument("--output_folder", type=str, default="tables")
     parser.add_argument("--nlargest", type=int, default=5)
+    parser.add_argument("--src_threshold", type=float, default=0)
     create_main.add_main_args(parser)
     args = parser.parse_args()
     create_main.main(args, get_fn(args), get_fn(args))
