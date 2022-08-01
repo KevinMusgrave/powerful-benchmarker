@@ -26,7 +26,7 @@ def correlation_bar_plot(args, per_adapter, name):
     assert "Std" not in dfm["variable"].values
     order = df.sort_values("Mean", ascending=False)["validator_as_str"].values
     xlabel = (
-        "Weighed Spearman Correlation"
+        "Weighted Spearman Correlation"
         if name == "weighted_spearman"
         else "Spearman Correlation"
     )

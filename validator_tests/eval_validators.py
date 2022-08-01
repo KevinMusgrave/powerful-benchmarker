@@ -3,7 +3,6 @@ import os
 import sys
 
 from pytorch_adapt.utils import common_functions as c_f
-from scipy.stats import spearmanr
 
 sys.path.insert(0, ".")
 
@@ -15,7 +14,7 @@ from validator_tests.utils.df_utils import (
     get_name_from_df,
     get_sorted_unique,
 )
-from validator_tests.utils.weighted_spearman import weighted_spearman
+from validator_tests.utils.weighted_spearman import spearman, weighted_spearman
 
 
 def save_df(folder, full_df, df, filename):
@@ -83,7 +82,7 @@ def get_weighted_spearman_score(output_folder, df, per_adapter):
 
 def get_spearman_score(output_folder, df, per_adapter):
     def score_fn(x):
-        return spearmanr(x[TARGET_ACCURACY].values, x["score"].values).correlation
+        return spearman(x[TARGET_ACCURACY].values, x["score"].values)
 
     get_correlation(output_folder, df, per_adapter, score_fn, "spearman")
 

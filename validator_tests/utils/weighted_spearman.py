@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import rankdata
+from scipy.stats import rankdata, spearmanr
 
 from .weighted_corr import WeightedCorr
 
@@ -8,6 +8,7 @@ from .weighted_corr import WeightedCorr
 def set_nan_inf_to_min(x):
     is_finite = np.isfinite(x)
     x[~is_finite] = np.min(x[is_finite])
+    return x
 
 
 def weighted_spearman(target_accuracies, validation_scores, pow):
@@ -24,3 +25,10 @@ def weighted_spearman(target_accuracies, validation_scores, pow):
         y=pd.Series(target_accuracies),
         w=pd.Series(weights),
     )(method="spearman")
+
+
+def spearman(target_accuracies, validation_scores):
+    return spearmanr(
+        target_accuracies,
+        set_nan_inf_to_min(validation_scores),
+    ).correlation
