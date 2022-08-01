@@ -44,9 +44,7 @@ def correlation_single_adapter(args, name):
         "operation_fn": operation_fn,
     }
 
-    caption = get_caption(
-        per_adapter=False, with_equation_ref=False, short_caption=True
-    )
+    caption = get_caption(per_adapter=False, short_caption=True)
 
     highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
         "Mean"

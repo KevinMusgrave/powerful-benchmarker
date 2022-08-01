@@ -89,23 +89,9 @@ def remove_whitespace_before_punctuation(x):
     return re.sub('\s+([?.!",](?:\s|$))', r"\1", x)
 
 
-def get_caption(per_adapter, with_equation_ref=True, short_caption=False):
-    equation_ref = ""
-    if with_equation_ref:
-        if per_adapter:
-            equation_ref = "(see equations \\ref{AverageTop20RTA_equation} and \\ref{RSVA_equation})"
-        else:
-            equation_ref = (
-                "(see equations \\ref{TopN_RTA_equation} and \\ref{RSVA_equation})"
-            )
-
-    if per_adapter:
-        caption = (
-            f"The Average Top RTA of each validator/algorithm pair {equation_ref}."
-        )
-    else:
-        caption = f"The Top RTA of each validator/task pair {equation_ref}."
-
+def get_caption(per_adapter, short_caption=False):
+    pair_str = "algorithm" if per_adapter else "task"
+    caption = f"The weighted Spearman correlation of each validator/{pair_str} pair."
     if not short_caption:
         mean_std_str = "algorithm" if per_adapter else "task"
         caption += (
