@@ -100,13 +100,16 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest):
     )
     to_save = add_task_column(to_save)
     to_save = to_save[["adapter", "task", TARGET_ACCURACY, f"{TARGET_ACCURACY}_std"]]
-    save_df(output_folder, df, to_save, "best_accuracy_per_adapter")
+    save_df(output_folder, df, to_save, f"best_accuracy_per_adapter_{nlargest}")
 
 
-def eval_validators(output_folder, df):
-    get_weighted_spearman_score(output_folder, df, False)
-    get_weighted_spearman_score(output_folder, df, True)
-    get_best_accuracy_per_adapter(output_folder, df, 5)
+def get_fn(args):
+    def eval_validators(output_folder, df):
+        get_weighted_spearman_score(output_folder, df, False)
+        get_weighted_spearman_score(output_folder, df, True)
+        get_best_accuracy_per_adapter(output_folder, df, args.nlargest)
+
+    return eval_validators
 
 
 if __name__ == "__main__":
@@ -114,6 +117,7 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
     parser.add_argument("--output_folder", type=str, default="tables")
+    parser.add_argument("--nlargest", type=int, default=5)
     create_main.add_main_args(parser)
     args = parser.parse_args()
-    create_main.main(args, eval_validators, eval_validators)
+    create_main.main(args, get_fn(args), get_fn(args))

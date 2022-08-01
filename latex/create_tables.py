@@ -30,5 +30,6 @@ if __name__ == "__main__":
     add_exp_group_args(parser)
     parser.add_argument("--input_folder", type=str, default="tables")
     parser.add_argument("--output_folder", type=str, default="tables_latex")
+    parser.add_argument("--nlargest", type=int, default=5)
     args = parser.parse_args()
     main(args)
