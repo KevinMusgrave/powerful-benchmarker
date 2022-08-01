@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, ".")
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
 from latex.correlation import correlation
+from latex.correlation_bar_plot import correlation_bar_plot
 from latex.correlation_single_adapter import correlation_single_adapter
 from validator_tests.utils.constants import add_exp_group_args
 
@@ -13,9 +14,10 @@ def main(args):
 
     for per_adapter in [False, True]:
         for name in ["weighted_spearman", "spearman"]:
-            correlation(args, per_adapter=per_adapter, name=name)
+            correlation(args, per_adapter, name)
+            correlation_bar_plot(args, per_adapter, name)
             if per_adapter:
-                correlation_single_adapter(args, name=name)
+                correlation_single_adapter(args, name)
 
 
 if __name__ == "__main__":
