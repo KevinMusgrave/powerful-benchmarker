@@ -21,6 +21,9 @@ def correlation_bar_plot(args, per_adapter, name):
     df = df.reset_index()
     new_col = df.apply(lambda x: f'{x["level_0"]}: {x["level_1"]}', axis=1)
     df = df.assign(validator_as_str=new_col).drop(columns=["level_0", "level_1"])
+    df["validator_as_str"] = df["validator_as_str"].str.replace(
+        "\\tau", "τ", regex=False
+    )
     dfm = df.drop(columns=["Mean", "Std"]).melt(id_vars=["validator_as_str"])
     assert "Mean" not in dfm["variable"].values
     assert "Std" not in dfm["variable"].values
