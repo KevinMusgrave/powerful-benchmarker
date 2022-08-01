@@ -117,9 +117,9 @@ def get_caption(per_adapter, with_equation_ref=True, short_caption=False):
     return remove_whitespace_before_punctuation(caption)
 
 
-def trndcg(args, per_adapter=False):
+def weighted_spearman(args, per_adapter=False):
     per_adapter_str = "_per_adapter" if per_adapter else ""
-    basename = f"trndcg{per_adapter_str}"
+    basename = f"weighted_spearman{per_adapter_str}"
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,

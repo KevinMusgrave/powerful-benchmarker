@@ -33,8 +33,8 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
-def trndcg_single_adapter(args):
-    basename = f"trndcg_per_adapter"
+def weighted_spearman_single_adapter(args):
+    basename = f"weighted_spearman_per_adapter"
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
