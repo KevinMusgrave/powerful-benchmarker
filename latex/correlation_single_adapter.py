@@ -1,8 +1,7 @@
 import pandas as pd
 
 from latex import utils as latex_utils
-from latex.table_creator import table_creator
-from latex.weighted_spearman import (
+from latex.correlation import (
     get_caption,
     get_preprocess_df,
     interval_fn,
@@ -10,6 +9,7 @@ from latex.weighted_spearman import (
     min_value_fn,
     operation_fn,
 )
+from latex.table_creator import table_creator
 
 
 def postprocess_df(df):
@@ -33,8 +33,8 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
-def weighted_spearman_single_adapter(args):
-    basename = f"weighted_spearman_per_adapter"
+def correlation_single_adapter(args, name):
+    basename = f"{name}_per_adapter"
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,

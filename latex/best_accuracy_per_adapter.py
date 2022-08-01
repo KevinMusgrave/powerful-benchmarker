@@ -21,15 +21,15 @@ def postprocess_df(df):
 
 
 def best_accuracy_per_adapter(args):
-    basename = f"best_accuracy_per_adapter_{args.nlargest}"
+    nlargest = args.nlargest
+    basename = f"best_accuracy_per_adapter_{nlargest}"
     min_value_fn = lambda x, _: x.loc["Source only"]
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
     }
     caption = (
-        "For each algorithm/task pair, we sorted model checkpoints by target accuracy, "
-        f"and each cell in this table is the average accuracy of the top checkpoints. "
+        f"The average of the top {nlargest} target domain accuracies per adapter/task pair. "
         "Green cells have an average accuracy greater than than the source-only model. "
         "A stronger green color indicates higher accuracy. The highest value per column is bolded."
     )
