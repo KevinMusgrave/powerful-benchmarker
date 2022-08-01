@@ -9,7 +9,7 @@ from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
 from validator_tests.utils.df_utils import get_name_from_df, get_sorted_unique
-from validator_tests.utils.trndcg import trndcg_score
+from validator_tests.utils.trndcg import weighted_spearman
 
 
 def save_df(folder, df, per_adapter):
@@ -59,7 +59,9 @@ def group_by_task_validator(per_adapter):
 def get_trndcg_score(output_folder, df, per_adapter):
     new_df = df.groupby(group_by_task_validator(per_adapter))[
         [TARGET_ACCURACY, "score"]
-    ].apply(lambda x: trndcg_score(x[TARGET_ACCURACY].values, x["score"].values, pow=1))
+    ].apply(
+        lambda x: weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
+    )
     new_df = new_df.reset_index(name="trndcg")
     df = assign_original_df_info(new_df, df)
     save_df(output_folder, df, per_adapter)
