@@ -1,7 +1,7 @@
 from latex import utils as latex_utils
 from latex.color_map_tags import absolute_value_greater_than, absolute_value_interval_fn
 from latex.table_creator import table_creator
-from latex.trndcg import (
+from latex.weighted_spearman import (
     get_final_str_hook,
     get_highlight_max_subset,
     get_postprocess_df,

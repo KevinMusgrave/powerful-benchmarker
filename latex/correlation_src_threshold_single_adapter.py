@@ -5,8 +5,8 @@ from latex.correlation_src_threshold import (
     operation_fn_wrapper,
 )
 from latex.table_creator import table_creator
-from latex.trndcg import get_preprocess_df, max_value_fn, min_value_fn
-from latex.trndcg_single_adapter import caption_hook, postprocess_df
+from latex.weighted_spearman import get_preprocess_df, max_value_fn, min_value_fn
+from latex.weighted_spearman_single_adapter import caption_hook, postprocess_df
 
 
 def correlation_src_threshold_single_adapter(args, threshold):

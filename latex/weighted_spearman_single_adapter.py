@@ -2,7 +2,7 @@ import pandas as pd
 
 from latex import utils as latex_utils
 from latex.table_creator import table_creator
-from latex.trndcg import (
+from latex.weighted_spearman import (
     get_caption,
     get_preprocess_df,
     interval_fn,

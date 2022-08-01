@@ -7,8 +7,8 @@ from latex.correlation_src_threshold import correlation_src_threshold
 from latex.correlation_src_threshold_single_adapter import (
     correlation_src_threshold_single_adapter,
 )
-from latex.trndcg import trndcg
-from latex.trndcg_single_adapter import trndcg_single_adapter
+from latex.weighted_spearman import weighted_spearman
+from latex.weighted_spearman_single_adapter import weighted_spearman_single_adapter
 from validator_tests.utils.constants import add_exp_group_args
 
 
@@ -20,9 +20,9 @@ def main(args):
         #     args, threshold=threshold, per_adapter=per_adapter
         # )
         # correlation_src_threshold_single_adapter(args, threshold=threshold)
-        trndcg(args, per_adapter=per_adapter)
+        weighted_spearman(args, per_adapter=per_adapter)
         if per_adapter:
-            trndcg_single_adapter(args)
+            weighted_spearman_single_adapter(args)
 
 
 if __name__ == "__main__":

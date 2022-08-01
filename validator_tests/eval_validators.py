@@ -9,14 +9,14 @@ from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
 from validator_tests.utils.df_utils import get_name_from_df, get_sorted_unique
-from validator_tests.utils.trndcg import weighted_spearman
+from validator_tests.utils.weighted_spearman import weighted_spearman
 
 
 def save_df(folder, df, per_adapter):
     folder = os.path.join(folder, get_name_from_df(df, assert_one_task=True))
     c_f.makedir_if_not_there(folder)
-    filename = "trndcg"
-    keep = ["validator", "validator_args", "task", "trndcg"]
+    filename = "weighted_spearman"
+    keep = ["validator", "validator_args", "task", "weighted_spearman"]
     if per_adapter:
         filename += "_per_adapter"
         keep += ["adapter"]
@@ -56,20 +56,20 @@ def group_by_task_validator(per_adapter):
     return ["validator", "validator_args"] + group_by_task(per_adapter)
 
 
-def get_trndcg_score(output_folder, df, per_adapter):
+def get_weighted_spearman_score(output_folder, df, per_adapter):
     new_df = df.groupby(group_by_task_validator(per_adapter))[
         [TARGET_ACCURACY, "score"]
     ].apply(
         lambda x: weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
     )
-    new_df = new_df.reset_index(name="trndcg")
+    new_df = new_df.reset_index(name="weighted_spearman")
     df = assign_original_df_info(new_df, df)
     save_df(output_folder, df, per_adapter)
 
 
 def eval_validators(output_folder, df):
-    get_trndcg_score(output_folder, df, False)
-    get_trndcg_score(output_folder, df, True)
+    get_weighted_spearman_score(output_folder, df, False)
+    get_weighted_spearman_score(output_folder, df, True)
 
 
 if __name__ == "__main__":
