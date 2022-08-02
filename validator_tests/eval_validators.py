@@ -51,7 +51,7 @@ def group_by_task_validator(per_adapter):
 
 
 def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, name):
-    if src_threshold != [0]:
+    if src_threshold is not None:
         raise ValueError("src_threshold is temporarily disabled")
     # df = threshold_utils.filter_by_src_threshold(
     #     df, src_threshold, filter_action="set_to_nan"
@@ -141,7 +141,7 @@ if __name__ == "__main__":
     add_exp_group_args(parser)
     parser.add_argument("--output_folder", type=str, default="tables")
     parser.add_argument("--nlargest", type=int, default=5)
-    parser.add_argument("--src_threshold", nargs="+", type=float, default=[0])
+    parser.add_argument("--src_threshold", nargs="+", type=float, default=None)
     create_main.add_main_args(parser)
     args = parser.parse_args()
     create_main.main(args, get_fn(args), get_fn(args))
