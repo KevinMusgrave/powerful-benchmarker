@@ -7,7 +7,7 @@ from latex.table_creator import table_creator
 def correlation_diffs(args, per_adapter, names, src_threshold):
     dfs = []
     for name in names:
-        basename = base_filename(name, True, src_threshold)
+        basename = base_filename(name, per_adapter, src_threshold)
 
         df, output_folder = table_creator(
             args,
