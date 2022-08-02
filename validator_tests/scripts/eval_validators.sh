@@ -8,6 +8,6 @@ exp_prefixes=("mnist_mnist_mnistm" "office31_amazon_dslr" "office31_amazon_webca
 
 for i in "${exp_prefixes[@]}"
 do
-    python simple_slurm.py --command "python validator_tests/eval_validators.py --run_combined --src_threshold 0 0.5" --all_in_one --exp_group_prefix $i --exp_group_excludes oracle \
+    python simple_slurm.py --command "python validator_tests/eval_validators.py --run_combined" --all_in_one --exp_group_prefix $i --exp_group_excludes oracle \
     --slurm_config_folder validator_tests --slurm_config mnist --job_name=eval_validators --cpus-per-task=4
 done

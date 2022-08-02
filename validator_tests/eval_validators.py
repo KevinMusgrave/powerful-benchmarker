@@ -7,7 +7,7 @@ from pytorch_adapt.utils import common_functions as c_f
 sys.path.insert(0, ".")
 
 from powerful_benchmarker.utils.constants import add_default_args
-from validator_tests.utils import create_main, threshold_utils
+from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
 from validator_tests.utils.df_utils import (
     add_task_column,
@@ -51,9 +51,11 @@ def group_by_task_validator(per_adapter):
 
 
 def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, name):
-    df = threshold_utils.filter_by_src_threshold(
-        df, src_threshold, filter_action="set_to_nan"
-    )
+    if src_threshold != [0]:
+        raise ValueError("src_threshold is temporarily disabled")
+    # df = threshold_utils.filter_by_src_threshold(
+    #     df, src_threshold, filter_action="set_to_nan"
+    # )
     new_df = df.groupby(group_by_task_validator(per_adapter))[
         [TARGET_ACCURACY, "score"]
     ].apply(score_fn)
