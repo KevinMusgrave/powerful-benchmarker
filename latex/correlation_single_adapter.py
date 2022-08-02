@@ -5,6 +5,7 @@ from latex.correlation import (
     base_filename,
     get_caption,
     get_highlight_max_subset,
+    get_highlight_min_subset,
     get_preprocess_df,
     interval_fn,
     max_value_fn,
@@ -49,6 +50,7 @@ def correlation_single_adapter(args, name, src_threshold):
     caption = get_caption(per_adapter=False, short_caption=True)
 
     highlight_max_subset = get_highlight_max_subset(per_adapter=False)
+    highlight_min_subset = get_highlight_min_subset()
 
     table_creator(
         args,
@@ -61,7 +63,7 @@ def correlation_single_adapter(args, name, src_threshold):
         caption=caption,
         highlight_min=True,
         highlight_max_subset=highlight_max_subset,
-        highlight_min_subset=["Std"],
+        highlight_min_subset=highlight_min_subset,
         final_str_hook=latex_utils.validator_final_str_hook,
         caption_hook=caption_hook,
         position="H",

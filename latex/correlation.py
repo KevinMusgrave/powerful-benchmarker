@@ -78,8 +78,18 @@ def get_highlight_max_subset(per_adapter):
                     set(df.columns.values)
                 )
             )
-        highlight_max_subset += ["Mean"]
+        if "Mean" in df.columns:
+            highlight_max_subset += ["Mean"]
         return highlight_max_subset
+
+    return fn
+
+
+def get_highlight_min_subset():
+    def fn(df):
+        if "Std" in df.columns:
+            return ["Std"]
+        return None
 
     return fn
 
@@ -128,6 +138,7 @@ def correlation(args, per_adapter, name, src_threshold):
 
     caption = get_caption(per_adapter)
     highlight_max_subset = get_highlight_max_subset(per_adapter)
+    highlight_min_subset = get_highlight_min_subset()
     final_str_hook = get_final_str_hook(per_adapter)
 
     table_creator(
@@ -141,6 +152,7 @@ def correlation(args, per_adapter, name, src_threshold):
         caption=caption,
         highlight_min=True,
         highlight_max_subset=highlight_max_subset,
-        highlight_min_subset=["Std"],
+        highlight_min_subset=highlight_min_subset,
         final_str_hook=final_str_hook,
+        position="H",
     )

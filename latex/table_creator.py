@@ -9,6 +9,12 @@ from validator_tests.utils import utils
 from validator_tests.utils.df_utils import get_name_from_exp_groups
 
 
+def maybe_set_to_null_fn(x):
+    if x is None:
+        return lambda _: None
+    return x
+
+
 def save_to_latex(
     df,
     folder,
@@ -22,6 +28,12 @@ def save_to_latex(
     final_str_hook=None,
     **kwargs,
 ):
+    if len(df.columns) == 3 and "Mean" in df.columns and "Std" in df.columns:
+        df = df.drop(columns=["Mean", "Std"])
+
+    highlight_max_subset = maybe_set_to_null_fn(highlight_max_subset)
+    highlight_min_subset = maybe_set_to_null_fn(highlight_min_subset)
+
     c_f.makedir_if_not_there(folder)
     tags_dict, color_map_tags = None, ""
     if color_map_tag_kwargs:
@@ -30,14 +42,12 @@ def save_to_latex(
 
     df_style = df.style
     if highlight_max:
-        if highlight_max_subset is None:
-            highlight_max_subset = lambda _: None
         df_style = df_style.highlight_max(
             subset=highlight_max_subset(df), props="textbf:--rwrap"
         )
     if highlight_min:
         df_style = df_style.highlight_min(
-            subset=highlight_min_subset, props="textbf:--rwrap"
+            subset=highlight_min_subset(df), props="textbf:--rwrap"
         )
     latex_str = df_style.format(
         tags_dict,
