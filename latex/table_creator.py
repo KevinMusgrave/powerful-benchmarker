@@ -76,6 +76,7 @@ def table_creator(
     add_resizebox=False,
     do_save_to_latex=True,
     caption_hook=None,
+    label_prefix=None,
     **kwargs,
 ):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
@@ -104,7 +105,7 @@ def table_creator(
                     curr_basename,
                     color_map_tag_kwargs,
                     add_resizebox,
-                    label=curr_basename,
+                    label=f"{label_prefix}{curr_basename}",
                     caption=caption,
                     **kwargs,
                 )
@@ -115,7 +116,7 @@ def table_creator(
                 basename,
                 color_map_tag_kwargs,
                 add_resizebox,
-                label=basename,
+                label=f"{label_prefix}{basename}",
                 **kwargs,
             )
     else:

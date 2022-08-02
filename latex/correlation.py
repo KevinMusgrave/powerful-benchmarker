@@ -125,6 +125,20 @@ def base_filename(name, per_adapter, src_threshold):
     return f"{name}_{src_threshold}_src_threshold{per_adapter_str}"
 
 
+def get_add_resizebox(args):
+    return args.exp_group_prefix != "mnist"
+
+
+def get_highlight_min(args):
+    return args.exp_group_prefix != "mnist"
+
+
+def get_label_prefix(args):
+    if args.exp_group_prefix:
+        return f"{args.exp_group_prefix}_"
+    return ""
+
+
 def correlation(args, per_adapter, name, src_threshold):
     basename = base_filename(name, per_adapter, src_threshold)
     color_map_tag_kwargs = {
@@ -147,12 +161,13 @@ def correlation(args, per_adapter, name, src_threshold):
         get_preprocess_df(per_adapter),
         get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
-        add_resizebox=True,
+        add_resizebox=get_add_resizebox(args),
         clines="skip-last;data",
         caption=caption,
-        highlight_min=True,
+        highlight_min=get_highlight_min(args),
         highlight_max_subset=highlight_max_subset,
         highlight_min_subset=highlight_min_subset,
         final_str_hook=final_str_hook,
         position="H",
+        label_prefix=get_label_prefix(args),
     )
