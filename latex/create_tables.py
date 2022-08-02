@@ -13,14 +13,15 @@ from validator_tests.utils.constants import add_exp_group_args
 def main(args):
     correlation_names = ["weighted_spearman", "spearman"]
     best_accuracy_per_adapter(args)
-    correlation_diffs(args, False, correlation_names)
+    correlation_diffs(args, False, correlation_names, 0.0)
 
-    for per_adapter in [False, True]:
-        for name in correlation_names:
-            correlation(args, per_adapter, name)
-            correlation_bar_plot(args, per_adapter, name)
-            if per_adapter:
-                correlation_single_adapter(args, name)
+    for src_threshold in [0.0, 0.5]:
+        for per_adapter in [False, True]:
+            for name in correlation_names:
+                correlation(args, per_adapter, name, src_threshold)
+                correlation_bar_plot(args, per_adapter, name, src_threshold)
+                if per_adapter:
+                    correlation_single_adapter(args, name, src_threshold)
 
 
 if __name__ == "__main__":

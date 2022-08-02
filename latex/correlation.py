@@ -103,9 +103,13 @@ def get_caption(per_adapter, short_caption=False):
     return remove_whitespace_before_punctuation(caption)
 
 
-def correlation(args, per_adapter, name):
+def base_filename(name, per_adapter, src_threshold):
     per_adapter_str = "_per_adapter" if per_adapter else ""
-    basename = f"{name}{per_adapter_str}"
+    return f"{name}_{src_threshold}_src_threshold{per_adapter_str}"
+
+
+def correlation(args, per_adapter, name, src_threshold):
+    basename = base_filename(name, per_adapter, src_threshold)
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,

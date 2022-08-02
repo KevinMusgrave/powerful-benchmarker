@@ -1,14 +1,13 @@
 import os
 
-from latex.correlation import get_postprocess_df, get_preprocess_df
+from latex.correlation import base_filename, get_postprocess_df, get_preprocess_df
 from latex.table_creator import table_creator
 
 
-def correlation_diffs(args, per_adapter, names):
+def correlation_diffs(args, per_adapter, names, src_threshold):
     dfs = []
     for name in names:
-        per_adapter_str = "_per_adapter" if per_adapter else ""
-        basename = f"{name}{per_adapter_str}"
+        basename = base_filename(name, True, src_threshold)
 
         df, output_folder = table_creator(
             args,

@@ -60,7 +60,7 @@ def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, nam
     new_df = new_df.reset_index(name=name)
     df = assign_original_df_info(new_df, df)
 
-    filename = name
+    filename = f"{name}_{src_threshold}_src_threshold"
     keep = ["validator", "validator_args", "task", name]
     if per_adapter:
         filename += "_per_adapter"
@@ -123,10 +123,11 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest):
 
 def get_fn(args):
     def eval_validators(output_folder, df):
-        get_weighted_spearman_score(output_folder, df, False, args.src_threshold)
-        get_weighted_spearman_score(output_folder, df, True, args.src_threshold)
-        get_spearman_score(output_folder, df, False, args.src_threshold)
-        get_spearman_score(output_folder, df, True, args.src_threshold)
+        for s in args.src_threshold:
+            get_weighted_spearman_score(output_folder, df, False, s)
+            get_weighted_spearman_score(output_folder, df, True, s)
+            get_spearman_score(output_folder, df, False, s)
+            get_spearman_score(output_folder, df, True, s)
         get_best_accuracy_per_adapter(output_folder, df, args.nlargest)
 
     return eval_validators
@@ -138,7 +139,7 @@ if __name__ == "__main__":
     add_exp_group_args(parser)
     parser.add_argument("--output_folder", type=str, default="tables")
     parser.add_argument("--nlargest", type=int, default=5)
-    parser.add_argument("--src_threshold", type=float, default=0)
+    parser.add_argument("--src_threshold", nargs="+", type=float, default=[0])
     create_main.add_main_args(parser)
     args = parser.parse_args()
     create_main.main(args, get_fn(args), get_fn(args))

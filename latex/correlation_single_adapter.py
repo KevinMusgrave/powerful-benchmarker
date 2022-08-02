@@ -2,6 +2,7 @@ import pandas as pd
 
 from latex import utils as latex_utils
 from latex.correlation import (
+    base_filename,
     get_caption,
     get_preprocess_df,
     interval_fn,
@@ -33,8 +34,8 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
-def correlation_single_adapter(args, name):
-    basename = f"{name}_per_adapter"
+def correlation_single_adapter(args, name, src_threshold):
+    basename = base_filename(name, True, src_threshold)
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,

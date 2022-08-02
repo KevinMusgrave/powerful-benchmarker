@@ -29,6 +29,13 @@ def unused_bnm_args():
     ]
 
 
+def unused_mmdperclass_args():
+    return [
+        '{"exponent": 0, "layer": "preds", "normalize": true, "split": "train"}',
+        '{"exponent": 0, "layer": "preds", "normalize": false, "split": "train"}',
+    ]
+
+
 def expected_num_validators():
     accuracy = 8
     entropy = 3
@@ -38,7 +45,7 @@ def expected_num_validators():
     class_ami = 8
     class_ss = 8
     mmd = 6
-    mmd_per_class = 6
+    mmd_per_class = 4
     bnm = 3
     return (
         accuracy
@@ -74,9 +81,19 @@ def filter_validators(df):
             ]
         )
     ]
-    return df[
+
+    df = df[
         ~((df["validator"] == "BNM") & (df["validator_args"].isin(unused_bnm_args())))
     ]
+
+    df = df[
+        ~(
+            (df["validator"] == "MMDPerClass")
+            & (df["validator_args"].isin(unused_mmdperclass_args()))
+        )
+    ]
+
+    return df
 
 
 def keep_common_experiments(df):
