@@ -30,8 +30,10 @@ def save_to_latex(
 
     df_style = df.style
     if highlight_max:
+        if highlight_max_subset is None:
+            highlight_max_subset = lambda _: None
         df_style = df_style.highlight_max(
-            subset=highlight_max_subset, props="textbf:--rwrap"
+            subset=highlight_max_subset(df), props="textbf:--rwrap"
         )
     if highlight_min:
         df_style = df_style.highlight_min(

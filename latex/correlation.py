@@ -69,12 +69,19 @@ def max_value_fn(curr_df, column_name):
 
 
 def get_highlight_max_subset(per_adapter):
-    if per_adapter:
-        highlight_max_subset = latex_utils.adapter_names()
-    else:
-        highlight_max_subset = list(latex_utils.shortened_task_name_dict().values())
-    highlight_max_subset += ["Mean"]
-    return highlight_max_subset
+    def fn(df):
+        if per_adapter:
+            highlight_max_subset = latex_utils.adapter_names()
+        else:
+            highlight_max_subset = list(
+                set(latex_utils.shortened_task_name_dict().values()).intersection(
+                    set(df.columns.values)
+                )
+            )
+        highlight_max_subset += ["Mean"]
+        return highlight_max_subset
+
+    return fn
 
 
 def get_final_str_hook(per_adapter):

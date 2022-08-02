@@ -4,6 +4,7 @@ from latex import utils as latex_utils
 from latex.correlation import (
     base_filename,
     get_caption,
+    get_highlight_max_subset,
     get_preprocess_df,
     interval_fn,
     max_value_fn,
@@ -47,9 +48,7 @@ def correlation_single_adapter(args, name, src_threshold):
 
     caption = get_caption(per_adapter=False, short_caption=True)
 
-    highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
-        "Mean"
-    ]
+    highlight_max_subset = get_highlight_max_subset(per_adapter=False)
 
     table_creator(
         args,
