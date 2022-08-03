@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import rankdata, spearmanr
-
-from .weighted_corr import WeightedCorr
+from WeightedCorr import WeightedCorr
 
 
 def set_nan_inf_to_min(x):
