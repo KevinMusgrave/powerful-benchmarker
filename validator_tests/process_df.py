@@ -2,16 +2,10 @@ import argparse
 import os
 import sys
 
-import numpy as np
-
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import derive, utils
-from validator_tests.utils.constants import (
-    EXPECTED_NUMBER_OF_CHECKPOINTS,
-    PROCESSED_DF_FILENAME,
-    add_exp_group_args,
-)
+from validator_tests.utils.constants import PROCESSED_DF_FILENAME, add_exp_group_args
 from validator_tests.utils.df_utils import (
     add_task_column,
     all_acc_score_column_names,
@@ -21,13 +15,54 @@ from validator_tests.utils.df_utils import (
     exp_specific_columns,
     get_all_acc,
     get_all_dfs,
-    print_validators_with_nan,
-    remove_nan_inf_scores,
 )
 
 
+def unused_bnm_args():
+    return [
+        '{"layer": "features", "split": "src_train"}',
+        '{"layer": "features", "split": "src_val"}',
+        '{"layer": "features", "split": "target_train"}',
+        '{"layer": "preds", "split": "src_train"}',
+        '{"layer": "preds", "split": "src_val"}',
+        '{"layer": "preds", "split": "target_train"}',
+    ]
+
+
+def unused_mmdperclass_args():
+    return [
+        '{"exponent": 0, "layer": "preds", "normalize": true, "split": "train"}',
+        '{"exponent": 0, "layer": "preds", "normalize": false, "split": "train"}',
+    ]
+
+
+def expected_num_validators():
+    accuracy = 8
+    entropy = 3
+    diversity = 3
+    dev_binary = 9
+    snd = 12
+    class_ami = 8
+    class_ss = 8
+    mmd = 6
+    mmd_per_class = 4
+    bnm = 3
+    return (
+        accuracy
+        + entropy
+        + diversity
+        + dev_binary
+        + snd
+        + class_ami
+        + class_ss
+        + mmd
+        + mmd_per_class
+        + bnm
+    )
+
+
 def filter_validators(df):
-    return df[
+    df = df[
         df["validator"].isin(
             [
                 "Accuracy",
@@ -47,35 +82,46 @@ def filter_validators(df):
         )
     ]
 
+    df = df[
+        ~((df["validator"] == "BNM") & (df["validator_args"].isin(unused_bnm_args())))
+    ]
 
-def process_acc_validator(df, detailed_warnings):
-    v_keys = ["validator", "validator_args"]
-    sizes_before = df.groupby(v_keys).size().reset_index(name="before")
-    accs = get_all_acc(df)
-    df = df.merge(accs, on=exp_specific_columns(df, all_acc_score_column_names()))
-    assert_acc_rows_are_correct(df)
-    sizes_after = df.groupby(v_keys).size().reset_index(name="after")
-    sizes_before = sizes_before.merge(sizes_after, on=v_keys)
-    mismatch_mask = sizes_before["before"] != sizes_before["after"]
-    greater_than_mask = sizes_before["before"] < sizes_before["after"]
-    if np.sum(mismatch_mask) > 0:
-        print("WARNING: sizes before and after don't match in process_acc_validator")
-        if detailed_warnings:
-            print(sizes_before[mismatch_mask])
-    if np.sum(greater_than_mask) > 0:
-        raise ValueError("sizes after has values greater than sizes before")
+    df = df[
+        ~(
+            (df["validator"] == "MMDPerClass")
+            & (df["validator_args"].isin(unused_mmdperclass_args()))
+        )
+    ]
+
     return df
 
 
-def warn_unfinished_validators(df, detailed_warnings):
-    num_done = df.groupby(["validator", "validator_args"]).size()
-    num_done = num_done[num_done != EXPECTED_NUMBER_OF_CHECKPOINTS]
-    if len(num_done) > 0:
-        print(
-            f"WARNING: there are {len(num_done)} validators with less/more entries than expected"
-        )
-        if detailed_warnings:
-            print(num_done)
+def keep_common_experiments(df):
+    groupby = ["dataset", "adapter", "exp_name", "trial_num", "trial_params", "epoch"]
+    size_per_exp = df.groupby(groupby).size()
+    size_per_exp = size_per_exp[size_per_exp == expected_num_validators()].reset_index()
+    keep = True
+    for g in groupby:
+        keep &= df[g].isin(size_per_exp[g])
+    return df[keep]
+
+
+def process_acc_validator(df):
+    accs = get_all_acc(df)
+    df = df.merge(accs, on=exp_specific_columns(df, all_acc_score_column_names()))
+    assert_acc_rows_are_correct(df)
+    return df
+
+
+def assert_all_same_size(df):
+    size_per_validator = df.groupby(["validator", "validator_args"]).size()
+    unique_sizes = size_per_validator.unique()
+    if len(unique_sizes) != 1:
+        print("error: all validators should have same number of elements")
+        for x in unique_sizes:
+            print(f"\nvalidators with size={x}")
+            print(size_per_validator[size_per_validator == x])
+        raise ValueError
 
 
 def process_df(args, exp_group):
@@ -96,8 +142,11 @@ def process_df(args, exp_group):
     print("filtering validators")
     df = filter_validators(df)
 
+    print("keep common experiments")
+    df = keep_common_experiments(df)
+
     print("processing accuracies")
-    df = process_acc_validator(df, args.detailed_warnings)
+    df = process_acc_validator(df)
     if len(df) == 0:
         print("accuracies have not been computed yet. Exiting")
         return
@@ -107,11 +156,7 @@ def process_df(args, exp_group):
 
     print("adding derived scores")
     df = derive.add_derived_scores(df)
-
-    print("finding unfinished validators")
-    warn_unfinished_validators(df, args.detailed_warnings)
-    df = remove_nan_inf_scores(df)
-    print_validators_with_nan(df, assert_none=True)
+    assert_all_same_size(df)
 
     print(f"saving df to {filename}")
     df.to_pickle(filename)
@@ -127,6 +172,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
-    parser.add_argument("--detailed_warnings", action="store_true")
     args = parser.parse_args()
     main(args)

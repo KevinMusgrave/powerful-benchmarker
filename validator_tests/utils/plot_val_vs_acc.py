@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 
-from powerful_benchmarker.utils.score_utils import pretrained_src_accuracy
-
-from . import df_utils, threshold_utils
+from . import threshold_utils
 from .constants import TARGET_ACCURACY
 from .plot_utils import plot_loop
 
@@ -109,10 +107,9 @@ def plot_val_vs_acc(
 
     filename_suffix = ""
     if src_threshold is not None:
-        dataset = df_utils.get_sorted_unique(df, "dataset", assert_one=True)[0]
-        src_domains = df_utils.get_sorted_unique(df, "src_domains", assert_one=True)[0]
-        min_acc = pretrained_src_accuracy(dataset, src_domains, "val", "micro")
-        df = threshold_utils.filter_by_acc(df, min_acc * src_threshold, "src")
+        df = threshold_utils.filter_by_src_threshold(
+            df, src_threshold, filter_action="remove"
+        )
         filename_suffix = f"{src_threshold}_src_threshold"
 
     plot_loop(

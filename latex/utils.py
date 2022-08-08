@@ -248,10 +248,19 @@ def rename_specific_validator_args(df):
     ] = "DEVN"
 
 
+def rename_ClassSS_args(df):
+    df.loc[df["validator"] == "ClassSS", "validator_args"] = df[
+        df["validator"] == "ClassSS"
+    ]["validator_args"].str.replace(
+        ", L2 Normalized", ""
+    )  # All ClassSS are all L2 normalized
+
+
 def rename_validator_args(df):
     df.validator_args.replace(to_replace=pretty_validator_args_dict(), inplace=True)
     rename_specific_validator_args(df)
     df.validator.replace(to_replace=pretty_validator_dict(), inplace=True)
+    rename_ClassSS_args(df)
     return df
 
 
