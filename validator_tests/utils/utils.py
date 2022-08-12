@@ -26,7 +26,7 @@ def get_condition_fn(validator_name, validator_args_str, trial_range):
                 if len(df) > 0:
                     return False
                 return True
-            except:  # in case it's corrupted or something
+            except Exception:  # in case it's corrupted or something
                 return True
         if trial_range_specified and iteration not in trial_range:
             return False

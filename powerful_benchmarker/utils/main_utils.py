@@ -170,12 +170,12 @@ def plot_visualizations(plot_path):
     def return_func(study, frozen_trial):
         try:
             fig = optuna.visualization.plot_contour(study)
-            fig.write_html(os.path.join(plot_path, f"contour_plot.html"))
+            fig.write_html(os.path.join(plot_path, "contour_plot.html"))
             fig = optuna.visualization.plot_parallel_coordinate(study)
-            fig.write_html(os.path.join(plot_path, f"parallel_coordinate.html"))
+            fig.write_html(os.path.join(plot_path, "parallel_coordinate.html"))
             fig = optuna.visualization.plot_param_importances(study)
-            fig.write_html(os.path.join(plot_path, f"importances.html"))
-        except:
+            fig.write_html(os.path.join(plot_path, "importances.html"))
+        except Exception:
             pass
 
     return return_func

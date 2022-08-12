@@ -103,7 +103,7 @@ def get_final_str_hook(per_adapter):
 
 
 def remove_whitespace_before_punctuation(x):
-    return re.sub('\s+([?.!",](?:\s|$))', r"\1", x)
+    return re.sub(r'\s+([?.!",](?:\s|$))', r"\1", x)
 
 
 def get_caption(per_adapter, short_caption=False):
