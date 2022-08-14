@@ -128,7 +128,7 @@ def get_adapter_datasets_etc(
     optimizers = configerer.get_optimizers(
         cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
     )
-    before_training_starts = configerer.get_before_training_starts_hook(cfg.optimizer)
+    before_training_starts = configerer.get_before_training_starts_hook()
 
     adapter = configerer.get_new_adapter(
         models,

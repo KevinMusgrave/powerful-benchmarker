@@ -27,7 +27,7 @@ class BaseConfig:
         else:
             raise TypeError
 
-    def get_before_training_starts_hook(self, optimizer):
+    def get_before_training_starts_hook(self):
         def before_training_starts(cls):
             def func(framework):
                 _, max_iters = framework.get_training_length()
