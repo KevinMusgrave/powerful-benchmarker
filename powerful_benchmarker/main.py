@@ -124,6 +124,7 @@ def get_adapter_datasets_etc(
         pretrain_on_src=cfg.pretrain_on_src,
         num_classes=num_classes,
         feature_layer=cfg.feature_layer,
+        multilabel=cfg.multilabel
     )
     optimizers = configerer.get_optimizers(
         cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
@@ -139,8 +140,6 @@ def get_adapter_datasets_etc(
         datasets=datasets,
     )
     logger = Logger(os.path.join(exp_path, "logs"))
-    if framework is None:
-        framework = Ignite
 
     if (len(trial.params) - num_fixed_params) > 5:
         raise ValueError("Should only optimize 5 hyperparams")
@@ -216,7 +215,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     if cfg.patience:
         early_stopper_kwargs = {"patience": cfg.patience}
 
-    best_score, best_epoch = adapter.run(
+    best_score, _ = adapter.run(
         datasets=datasets,
         dataloader_creator=dataloader_creator,
         max_epochs=cfg.max_epochs,

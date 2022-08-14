@@ -1,5 +1,9 @@
 import torch
-from pytorch_adapt.frameworks.ignite import IgnitePredsAsFeatures
+from pytorch_adapt.frameworks.ignite import (
+    Ignite,
+    IgniteMultiLabelClassification,
+    IgnitePredsAsFeatures,
+)
 from pytorch_adapt.layers import DoNothingOptimizer
 from pytorch_adapt.models import Discriminator
 from pytorch_adapt.models import pretrained as pretrained_module
@@ -80,6 +84,7 @@ class BaseConfig:
         pretrain_on_src,
         num_classes,
         feature_layer,
+        multilabel,
     ):
         self.num_classes = num_classes
         Gkwargs, Ckwargs = self.get_model_kwargs(dataset, pretrain_on_src, src_domains)
@@ -90,12 +95,14 @@ class BaseConfig:
 
         models = {"G": G, "C": C}
         models, self.feature_size, framework = self.set_feature_layer(
-            models, dataset, pretrain_on_src, feature_layer
+            models, dataset, pretrain_on_src, feature_layer, multilabel
         )
         models["D"] = Discriminator(in_size=self.feature_size, h=2048)
         return models, framework
 
-    def set_feature_layer(self, models, dataset, pretrain_on_src, feature_layer):
+    def set_feature_layer(
+        self, models, dataset, pretrain_on_src, feature_layer, multilabel
+    ):
         fc_out_feature_size = {
             "mnist": 1200,
             "domainnet": 2048,
@@ -103,10 +110,14 @@ class BaseConfig:
             "office31": 2048,
             "officehome": 2048,
         }[dataset]
-        framework = None
+        framework = IgniteMultiLabelClassification if multilabel else Ignite
         if pretrain_on_src or feature_layer == 0:
             return models, fc_out_feature_size, framework
         if feature_layer in [7, 8]:
+            if multilabel:
+                raise ValueError(
+                    "feature_layer in [7,8] and multilabel=True not currently supported"
+                )
             models["G"].fc = models["C"].net
             models["C"].net = torch.nn.Identity()
             if feature_layer == 8:
