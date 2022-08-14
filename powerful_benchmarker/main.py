@@ -99,7 +99,7 @@ def get_adapter_datasets_etc(
     num_classes = main_utils.num_classes(cfg.dataset)
 
     validator, checkpoint_fn = get_validator(
-        num_classes, cfg.validator_name, checkpoint_path, cfg.multilabel
+        num_classes, cfg.validator, checkpoint_path, cfg.multilabel
     )
 
     configerer = getattr(configs, cfg.adapter)(trial)

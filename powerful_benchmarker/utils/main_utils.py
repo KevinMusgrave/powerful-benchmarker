@@ -110,16 +110,14 @@ def get_stat_getter(num_classes, pretrain_on_src, multilabel):
         "src_val_macro",
         "src_val_micro",
     ]
-    src_validators = get_stat_getters_from_names(
-        validator_names, num_classes, multilabel
-    )
+    validators = get_stat_getters_from_names(validator_names, num_classes, multilabel)
     if not pretrain_on_src:
         validator_names = [x.replace("src_", "target_") for x in validator_names]
         target_validators = get_stat_getters_from_names(
             validator_names, num_classes, multilabel
         )
-        assert len(src_validators.keys() & target_validators.keys()) == 0
-    validators = {**src_validators, **target_validators}
+        assert len(validators.keys() & target_validators.keys()) == 0
+        validators.update(target_validators)
     for k, v in validators.items():
         assert len(v.required_data) == 1
         assert k.startswith(v.required_data[0].replace("with_labels", ""))
