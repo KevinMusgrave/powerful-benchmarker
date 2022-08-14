@@ -38,6 +38,7 @@ from .pretrainer_config import (
     MCCConfig,
     MinEntConfig,
     PretrainerConfig,
+    PretrainerMultiLabelConfig,
 )
 from .rtn_config import RTNConfig
 from .symnets_config import SymNetsConfig

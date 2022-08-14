@@ -66,7 +66,7 @@ class BaseConfig:
             if doing_uda:
                 Gkwargs["domain"] = src_domain
             Ckwargs = {"pretrained": doing_uda, "domain": src_domain}
-        elif dataset in ["office31", "officehome"]:
+        elif dataset in ["office31", "officehome", "voc_multilabel"]:
             Gkwargs = {"pretrained": True}
             Ckwargs = {"pretrained": doing_uda, "domain": src_domain}
         elif dataset == "mnist":
@@ -109,6 +109,7 @@ class BaseConfig:
             "domainnet126": 2048,
             "office31": 2048,
             "officehome": 2048,
+            "voc_multilabel": 2048,
         }[dataset]
         framework = IgniteMultiLabelClassification if multilabel else Ignite
         if pretrain_on_src or feature_layer == 0:

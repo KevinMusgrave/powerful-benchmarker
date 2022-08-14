@@ -1,5 +1,5 @@
 import torch
-from pytorch_adapt.adapters import Classifier, Finetuner
+from pytorch_adapt.adapters import Classifier, Finetuner, MultiLabelClassifier
 from pytorch_adapt.containers import Models, Optimizers
 from pytorch_adapt.hooks import (
     AFNHook,
@@ -45,6 +45,11 @@ class PretrainerConfig(BaseConfig):
     def save(self, folder):
         super().save(folder)
         main_utils.save_this_file(__file__, folder)
+
+
+class PretrainerMultiLabelConfig(PretrainerConfig):
+    def get_new_adapter(self, *args, **kwargs):
+        return MultiLabelClassifier(**self.get_adapter_kwargs(*args, **kwargs))
 
 
 class FinetunerConfig(PretrainerConfig):

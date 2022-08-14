@@ -261,7 +261,7 @@ def num_classes(dataset_name):
         "domainnet126": 126,
         "office31": 31,
         "officehome": 65,
-        "voc": 20,
+        "voc_multilabel": 20,
     }[dataset_name]
 
 
