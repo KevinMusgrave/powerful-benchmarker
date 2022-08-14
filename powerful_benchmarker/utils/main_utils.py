@@ -127,13 +127,20 @@ def get_stat_getter(num_classes, pretrain_on_src, multilabel):
 
 
 def get_val_hooks(
-    cfg, folder, logger, num_classes, pretrain_on_src, save_features_cls, multilabel
+    folder,
+    logger,
+    num_classes,
+    pretrain_on_src,
+    multilabel,
+    use_stat_getter,
+    save_features,
+    save_features_cls,
 ):
     hooks = []
-    if cfg.use_stat_getter:
+    if use_stat_getter:
         stat_getter = get_stat_getter(num_classes, pretrain_on_src, multilabel)
         hooks.append(IgniteValHookWrapper(stat_getter, logger=logger))
-    if cfg.save_features:
+    if save_features:
         hooks.append(save_features_cls(folder, logger))
     return hooks
 

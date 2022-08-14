@@ -74,7 +74,7 @@ def evaluate_best_model(cfg, exp_path):
             _,
             _,
             _,
-        ) = get_adapter_datasets_etc(cfg, exp_path, cfg.validator, [d], trial)
+        ) = get_adapter_datasets_etc(cfg, exp_path, [d], trial)
         adapter = framework(adapter, checkpoint_fn=checkpoint_fn)
         validator = validator.validator  # don't need ScoreHistory
         scores[d] = main_utils.evaluate(
@@ -89,7 +89,6 @@ def evaluate_best_model(cfg, exp_path):
 def get_adapter_datasets_etc(
     cfg,
     exp_path,
-    validator_name,
     target_domains,
     trial,
     num_fixed_params=0,
@@ -100,9 +99,7 @@ def get_adapter_datasets_etc(
     num_classes = main_utils.num_classes(cfg.dataset)
 
     validator, checkpoint_fn = get_validator(
-        num_classes,
-        validator_name,
-        checkpoint_path,
+        num_classes, cfg.validator_name, checkpoint_path, cfg.multilabel
     )
 
     configerer = getattr(configs, cfg.adapter)(trial)
@@ -184,7 +181,6 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     ) = get_adapter_datasets_etc(
         cfg,
         exp_path,
-        cfg.validator,
         cfg.target_domains,
         trial,
         num_fixed_params,
@@ -193,7 +189,14 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     save_features_cls = ignite_save_features.SaveFeatures
 
     val_hooks = main_utils.get_val_hooks(
-        cfg, exp_path, logger, num_classes, cfg.pretrain_on_src, save_features_cls
+        folder=exp_path,
+        logger=logger,
+        num_classes=num_classes,
+        pretrain_on_src=cfg.pretrain_on_src,
+        multilabel=cfg.multilabel,
+        use_stat_getter=cfg.use_stat_getter,
+        save_features=cfg.save_features,
+        save_features_cls=save_features_cls,
     )
 
     adapter = framework(
@@ -337,6 +340,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_startup_trials", type=int, default=10)
     parser.add_argument("--validator", type=str, default=None)
     parser.add_argument("--pretrain_on_src", action="store_true")
+    parser.add_argument("--multilabel", action="store_true")
     parser.add_argument("--evaluate", action="store_true")
     parser.add_argument("--num_reproduce", type=int, default=0)
     parser.add_argument("--feature_layer", type=int, default=0)
