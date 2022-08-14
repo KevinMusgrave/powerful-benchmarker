@@ -37,30 +37,6 @@ class SaveFeatures:
             write_nested_dict(hf, losses_dict, epoch, "losses")
 
 
-class SaveFeaturesATDOC(SaveFeatures):
-    def __init__(self, atdoc, **kwargs):
-        super().__init__(**kwargs)
-        self.atdoc = atdoc
-
-    def __call__(self, epoch, **collected_data):
-        super().__call__(epoch, **collected_data)
-        atdoc_dict = {
-            "target_train": {
-                "feat_memory": self.atdoc.labeler.feat_memory.cpu().numpy(),
-                "pred_memory": self.atdoc.labeler.pred_memory.cpu().numpy(),
-            }
-        }
-        with h5py.File(os.path.join(self.folder, "features.hdf5"), "a") as hf:
-            write_nested_dict(hf, atdoc_dict, epoch, "atdoc")
-
-
-def save_features_atdoc(atdoc):
-    def fn(folder, logger):
-        return SaveFeaturesATDOC(atdoc, folder=folder, logger=logger)
-
-    return fn
-
-
 def write_nested_dict(hf, d, epoch, series_name):
     for k1, v1 in d.items():
         grp = hf.create_group(f"{epoch}/{series_name}/{k1}")

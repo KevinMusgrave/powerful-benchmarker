@@ -13,6 +13,7 @@ from pytorch_adapt.datasets.getters import (
     get_mnist_mnistm,
     get_office31,
     get_officehome,
+    get_voc_multilabel,
 )
 from pytorch_adapt.frameworks.ignite import IgniteValHookWrapper
 from pytorch_adapt.utils import common_functions as c_f
@@ -86,40 +87,51 @@ def get_dataloader_creator(batch_size, num_workers):
     )
 
 
-def get_stat_getter(num_classes, pretrain_on_src):
-    validators = {
-        "src_train_macro": get_validator.src_accuracy(num_classes, split="train"),
-        "src_train_micro": get_validator.src_accuracy(
-            num_classes, average="micro", split="train"
-        ),
-        "src_val_macro": get_validator.src_accuracy(num_classes),
-        "src_val_micro": get_validator.src_accuracy(num_classes, average="micro"),
-    }
-    if not pretrain_on_src:
-        validators.update(
-            {
-                "target_train_macro": get_validator.target_accuracy(num_classes),
-                "target_train_micro": get_validator.target_accuracy(
-                    num_classes, average="micro"
-                ),
-                "target_val_macro": get_validator.target_accuracy(
-                    num_classes, split="val"
-                ),
-                "target_val_micro": get_validator.target_accuracy(
-                    num_classes, average="micro", split="val"
-                ),
-            }
+def get_stat_getters_from_names(names, num_classes, multilabel):
+    validators = {}
+    for vname in names:
+        domain, split, average = vname.split("_")
+        if domain == "src":
+            fn = get_validator.src_accuracy
+        elif domain == "target":
+            fn = get_validator.target_accuracy
+        else:
+            raise ValueError
+        validators[vname] = fn(
+            num_classes, split=split, average=average, multilabel=multilabel
         )
+    return validators
+
+
+def get_stat_getter(num_classes, pretrain_on_src, multilabel):
+    validator_names = [
+        "src_train_macro",
+        "src_train_micro",
+        "src_val_macro",
+        "src_val_micro",
+    ]
+    src_validators = get_stat_getters_from_names(
+        validator_names, num_classes, multilabel
+    )
+    if not pretrain_on_src:
+        validator_names = [x.replace("src_", "target_") for x in validator_names]
+        target_validators = get_stat_getters_from_names(
+            validator_names, num_classes, multilabel
+        )
+        assert len(src_validators.keys() & target_validators.keys()) == 0
+    validators = {**src_validators, **target_validators}
     for k, v in validators.items():
         assert len(v.required_data) == 1
         assert k.startswith(v.required_data[0].replace("with_labels", ""))
     return ScoreHistories(MultipleValidators(validators=validators))
 
 
-def get_val_hooks(cfg, folder, logger, num_classes, pretrain_on_src, save_features_cls):
+def get_val_hooks(
+    cfg, folder, logger, num_classes, pretrain_on_src, save_features_cls, multilabel
+):
     hooks = []
     if cfg.use_stat_getter:
-        stat_getter = get_stat_getter(num_classes, pretrain_on_src)
+        stat_getter = get_stat_getter(num_classes, pretrain_on_src, multilabel)
         hooks.append(IgniteValHookWrapper(stat_getter, logger=logger))
     if cfg.save_features:
         hooks.append(save_features_cls(folder, logger))
@@ -147,6 +159,7 @@ def get_datasets(
         "office31": get_office31,
         "officehome": get_officehome,
         "domainnet126": get_domainnet126,
+        "voc_multilabel": get_voc_multilabel,
     }[dataset]
     datasets = getter(
         src_domains,
@@ -243,6 +256,7 @@ def num_classes(dataset_name):
         "domainnet126": 126,
         "office31": 31,
         "officehome": 65,
+        "voc": 20,
     }[dataset_name]
 
 

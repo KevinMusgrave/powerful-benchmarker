@@ -191,8 +191,6 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     )
 
     save_features_cls = ignite_save_features.SaveFeatures
-    if cfg.adapter == "ATDOCConfig":
-        save_features_cls = ignite_save_features.save_features_atdoc(configerer.atdoc)
 
     val_hooks = main_utils.get_val_hooks(
         cfg, exp_path, logger, num_classes, cfg.pretrain_on_src, save_features_cls

@@ -122,7 +122,6 @@ class ATDOCConfig(ClassifierConfig):
         hook = ATDOCHook(dataset_size, self.feature_size, self.num_classes, k=k)
         hook.labeler.to(torch.device("cuda"))
         all_kwargs["hook_kwargs"]["post"] = [hook]
-        self.atdoc = hook  # for easy access by SaveFeaturesATDOC
         return all_kwargs
 
 
