@@ -28,7 +28,6 @@ import pytorch_adapt
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from optuna.trial import TrialState
-from pytorch_adapt.frameworks.ignite import Ignite
 from pytorch_adapt.frameworks.ignite import utils as ignite_utils
 from pytorch_adapt.utils import common_functions as c_f
 
@@ -124,7 +123,7 @@ def get_adapter_datasets_etc(
         pretrain_on_src=cfg.pretrain_on_src,
         num_classes=num_classes,
         feature_layer=cfg.feature_layer,
-        multilabel=cfg.multilabel
+        multilabel=cfg.multilabel,
     )
     optimizers = configerer.get_optimizers(
         cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
