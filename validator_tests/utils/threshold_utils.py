@@ -1,4 +1,4 @@
-from powerful_benchmarker.utils.score_utils import pretrained_src_accuracy
+from pytorch_adapt.models import pretrained_src_accuracy
 
 from . import df_utils
 

@@ -1,6 +1,6 @@
 import pandas as pd
+from pytorch_adapt.models import pretrained_target_accuracy
 
-from powerful_benchmarker.utils import score_utils
 from validator_tests.utils import df_utils
 
 
@@ -60,7 +60,7 @@ def add_source_only(df, accuracy_name):
     _, split, average = df_utils.accuracy_name_split(accuracy_name)
     tasks_split = [df_utils.task_name_split(x) for x in cols]
     src_only_accs = [
-        score_utils.pretrained_target_accuracy(
+        pretrained_target_accuracy(
             dataset, [src_domains], [target_domains], split, average
         )
         for dataset, src_domains, target_domains in tasks_split

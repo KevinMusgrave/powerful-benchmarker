@@ -1,5 +1,6 @@
 from pytorch_adapt.adapters import CDAN, CDANE
 from pytorch_adapt.containers import Misc, Models, Optimizers
+from pytorch_adapt.datasets import utils as dataset_utils
 from pytorch_adapt.inference import cdan_full_fn
 from pytorch_adapt.layers import RandomizedDotProduct
 from pytorch_adapt.weighters import MeanWeighter
@@ -10,7 +11,7 @@ from .base_config import BaseConfig
 
 class CDANConfig(BaseConfig):
     def get_models(self, dataset, *args, **kwargs):
-        num_classes = main_utils.num_classes(dataset)
+        num_classes = dataset_utils.num_classes(dataset)
         models, framework = super().get_models(dataset, *args, **kwargs)
         models["feature_combiner"] = RandomizedDotProduct(
             [self.feature_size, num_classes], self.feature_size

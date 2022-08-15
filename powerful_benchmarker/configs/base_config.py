@@ -7,6 +7,7 @@ from pytorch_adapt.frameworks.ignite import (
 from pytorch_adapt.layers import DoNothingOptimizer
 from pytorch_adapt.models import Discriminator
 from pytorch_adapt.models import pretrained as pretrained_module
+from pytorch_adapt.models.pretrained_scores import domain_len_assertion
 from pytorch_adapt.utils.common_functions import get_lr
 
 from ..utils import main_utils
@@ -59,7 +60,7 @@ class BaseConfig:
 
     def get_model_kwargs(self, dataset, pretrain_on_src, src_domains):
         # This is None if src_domains == []
-        src_domain = main_utils.domain_len_assertion(src_domains)
+        src_domain = domain_len_assertion(src_domains)
         doing_uda = not pretrain_on_src
         if dataset.startswith("domainnet"):
             Gkwargs = {"pretrained": True}

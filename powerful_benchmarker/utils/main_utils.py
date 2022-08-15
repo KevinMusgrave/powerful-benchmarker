@@ -252,22 +252,3 @@ def evaluate(adapter, datasets, validator, dataloader_creator):
             datasets, validator, dataloader_creator
         )
     return scores
-
-
-def num_classes(dataset_name):
-    return {
-        "mnist": 10,
-        "domainnet": 345,
-        "domainnet126": 126,
-        "office31": 31,
-        "officehome": 65,
-        "voc_multilabel": 20,
-    }[dataset_name]
-
-
-def domain_len_assertion(domain_list):
-    if len(domain_list) > 1:
-        raise ValueError("only 1 domain currently supported")
-    if len(domain_list) == 0:
-        return None
-    return domain_list[0]

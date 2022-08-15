@@ -28,6 +28,7 @@ import pytorch_adapt
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from optuna.trial import TrialState
+from pytorch_adapt.datasets import utils as dataset_utils
 from pytorch_adapt.frameworks.ignite import utils as ignite_utils
 from pytorch_adapt.utils import common_functions as c_f
 
@@ -95,7 +96,7 @@ def get_adapter_datasets_etc(
     if cfg.pretrain_on_src:
         assert cfg.feature_layer == 0
     checkpoint_path = os.path.join(exp_path, "checkpoints")
-    num_classes = main_utils.num_classes(cfg.dataset)
+    num_classes = dataset_utils.num_classes(cfg.dataset)
 
     validator, checkpoint_fn = get_validator(
         num_classes, cfg.validator, checkpoint_path, cfg.multilabel
