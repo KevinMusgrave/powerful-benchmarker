@@ -1,7 +1,5 @@
 import argparse
-import sys
 
-sys.path.insert(0, ".")
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
 from latex.correlation import correlation
 from latex.correlation_bar_plot import correlation_bar_plot

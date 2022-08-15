@@ -2,9 +2,6 @@ import argparse
 import glob
 import os
 import shutil
-import sys
-
-sys.path.insert(0, ".")
 
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils

@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import sys
 from functools import partialmethod
 
 from tqdm import tqdm
@@ -32,7 +31,6 @@ from pytorch_adapt.datasets import utils as dataset_utils
 from pytorch_adapt.frameworks.ignite import utils as ignite_utils
 from pytorch_adapt.utils import common_functions as c_f
 
-sys.path.insert(0, ".")
 from powerful_benchmarker import configs
 from powerful_benchmarker.utils import ignite_save_features, main_utils
 from powerful_benchmarker.utils.constants import (

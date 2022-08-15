@@ -2,13 +2,11 @@ import argparse
 import glob
 import json
 import os
-import sys
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
-sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import (
     BEST_TRIAL_FILENAME,
     JOBIDS_FILENAME,

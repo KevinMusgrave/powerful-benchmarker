@@ -3,13 +3,11 @@ import copy
 import math
 import os
 import subprocess
-import sys
 
 import numpy as np
 import submitit
 import torch
 
-sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from powerful_benchmarker.utils.utils import (
     append_jobid_to_file,

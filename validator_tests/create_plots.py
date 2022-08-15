@@ -1,7 +1,5 @@
 import argparse
-import sys
 
-sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import add_exp_group_args

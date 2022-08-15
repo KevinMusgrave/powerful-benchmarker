@@ -1,8 +1,6 @@
 import argparse
 import os
-import sys
 
-sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import derive, utils
 from validator_tests.utils.constants import PROCESSED_DF_FILENAME, add_exp_group_args
