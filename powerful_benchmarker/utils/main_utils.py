@@ -15,7 +15,10 @@ from pytorch_adapt.datasets.getters import (
     get_officehome,
     get_voc_multilabel,
 )
-from pytorch_adapt.frameworks.ignite import IgniteValHookWrapper
+from pytorch_adapt.frameworks.ignite import (
+    IgniteMultiLabelClassification,
+    IgniteValHookWrapper,
+)
 from pytorch_adapt.utils import common_functions as c_f
 from pytorch_adapt.validators import MultipleValidators, ScoreHistories
 
@@ -97,6 +100,8 @@ def get_stat_getters_from_names(names, num_classes, multilabel):
             fn = get_validator.target_accuracy
         else:
             raise ValueError
+        if multilabel:
+            vname = f"{vname}_multilabel"
         validators[vname] = fn(
             num_classes, split=split, average=average, multilabel=multilabel
         )
@@ -252,3 +257,24 @@ def evaluate(adapter, datasets, validator, dataloader_creator):
             datasets, validator, dataloader_creator
         )
     return scores
+
+
+def args_check(args):
+    if args.dataset in ["voc_multilabel"]:
+        if args.validator is not None and "multilabel" not in args.validator:
+            raise ValueError(
+                "If validator is specified for multilabel dataset, then a multilabel validator must be used."
+            )
+        if "MultiLabel" not in args.adapter:
+            raise ValueError(
+                "A MultiLabel adapter must be used for a multilabel dataset"
+            )
+        if not args.multilabel:
+            raise ValueError("--multilabel must be applied for multilabel datasets")
+
+
+def framework_check(adapter_name, framework):
+    if "MultiLabel" in adapter_name and framework is not IgniteMultiLabelClassification:
+        raise TypeError(
+            "framework must IgniteMultiLabelClassification when using MultiLabel adapter"
+        )

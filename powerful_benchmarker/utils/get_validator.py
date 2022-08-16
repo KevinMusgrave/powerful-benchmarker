@@ -31,22 +31,29 @@ def get_validator(
     num_classes,
     validator_name,
     checkpoint_path,
-    multilabel,
 ):
     if validator_name is None:
         return None, None
 
     if validator_name == "oracle":
         validator = target_accuracy(
-            num_classes, average="macro", split="train", multilabel=multilabel
+            num_classes, average="macro", split="train", multilabel=False
         )
     elif validator_name == "oracle_micro":
         validator = target_accuracy(
-            num_classes, average="micro", split="train", multilabel=multilabel
+            num_classes, average="micro", split="train", multilabel=False
         )
     elif validator_name == "src_accuracy":
         validator = src_accuracy(
-            num_classes, average="macro", split="val", multilabel=multilabel
+            num_classes, average="macro", split="val", multilabel=False
+        )
+    elif validator_name == "oracle_multilabel":
+        validator = target_accuracy(
+            num_classes, average="macro", split="train", multilabel=True
+        )
+    elif validator_name == "src_accuracy_multilabel":
+        validator = src_accuracy(
+            num_classes, average="macro", split="val", multilabel=True
         )
     else:
         raise ValueError

@@ -47,7 +47,8 @@ print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
 
 def evaluate_best_model(cfg, exp_path):
-    assert cfg.validator in ["oracle", "oracle_micro"]
+    assert cfg.src_domains == []
+    assert cfg.validator.startswith("oracle")
     original_exp_path = exp_path
     with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "r") as f:
         best_trial = json.load(f)
@@ -58,7 +59,14 @@ def evaluate_best_model(cfg, exp_path):
     ) as f:
         original_cfg = json.load(f)
 
-    for k in ["dataset", "adapter", "feature_layer", "pretrain_on_src", "pretrain_lr"]:
+    for k in [
+        "dataset",
+        "adapter",
+        "feature_layer",
+        "pretrain_on_src",
+        "pretrain_lr",
+        "multilabel",
+    ]:
         setattr(cfg, k, original_cfg[k])
     trial = optuna.trial.FixedTrial(original_cfg["trial_params"])
 
@@ -99,7 +107,7 @@ def get_adapter_datasets_etc(
     num_classes = dataset_utils.num_classes(cfg.dataset)
 
     validator, checkpoint_fn = get_validator(
-        num_classes, cfg.validator, checkpoint_path, cfg.multilabel
+        num_classes, cfg.validator, checkpoint_path
     )
 
     configerer = getattr(configs, cfg.adapter)(trial)
@@ -126,6 +134,9 @@ def get_adapter_datasets_etc(
         feature_layer=cfg.feature_layer,
         multilabel=cfg.multilabel,
     )
+
+    main_utils.framework_check(cfg.adapter, framework)
+
     optimizers = configerer.get_optimizers(
         cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
     )
@@ -353,4 +364,5 @@ if __name__ == "__main__":
     parser.add_argument("--check_initial_score", action="store_true")
     parser.add_argument("--use_full_inference", action="store_true")
     args = parser.parse_args()
+    main_utils.args_check(args)
     main(args)
