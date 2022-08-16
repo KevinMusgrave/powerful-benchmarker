@@ -1,9 +1,11 @@
 import argparse
 import glob
 import os
+import sys
 
 import pandas as pd
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import utils
 from validator_tests.utils.constants import (

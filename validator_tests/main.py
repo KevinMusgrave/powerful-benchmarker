@@ -2,6 +2,7 @@ import argparse
 import copy
 import logging
 import os
+import sys
 from functools import partialmethod
 
 logging.basicConfig()
@@ -10,8 +11,10 @@ logging.getLogger("pytorch-adapt").setLevel(logging.INFO)
 
 import pandas as pd
 import torch
-from pytorch_adapt.utils import common_functions as c_f
 from tqdm import tqdm
+
+sys.path.insert(0, ".")
+from pytorch_adapt.utils import common_functions as c_f
 
 from powerful_benchmarker.utils.constants import add_default_args
 from powerful_benchmarker.utils.utils import convert_unknown_args

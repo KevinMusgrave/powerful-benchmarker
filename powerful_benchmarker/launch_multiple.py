@@ -1,8 +1,10 @@
 import argparse
 import subprocess
+import sys
 
 import yaml
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.utils import get_yaml_config_path
 
 

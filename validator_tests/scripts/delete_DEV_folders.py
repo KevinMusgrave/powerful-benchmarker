@@ -2,7 +2,9 @@ import argparse
 import glob
 import os
 import shutil
+import sys
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils.constants import VALIDATOR_TESTS_FOLDER, add_exp_group_args
 from validator_tests.utils.utils import get_exp_groups

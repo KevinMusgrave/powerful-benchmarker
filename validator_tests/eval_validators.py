@@ -1,7 +1,10 @@
 import argparse
 import os
+import sys
 
 from pytorch_adapt.utils import common_functions as c_f
+
+sys.path.insert(0, ".")
 
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import create_main

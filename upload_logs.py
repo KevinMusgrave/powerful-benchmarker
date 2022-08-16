@@ -1,7 +1,9 @@
 import argparse
 import os
 import subprocess
+import sys
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import JOBIDS_FILENAME, add_default_args
 from validator_tests.utils.constants import JOBIDS_FILENAME as V_JOBSID_FILENAME
 

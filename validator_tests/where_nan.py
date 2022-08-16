@@ -1,11 +1,13 @@
 import argparse
 import json
 import os
+import sys
 
 import h5py
 import pandas as pd
 import torch
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests import configs
 from validator_tests.utils.constants import get_all_dfs

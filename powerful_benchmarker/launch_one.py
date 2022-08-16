@@ -1,11 +1,13 @@
 import argparse
 import os
 import subprocess
+import sys
 
 import submitit
 import torch
 import yaml
 
+sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import (
     BEST_TRIAL_FILENAME,
     JOBIDS_FILENAME,
