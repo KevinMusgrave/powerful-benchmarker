@@ -4,10 +4,40 @@ import string
 
 def main(cfg):
     base_string = """
-- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains painting
   - *A
   - *common
-- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains amazon
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains sketch
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
   - *A
   - *common
 """

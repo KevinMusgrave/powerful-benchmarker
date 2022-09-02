@@ -1,6 +1,0 @@
-dataset: officehome
-validator: oracle
-max_epochs: 200
-val_interval: 2
-patience: 20
-num_workers: 5
