@@ -19,6 +19,7 @@ from pytorch_adapt.frameworks.ignite import (
     IgniteMultiLabelClassification,
     IgniteValHookWrapper,
 )
+from pytorch_adapt.transforms.classification import get_timm_transform
 from pytorch_adapt.utils import common_functions as c_f
 from pytorch_adapt.validators import MultipleValidators, ScoreHistories
 
@@ -171,12 +172,18 @@ def get_datasets(
         "domainnet126": get_domainnet126,
         "voc_multilabel": get_voc_multilabel,
     }[dataset]
+
+    transform_getter = None
+    if dataset == "domainnet126" and pretrain_on_src:
+        transform_getter = get_timm_transform
+
     datasets = getter(
         src_domains,
         target_domains,
         folder,
         return_target_with_labels=True,
         download=download,
+        transform_getter=transform_getter,
     )
     c_f.LOGGER.debug(datasets)
     return datasets

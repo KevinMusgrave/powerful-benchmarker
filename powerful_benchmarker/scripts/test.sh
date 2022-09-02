@@ -1,10 +1,18 @@
-python powerful_benchmarker/main.py --exp_name test_experiment0 --dataset mnist \
---src_domains mnist --adapter PretrainerConfig \
---download_datasets --num_trials 2 \
---max_epochs 2 --pretrain_on_src --validator src_accuracy \
---use_stat_getter
+# python powerful_benchmarker/main.py --exp_name test_experiment0 --dataset voc_multilabel \
+# --src_domains voc --adapter PretrainerMultiLabelConfig \
+# --download_datasets --num_trials 2 \
+# --max_epochs 2 --pretrain_on_src --validator src_accuracy_multilabel \
+# --use_stat_getter --multilabel
 
-python powerful_benchmarker/main.py --exp_name test_experiment0 --target_domains mnist mnistm --evaluate --validator oracle
+# python powerful_benchmarker/main.py --exp_name test_experiment0 --target_domains voc clipart --evaluate --validator oracle_multilabel
+
+# python powerful_benchmarker/main.py --exp_name test_experiment0 --dataset mnist \
+# --src_domains mnist --adapter PretrainerConfig \
+# --download_datasets --num_trials 2 \
+# --max_epochs 2 --pretrain_on_src --validator src_accuracy \
+# --use_stat_getter
+
+# python powerful_benchmarker/main.py --exp_name test_experiment0 --target_domains mnist mnistm --evaluate --validator oracle
 
 # python powerful_benchmarker/main.py --exp_name test_experiment1 --dataset mnist \
 # --src_domains mnist --target_domains mnistm --adapter DANNConfig \
@@ -103,9 +111,9 @@ python powerful_benchmarker/main.py --exp_name test_experiment0 --target_domains
 #     python powerful_benchmarker/main.py \
 #     --exp_name ${exp_name} --dataset domainnet126 \
 #     --src_domains ${domain} --adapter PretrainerConfig \
-#     --num_trials 5 --batch_size 32 --num_workers 2 --n_startup_trials 5 \
+#     --num_trials 1 --batch_size 32 --num_workers 2 --n_startup_trials 5 \
 #     --max_epochs 100 --patience 10 --pretrain_on_src --validator src_accuracy \
-#     --optimizer SGD --pretrain_lr 0.01 --check_initial_score
+#     --optimizer SGD --pretrain_lr 0.01 --check_initial_score --download_datasets
 
 #     for validator in "oracle" "oracle_micro"
 #     do
@@ -114,3 +122,37 @@ python powerful_benchmarker/main.py --exp_name test_experiment0 --target_domains
 #     done
 
 # done
+
+
+
+python powerful_benchmarker/main.py --exp_name dann_test --dataset domainnet126 \
+--src_domains real --target_domains painting --adapter DANNConfig \
+--feature_layer 6 --max_epochs 2 --num_trials 1 --batch_size 16 \
+--save_features --use_full_inference --use_stat_getter
+
+
+
+# exp_name=pretrained_voc_multilabel_voc
+
+# python powerful_benchmarker/main.py \
+# --exp_name ${exp_name} --dataset voc_multilabel \
+# --src_domains voc --adapter PretrainerMultiLabelConfig \
+# --num_trials 1 --batch_size 32 --num_workers 2 --n_startup_trials 5 \
+# --max_epochs 100 --patience 10 --pretrain_on_src --validator src_accuracy_multilabel \
+# --optimizer SGD --pretrain_lr 0.01 --check_initial_score --multilabel
+
+# python powerful_benchmarker/main.py --exp_name ${exp_name} \
+# --target_domains voc clipart --evaluate --validator oracle_multilabel
+
+
+# exp_name=finetuned_voc_multilabel_voc
+
+# python powerful_benchmarker/main.py \
+# --exp_name ${exp_name} --dataset voc_multilabel \
+# --src_domains voc --adapter FinetunerMultiLabelConfig \
+# --num_trials 1 --batch_size 32 --num_workers 2 --n_startup_trials 5 \
+# --max_epochs 100 --patience 10 --pretrain_on_src --validator src_accuracy_multilabel \
+# --optimizer SGD --pretrain_lr 0.01 --check_initial_score --multilabel
+
+# python powerful_benchmarker/main.py --exp_name ${exp_name} \
+# --target_domains voc clipart --evaluate --validator oracle_multilabel

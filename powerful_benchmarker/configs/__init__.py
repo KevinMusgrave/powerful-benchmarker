@@ -33,6 +33,7 @@ from .pretrainer_config import (
     BNMConfig,
     BSPConfig,
     FinetunerConfig,
+    FinetunerMultiLabelConfig,
     IMConfig,
     ITLConfig,
     MCCConfig,
