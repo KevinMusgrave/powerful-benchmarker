@@ -1,0 +1,41 @@
+common: &common --group_configs fl6_adam_lr1 domainnet126 trial_run
+A: &A --config_names trial_run
+
+
+commands:
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains painting
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains sketch
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
+  - *A
+  - *common

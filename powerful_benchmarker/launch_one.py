@@ -103,6 +103,7 @@ def main(cfg, slurm_args):
     for i in [0, 1]:
         assert len(set(x[i] for x in exp_names)) == len(exp_names)
 
+    exp_names.append(("trial_run", "DANNConfig"))  # special name for testing
     exp_names = [(k, v) for k, v in exp_names if k in cfg.config_names]
 
     # make sure experiments are unique

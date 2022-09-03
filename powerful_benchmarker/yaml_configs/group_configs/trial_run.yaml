@@ -1,0 +1,9 @@
+num_trials: 1
+n_startup_trials: 1
+batch_size: 4
+max_epochs: 1
+val_interval: 1
+
+validator: oracle
+optimizer: DoNothing
+use_stat_getter: true

@@ -15,15 +15,13 @@ from pytorch_adapt.datasets.getters import (
     get_officehome,
     get_voc_multilabel,
 )
-from pytorch_adapt.frameworks.ignite import (
-    IgniteMultiLabelClassification,
-    IgniteValHookWrapper,
-)
+from pytorch_adapt.frameworks.ignite import IgniteMultiLabelClassification
 from pytorch_adapt.transforms.classification import get_timm_transform
 from pytorch_adapt.utils import common_functions as c_f
 from pytorch_adapt.validators import MultipleValidators, ScoreHistories
 
 from . import get_validator
+from .logger import IgniteValHookWrapperWithPrint
 
 
 def save_this_file(file_in, folder):
@@ -143,7 +141,7 @@ def get_val_hooks(
     hooks = []
     if use_stat_getter:
         stat_getter = get_stat_getter(num_classes, pretrain_on_src, multilabel)
-        hooks.append(IgniteValHookWrapper(stat_getter, logger=logger))
+        hooks.append(IgniteValHookWrapperWithPrint(stat_getter, logger=logger))
     if save_features:
         hooks.append(save_features_cls(folder, logger))
     return hooks

@@ -29,6 +29,8 @@ class BaseConfig:
             )
         elif optimizer == "Adam":
             return (torch.optim.Adam, {"lr": lr, "weight_decay": 1e-4})
+        elif optimizer == "DoNothing":
+            return (DoNothingOptimizer, {"lr": lr})
         else:
             raise TypeError
 
