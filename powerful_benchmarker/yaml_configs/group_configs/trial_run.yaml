@@ -1,0 +1,8 @@
+num_trials: 1
+n_startup_trials: 1
+max_epochs: 1
+batch_size: 4
+
+optimizer: DoNothing
+use_stat_getter: true
+check_initial_score: true

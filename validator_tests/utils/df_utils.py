@@ -6,12 +6,7 @@ import pandas as pd
 
 from powerful_benchmarker.utils.utils import create_exp_group_name
 
-from .constants import (
-    ALL_DFS_FILENAME,
-    PER_SRC_FILENAME,
-    PER_SRC_PER_ADAPTER_FILENAME,
-    PROCESSED_DF_FILENAME,
-)
+from .constants import ALL_DFS_FILENAME, PROCESSED_DF_FILENAME
 from .utils import dict_to_str, validator_str
 
 SPLIT_NAMES = ["src_train", "src_val", "target_train", "target_val"]
@@ -78,6 +73,8 @@ def assert_acc_rows_are_correct(df):
         for average in ["micro", "macro"]:
             curr = get_acc_rows(df, split, average)
             acc_column = curr[acc_score_column_name(split, average)]
+            if is_nan_or_inf(acc_column).any():
+                raise ValueError("NaN or inf found in accuracy rows")
             if not curr["score"].equals(acc_column):
                 raise ValueError("These columns should be equal")
             if acc_column.max() > 1:
@@ -160,9 +157,8 @@ def print_validators_with_nan(df, return_df=False, assert_none=False):
                 raise ValueError("There should be no scores with nan or inf")
 
 
-def remove_nan_inf_scores(df):
-    mask = np.isnan(df["score"]) | np.isinf(df["score"])
-    return df[~mask]
+def is_nan_or_inf(df):
+    return np.isnan(df) | np.isinf(df)
 
 
 def remove_arg(df, to_remove):
@@ -206,20 +202,6 @@ def get_name_from_df(df, assert_one_task=False):
 def get_name_from_exp_groups(exp_groups):
     split_names = [i.split("_") for i in exp_groups]
     return "_".join("".join(sorted(list(set(i)))) for i in zip(*split_names))
-
-
-def get_per_src_basename(per_adapter, topN, df=None, exp_groups=None):
-    basename = PER_SRC_PER_ADAPTER_FILENAME if per_adapter else PER_SRC_FILENAME
-    exp_group = (
-        get_name_from_df(df) if df is not None else get_name_from_exp_groups(exp_groups)
-    )
-    return f"{exp_group}_top{topN}_{basename}"
-
-
-def get_per_src_threshold_df(exp_folder, per_adapter, topN, exp_groups):
-    basename = get_per_src_basename(per_adapter, topN, exp_groups=exp_groups)
-    filename = os.path.join(exp_folder, basename)
-    return read_df(exp_folder, filename)
 
 
 def read_df(exp_folder, filename):

@@ -90,7 +90,9 @@ def get_count_fn(x):
     return fn
 
 
-def remove_completed_flags(flags, trial_ranges, exp_folder, exp_group, exp_name):
+def remove_completed_flags(
+    flags, trial_ranges, exp_folder, exp_group, exp_name, use_glob
+):
     print("removing completed flags")
     all_flags = []
     for f in flags:
@@ -102,8 +104,14 @@ def remove_completed_flags(flags, trial_ranges, exp_folder, exp_group, exp_name)
         f_copy = copy.deepcopy(f)
         validator_name = f_copy.pop("validator")
         trial_range = f_copy.pop("trial_range")
-        validator, _, exp_folders, condition_fn = get_validator_and_condition_fn(
-            validator_name, f_copy, trial_range, exp_folder, exp_group, exp_name
+        _, _, exp_folders, condition_fn = get_validator_and_condition_fn(
+            validator_name,
+            f_copy,
+            trial_range,
+            exp_folder,
+            exp_group,
+            exp_name,
+            use_glob,
         )
         count_list = []
         end_fn = get_count_fn(count_list)
@@ -128,10 +136,17 @@ def launcher(args, slurm_args, exp_groups):
             base_command = f"python validator_tests/main.py --exp_folder {args.exp_folder} --exp_group {exp_group} --exp_name {exp_name}"
             if args.skip_validator_errors:
                 base_command += " --skip_validator_errors"
+            if args.use_glob:
+                base_command += " --use_glob"
             flags = getattr(flags_module, args.flags)()
             trial_ranges = get_trial_ranges(args.trials_per_exp)
             flags = remove_completed_flags(
-                flags, trial_ranges, args.exp_folder, exp_group, exp_name
+                flags,
+                trial_ranges,
+                args.exp_folder,
+                exp_group,
+                exp_name,
+                args.use_glob,
             )
             flags = flags_to_strs(flags)
             commands = [f"{base_command} {x}" for x in flags]
@@ -165,6 +180,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp_per_slurm_job", type=int, required=True)
     parser.add_argument("--slurm_config", type=str, required=True)
     parser.add_argument("--skip_validator_errors", action="store_true")
+    parser.add_argument("--use_glob", action="store_true")
     parser.add_argument("--run", action="store_true")
     args, unknown_args = parser.parse_known_args()
     slurm_args = create_slurm_args(args, unknown_args, "validator_tests")

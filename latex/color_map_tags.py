@@ -75,7 +75,7 @@ def create_color_map_tags(
                     + f"pt\\cellcolor{{lime!{greenness}}}\\else"
                 )
                 ifdim_count += 1
-        curr_str += f"\\cellcolor{{lime!0}}"
+        curr_str += "\\cellcolor{lime!0}"
         curr_str += "\\fi" * ifdim_count
         curr_str += "#1}"
         output_strs.append(curr_str)

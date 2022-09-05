@@ -9,11 +9,6 @@ from latex.table_creator import table_creator
 from validator_tests.utils.utils import validator_args_delimited
 
 
-def std_condition(std, c):
-    endwith_std = c.endswith("_std")
-    return (std and endwith_std) or (not std and not endwith_std)
-
-
 def get_preprocess_df(per_adapter):
     def fn(df):
         df = latex_utils.filter_validators(df)
@@ -49,27 +44,6 @@ def get_postprocess_df(per_adapter):
     return fn
 
 
-def get_preprocess_df_wrapper(per_adapter, std=False):
-    fn2 = get_preprocess_df(per_adapter)
-
-    def fn(df):
-
-        if per_adapter:
-            for c in df.columns.levels[0]:
-                if std_condition(std, c):
-                    df = df[c].reset_index()
-                    break
-        else:
-            columns = []
-            for c in df.columns:
-                if (not c.startswith("predicted_best_acc")) or std_condition(std, c):
-                    columns.append(c)
-            df = df[columns]
-        return fn2(df)
-
-    return fn
-
-
 def interval_fn(min_value, max_value, num_steps, column_name):
     if column_name == "Std":
         return reverse_interval_fn(min_value, max_value, num_steps, column_name)
@@ -95,12 +69,29 @@ def max_value_fn(curr_df, column_name):
 
 
 def get_highlight_max_subset(per_adapter):
-    if per_adapter:
-        highlight_max_subset = latex_utils.adapter_names()
-    else:
-        highlight_max_subset = list(latex_utils.shortened_task_name_dict().values())
-    highlight_max_subset += ["Mean"]
-    return highlight_max_subset
+    def fn(df):
+        if per_adapter:
+            highlight_max_subset = latex_utils.adapter_names()
+        else:
+            highlight_max_subset = list(
+                set(latex_utils.shortened_task_name_dict().values()).intersection(
+                    set(df.columns.values)
+                )
+            )
+        if "Mean" in df.columns:
+            highlight_max_subset += ["Mean"]
+        return highlight_max_subset
+
+    return fn
+
+
+def get_highlight_min_subset():
+    def fn(df):
+        if "Std" in df.columns:
+            return ["Std"]
+        return None
+
+    return fn
 
 
 def get_final_str_hook(per_adapter):
@@ -112,31 +103,12 @@ def get_final_str_hook(per_adapter):
 
 
 def remove_whitespace_before_punctuation(x):
-    return re.sub('\s+([?.!",](?:\s|$))', r"\1", x)
+    return re.sub(r'\s+([?.!",](?:\s|$))', r"\1", x)
 
 
-def get_caption(
-    topN, threshold, per_adapter, with_equation_ref=True, short_caption=False
-):
-    threshold_str = int(threshold * 100)
-    equation_ref = ""
-    if threshold_str == 0:
-        threshold_phrase = f", without removing any checkpoints"
-    else:
-        threshold_phrase = f", after removing checkpoints with < {threshold_str}\% RSVA"
-    if with_equation_ref:
-        if per_adapter:
-            equation_ref = "(see equations \\ref{AverageTop20RTA_equation} and \\ref{RSVA_equation})"
-        else:
-            equation_ref = (
-                "(see equations \\ref{TopN_RTA_equation} and \\ref{RSVA_equation})"
-            )
-
-    if per_adapter:
-        caption = f"The Average Top {topN} RTA of each validator/algorithm pair {threshold_phrase} {equation_ref}."
-    else:
-        caption = f"The Top {topN} RTA of each validator/task pair {threshold_phrase} {equation_ref}."
-
+def get_caption(per_adapter, short_caption=False):
+    pair_str = "algorithm" if per_adapter else "task"
+    caption = f"The weighted Spearman correlation of each validator/{pair_str} pair."
     if not short_caption:
         mean_std_str = "algorithm" if per_adapter else "task"
         caption += (
@@ -148,11 +120,27 @@ def get_caption(
     return remove_whitespace_before_punctuation(caption)
 
 
-def predicted_best_acc(args, topN, threshold, per_adapter=False):
-    per_adapter_str = "per_adapter_" if per_adapter else ""
-    basename = (
-        f"predicted_best_acc_top{topN}_{per_adapter_str}{threshold}_src_threshold"
-    )
+def base_filename(name, per_adapter, src_threshold):
+    per_adapter_str = "_per_adapter" if per_adapter else ""
+    return f"{name}_{src_threshold}_src_threshold{per_adapter_str}"
+
+
+def get_add_resizebox(args):
+    return args.exp_group_prefix != "mnist"
+
+
+def get_highlight_min(args):
+    return args.exp_group_prefix != "mnist"
+
+
+def get_label_prefix(args):
+    if args.exp_group_prefix:
+        return f"{args.exp_group_prefix}_"
+    return ""
+
+
+def correlation(args, per_adapter, name, src_threshold):
+    basename = base_filename(name, per_adapter, src_threshold)
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
@@ -162,21 +150,24 @@ def predicted_best_acc(args, topN, threshold, per_adapter=False):
         "operation_fn": operation_fn,
     }
 
-    caption = get_caption(topN, threshold, per_adapter)
+    caption = get_caption(per_adapter)
     highlight_max_subset = get_highlight_max_subset(per_adapter)
+    highlight_min_subset = get_highlight_min_subset()
     final_str_hook = get_final_str_hook(per_adapter)
 
     table_creator(
         args,
         basename,
-        get_preprocess_df_wrapper(per_adapter),
+        get_preprocess_df(per_adapter),
         get_postprocess_df(per_adapter),
         color_map_tag_kwargs,
-        add_resizebox=True,
+        add_resizebox=get_add_resizebox(args),
         clines="skip-last;data",
         caption=caption,
-        highlight_min=True,
+        highlight_min=get_highlight_min(args),
         highlight_max_subset=highlight_max_subset,
-        highlight_min_subset=["Std"],
+        highlight_min_subset=highlight_min_subset,
         final_str_hook=final_str_hook,
+        position="H",
+        label_prefix=get_label_prefix(args),
     )

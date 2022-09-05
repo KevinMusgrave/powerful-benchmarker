@@ -1,6 +1,6 @@
 import pandas as pd
+from pytorch_adapt.models import pretrained_target_accuracy
 
-from powerful_benchmarker.utils import score_utils
 from validator_tests.utils import df_utils
 
 
@@ -60,7 +60,7 @@ def add_source_only(df, accuracy_name):
     _, split, average = df_utils.accuracy_name_split(accuracy_name)
     tasks_split = [df_utils.task_name_split(x) for x in cols]
     src_only_accs = [
-        score_utils.pretrained_target_accuracy(
+        pretrained_target_accuracy(
             dataset, [src_domains], [target_domains], split, average
         )
         for dataset, src_domains, target_domains in tasks_split
@@ -100,6 +100,10 @@ def validators_to_remove():
         "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_True",
         "ClassAMICentroidInit_layer_features_normalize_True_p_2.0_split_train_with_src_False",
         "ClassAMICentroidInit_layer_logits_normalize_True_p_2.0_split_train_with_src_False",
+        "ClassSSCentroidInit_layer_features_normalize_False_p_2.0_split_train_with_src_True",
+        "ClassSSCentroidInit_layer_logits_normalize_False_p_2.0_split_train_with_src_True",
+        "ClassSSCentroidInit_layer_features_normalize_False_p_2.0_split_train_with_src_False",
+        "ClassSSCentroidInit_layer_logits_normalize_False_p_2.0_split_train_with_src_False",
         "Diversity_split_src_train",
         "Diversity_split_src_val",
         "Diversity_split_target_train",
@@ -190,18 +194,18 @@ def pretty_validator_args_dict():
         "exponent 0 layer logits normalize True split train": "Logits, L2 Normalized",
         "exponent 0 layer preds normalize False split train": "Preds",
         "exponent 0 layer preds normalize True split train": "Preds, L2 Normalized",
-        "T 0.01 layer features split target train": "Features, \\tau=0.01",
-        "T 0.01 layer logits split target train": "Logits, \\tau=0.01",
-        "T 0.01 layer preds split target train": "Preds, \\tau=0.01",
-        "T 0.05 layer features split target train": "Features, \\tau=0.05",
-        "T 0.05 layer logits split target train": "Logits, \\tau=0.05",
-        "T 0.05 layer preds split target train": "Preds, \\tau=0.05",
-        "T 0.1 layer features split target train": "Features, \\tau=0.1",
-        "T 0.1 layer logits split target train": "Logits, \\tau=0.1",
-        "T 0.1 layer preds split target train": "Preds, \\tau=0.1",
-        "T 0.5 layer features split target train": "Features, \\tau=0.5",
-        "T 0.5 layer logits split target train": "Logits, \\tau=0.5",
-        "T 0.5 layer preds split target train": "Preds, \\tau=0.5",
+        "T 0.01 layer features split target train": "Features, $\\tau=0.01$",
+        "T 0.01 layer logits split target train": "Logits, $\\tau=0.01$",
+        "T 0.01 layer preds split target train": "Preds, $\\tau=0.01$",
+        "T 0.05 layer features split target train": "Features, $\\tau=0.05$",
+        "T 0.05 layer logits split target train": "Logits, $\\tau=0.05$",
+        "T 0.05 layer preds split target train": "Preds, $\\tau=0.05$",
+        "T 0.1 layer features split target train": "Features, $\\tau=0.1$",
+        "T 0.1 layer logits split target train": "Logits, $\\tau=0.1$",
+        "T 0.1 layer preds split target train": "Preds, $\\tau=0.1$",
+        "T 0.5 layer features split target train": "Features, $\\tau=0.5$",
+        "T 0.5 layer logits split target train": "Logits, $\\tau=0.5$",
+        "T 0.5 layer preds split target train": "Preds, $\\tau=0.5$",
     }
 
 
@@ -210,6 +214,7 @@ def pretty_validator_dict():
         "BNMSummed": "BNM",
         "BNMSummedSrcVal": "BNM",
         "ClassAMICentroidInit": "ClassAMI",
+        "ClassSSCentroidInit": "ClassSS",
         "DEVBinary": "DEV",
         "EntropySummed": "Entropy",
         "EntropySummedSrcVal": "Entropy",
@@ -243,10 +248,19 @@ def rename_specific_validator_args(df):
     ] = "DEVN"
 
 
+def rename_ClassSS_args(df):
+    df.loc[df["validator"] == "ClassSS", "validator_args"] = df[
+        df["validator"] == "ClassSS"
+    ]["validator_args"].str.replace(
+        ", L2 Normalized", ""
+    )  # All ClassSS are all L2 normalized
+
+
 def rename_validator_args(df):
     df.validator_args.replace(to_replace=pretty_validator_args_dict(), inplace=True)
     rename_specific_validator_args(df)
     df.validator.replace(to_replace=pretty_validator_dict(), inplace=True)
+    rename_ClassSS_args(df)
     return df
 
 

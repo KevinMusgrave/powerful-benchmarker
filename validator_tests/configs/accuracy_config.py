@@ -1,7 +1,6 @@
 import torch.nn.functional as F
+from pytorch_adapt.datasets import utils as dataset_utils
 from pytorch_adapt.validators import AccuracyValidator
-
-from powerful_benchmarker.utils.main_utils import num_classes
 
 from .base_config import BaseConfig, get_from_hdf5
 
@@ -16,7 +15,7 @@ class Accuracy(BaseConfig):
             key_map={self.split: "src_val"},
             torchmetric_kwargs={
                 "average": self.validator_args["average"],
-                "num_classes": num_classes(exp_config["dataset"]),
+                "num_classes": dataset_utils.num_classes(exp_config["dataset"]),
             },
         )
 

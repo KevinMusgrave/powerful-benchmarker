@@ -1,1 +1,1 @@
-python validator_tests/scripts/run.py --validators ClassSSCentroidInit DEVBinary --other_args "--exp_group_prefix mnist --exp_group_excludes oracle" --slurm_config mnist
+python validator_tests/scripts/run.py --other_args "--exp_group_prefix mnist --exp_group_excludes oracle" --slurm_config mnist

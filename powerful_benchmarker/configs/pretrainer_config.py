@@ -1,5 +1,10 @@
 import torch
-from pytorch_adapt.adapters import Classifier, Finetuner
+from pytorch_adapt.adapters import (
+    Classifier,
+    Finetuner,
+    MultiLabelClassifier,
+    MultiLabelFinetuner,
+)
 from pytorch_adapt.containers import Models, Optimizers
 from pytorch_adapt.hooks import (
     AFNHook,
@@ -47,9 +52,19 @@ class PretrainerConfig(BaseConfig):
         main_utils.save_this_file(__file__, folder)
 
 
+class PretrainerMultiLabelConfig(PretrainerConfig):
+    def get_new_adapter(self, *args, **kwargs):
+        return MultiLabelClassifier(**self.get_adapter_kwargs(*args, **kwargs))
+
+
 class FinetunerConfig(PretrainerConfig):
     def get_new_adapter(self, *args, **kwargs):
         return Finetuner(**self.get_adapter_kwargs(*args, **kwargs))
+
+
+class FinetunerMultiLabelConfig(FinetunerConfig):
+    def get_new_adapter(self, *args, **kwargs):
+        return MultiLabelFinetuner(**self.get_adapter_kwargs(*args, **kwargs))
 
 
 class ClassifierConfig(PretrainerConfig):
@@ -122,7 +137,6 @@ class ATDOCConfig(ClassifierConfig):
         hook = ATDOCHook(dataset_size, self.feature_size, self.num_classes, k=k)
         hook.labeler.to(torch.device("cuda"))
         all_kwargs["hook_kwargs"]["post"] = [hook]
-        self.atdoc = hook  # for easy access by SaveFeaturesATDOC
         return all_kwargs
 
 

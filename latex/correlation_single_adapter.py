@@ -1,29 +1,21 @@
 import pandas as pd
 
 from latex import utils as latex_utils
-from latex.predicted_best_acc import (
+from latex.correlation import (
+    base_filename,
+    get_add_resizebox,
     get_caption,
+    get_highlight_max_subset,
+    get_highlight_min,
+    get_highlight_min_subset,
+    get_label_prefix,
     get_preprocess_df,
     interval_fn,
     max_value_fn,
     min_value_fn,
     operation_fn,
-    std_condition,
 )
 from latex.table_creator import table_creator
-
-
-def get_preprocess_df_wrapper(std=False):
-    fn2 = get_preprocess_df(per_adapter=True)
-
-    def fn(df):
-        for c in df.columns.levels[0]:
-            if std_condition(std, c):
-                df = df[c].reset_index()
-                break
-        return fn2(df)
-
-    return fn
 
 
 def postprocess_df(df):
@@ -47,8 +39,8 @@ def caption_hook(caption, k):
     return caption.replace("pair", f"pair for \\textbf{{{k}}}")
 
 
-def predicted_best_acc_single_adapter(args, topN, threshold):
-    basename = f"predicted_best_acc_top{topN}_per_adapter_{threshold}_src_threshold"
+def correlation_single_adapter(args, name, src_threshold):
+    basename = base_filename(name, True, src_threshold)
     color_map_tag_kwargs = {
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
@@ -58,27 +50,25 @@ def predicted_best_acc_single_adapter(args, topN, threshold):
         "operation_fn": operation_fn,
     }
 
-    caption = get_caption(
-        topN, threshold, per_adapter=False, with_equation_ref=False, short_caption=True
-    )
+    caption = get_caption(per_adapter=False, short_caption=True)
 
-    highlight_max_subset = list(latex_utils.shortened_task_name_dict().values()) + [
-        "Mean"
-    ]
+    highlight_max_subset = get_highlight_max_subset(per_adapter=False)
+    highlight_min_subset = get_highlight_min_subset()
 
     table_creator(
         args,
         basename,
-        get_preprocess_df_wrapper(std=False),
+        get_preprocess_df(per_adapter=True),
         postprocess_df,
         color_map_tag_kwargs,
-        add_resizebox=True,
+        add_resizebox=get_add_resizebox(args),
         clines="skip-last;data",
         caption=caption,
-        highlight_min=True,
+        highlight_min=get_highlight_min(args),
         highlight_max_subset=highlight_max_subset,
-        highlight_min_subset=["Std"],
+        highlight_min_subset=highlight_min_subset,
         final_str_hook=latex_utils.validator_final_str_hook,
         caption_hook=caption_hook,
         position="H",
+        label_prefix=get_label_prefix(args),
     )

@@ -26,7 +26,7 @@ def get_condition_fn(validator_name, validator_args_str, trial_range):
                 if len(df) > 0:
                     return False
                 return True
-            except:  # in case it's corrupted or something
+            except Exception:  # in case it's corrupted or something
                 return True
         if trial_range_specified and iteration not in trial_range:
             return False
@@ -46,10 +46,14 @@ def dict_to_str(x):
     return json.dumps(x, sort_keys=True)
 
 
-def get_exp_folders(folder, name):
+def get_exp_folders(folder, name, use_glob=False):
     exp_path = os.path.join(folder, name)
     if not os.path.isdir(exp_path):
         return []
+    if use_glob:
+        feature_folders = glob.glob(os.path.join(exp_path, "**", "features"))
+        return [os.path.dirname(os.path.normpath(x)) for x in feature_folders]
+
     trials_filename = os.path.join(exp_path, TRIALS_FILENAME)
     with open(trials_filename, "r") as f:
         trials_info = pd.read_csv(f)

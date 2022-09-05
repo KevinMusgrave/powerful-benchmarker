@@ -22,12 +22,16 @@ def collect_dfs(args, exp_group):
     if args.slurm_folder in exp_names:
         exp_names.remove(args.slurm_folder)
     for e in exp_names:
-        exp_folders = utils.get_exp_folders(exp_folder, e)
+        exp_folders = utils.get_exp_folders(exp_folder, e, use_glob=True)
         for ef in exp_folders:
             print(ef, flush=True)
-            df_files = glob.glob(os.path.join(ef, VALIDATOR_TESTS_FOLDER, "*.pkl"))
-            for dff in df_files:
-                df.append(pd.read_pickle(dff))
+            for v in args.validators:
+                search_term = f"{v}*.pkl"
+                df_files = glob.glob(
+                    os.path.join(ef, VALIDATOR_TESTS_FOLDER, search_term)
+                )
+                for dff in df_files:
+                    df.append(pd.read_pickle(dff))
 
     df = pd.concat(df, axis=0, ignore_index=True)
     filename = os.path.join(exp_folder, ALL_DFS_FILENAME)
@@ -44,5 +48,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder", "slurm_folder"])
     add_exp_group_args(parser)
+    parser.add_argument("--validators", nargs="+", type=str, default=[""])
     args = parser.parse_args()
     main(args)

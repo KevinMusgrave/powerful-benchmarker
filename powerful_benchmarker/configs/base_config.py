@@ -1,8 +1,13 @@
 import torch
-from pytorch_adapt.frameworks.ignite import IgnitePredsAsFeatures
+from pytorch_adapt.frameworks.ignite import (
+    Ignite,
+    IgniteMultiLabelClassification,
+    IgnitePredsAsFeatures,
+)
 from pytorch_adapt.layers import DoNothingOptimizer
 from pytorch_adapt.models import Discriminator
 from pytorch_adapt.models import pretrained as pretrained_module
+from pytorch_adapt.models.pretrained_scores import domain_len_assertion
 from pytorch_adapt.utils.common_functions import get_lr
 
 from ..utils import main_utils
@@ -24,10 +29,12 @@ class BaseConfig:
             )
         elif optimizer == "Adam":
             return (torch.optim.Adam, {"lr": lr, "weight_decay": 1e-4})
+        elif optimizer == "DoNothing":
+            return (DoNothingOptimizer, {"lr": lr})
         else:
             raise TypeError
 
-    def get_before_training_starts_hook(self, optimizer):
+    def get_before_training_starts_hook(self):
         def before_training_starts(cls):
             def func(framework):
                 _, max_iters = framework.get_training_length()
@@ -53,43 +60,68 @@ class BaseConfig:
 
         return before_training_starts
 
+    def get_model_kwargs(self, dataset, pretrain_on_src, src_domains):
+        # This is None if src_domains == []
+        src_domain = domain_len_assertion(src_domains)
+        doing_uda = not pretrain_on_src
+        if dataset.startswith("domainnet"):
+            Gkwargs = {"pretrained": True}
+            if doing_uda:
+                Gkwargs["domain"] = src_domain
+            Ckwargs = {"pretrained": doing_uda, "domain": src_domain}
+        elif dataset in ["office31", "officehome", "voc_multilabel"]:
+            Gkwargs = {"pretrained": True}
+            Ckwargs = {"pretrained": doing_uda, "domain": src_domain}
+        elif dataset == "mnist":
+            Gkwargs = {"pretrained": doing_uda}
+            Ckwargs = {"pretrained": doing_uda}
+        else:
+            raise ValueError
+
+        return Gkwargs, Ckwargs
+
     def get_models(
         self,
         dataset,
         src_domains,
-        start_with_pretrained,
         pretrain_on_src,
         num_classes,
         feature_layer,
+        multilabel,
     ):
         self.num_classes = num_classes
-
-        kwargs = {"pretrained": start_with_pretrained}
-        G = getattr(pretrained_module, f"{dataset}G")(**kwargs)
-
-        if start_with_pretrained and dataset != "mnist":
-            kwargs["domain"] = main_utils.domain_len_assertion(src_domains)
-        C = getattr(pretrained_module, f"{dataset}C")(**kwargs)
+        Gkwargs, Ckwargs = self.get_model_kwargs(dataset, pretrain_on_src, src_domains)
+        print("G kwargs", Gkwargs)
+        print("C kwargs", Ckwargs)
+        G = getattr(pretrained_module, f"{dataset}G")(**Gkwargs)
+        C = getattr(pretrained_module, f"{dataset}C")(**Ckwargs)
 
         models = {"G": G, "C": C}
         models, self.feature_size, framework = self.set_feature_layer(
-            models, dataset, pretrain_on_src, feature_layer
+            models, dataset, pretrain_on_src, feature_layer, multilabel
         )
         models["D"] = Discriminator(in_size=self.feature_size, h=2048)
         return models, framework
 
-    def set_feature_layer(self, models, dataset, pretrain_on_src, feature_layer):
+    def set_feature_layer(
+        self, models, dataset, pretrain_on_src, feature_layer, multilabel
+    ):
         fc_out_feature_size = {
             "mnist": 1200,
             "domainnet": 2048,
             "domainnet126": 2048,
             "office31": 2048,
             "officehome": 2048,
+            "voc_multilabel": 2048,
         }[dataset]
-        framework = None
+        framework = IgniteMultiLabelClassification if multilabel else Ignite
         if pretrain_on_src or feature_layer == 0:
             return models, fc_out_feature_size, framework
         if feature_layer in [7, 8]:
+            if multilabel:
+                raise ValueError(
+                    "feature_layer in [7,8] and multilabel=True not currently supported"
+                )
             models["G"].fc = models["C"].net
             models["C"].net = torch.nn.Identity()
             if feature_layer == 8:

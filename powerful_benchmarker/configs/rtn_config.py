@@ -1,6 +1,7 @@
 import torch
 from pytorch_adapt.adapters import RTN
 from pytorch_adapt.containers import Misc, Models, Optimizers
+from pytorch_adapt.datasets import utils as dataset_utils
 from pytorch_adapt.inference import rtn_full_fn
 from pytorch_adapt.layers import MMDLoss, PlusResidual, RandomizedDotProduct
 from pytorch_adapt.layers.utils import get_kernel_scales
@@ -13,7 +14,7 @@ from .base_config import BaseConfig
 class RTNConfig(BaseConfig):
     def get_models(self, dataset, *args, **kwargs):
         models, framework = super().get_models(dataset, *args, **kwargs)
-        num_classes = main_utils.num_classes(dataset)
+        num_classes = dataset_utils.num_classes(dataset)
         models["residual_model"] = PlusResidual(
             torch.nn.Sequential(
                 torch.nn.Linear(num_classes, num_classes),

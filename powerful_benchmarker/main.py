@@ -28,7 +28,7 @@ import pytorch_adapt
 import torch
 from optuna.samplers import PartialFixedSampler, TPESampler
 from optuna.trial import TrialState
-from pytorch_adapt.frameworks.ignite import Ignite
+from pytorch_adapt.datasets import utils as dataset_utils
 from pytorch_adapt.frameworks.ignite import utils as ignite_utils
 from pytorch_adapt.utils import common_functions as c_f
 
@@ -47,7 +47,8 @@ print("pytorch_adapt.__version__", pytorch_adapt.__version__)
 
 
 def evaluate_best_model(cfg, exp_path):
-    assert cfg.validator in ["oracle", "oracle_micro"]
+    assert cfg.src_domains == []
+    assert cfg.validator.startswith("oracle")
     original_exp_path = exp_path
     with open(os.path.join(exp_path, BEST_TRIAL_FILENAME), "r") as f:
         best_trial = json.load(f)
@@ -58,7 +59,14 @@ def evaluate_best_model(cfg, exp_path):
     ) as f:
         original_cfg = json.load(f)
 
-    for k in ["dataset", "adapter", "feature_layer", "pretrain_on_src", "pretrain_lr"]:
+    for k in [
+        "dataset",
+        "adapter",
+        "feature_layer",
+        "pretrain_on_src",
+        "pretrain_lr",
+        "multilabel",
+    ]:
         setattr(cfg, k, original_cfg[k])
     trial = optuna.trial.FixedTrial(original_cfg["trial_params"])
 
@@ -74,7 +82,7 @@ def evaluate_best_model(cfg, exp_path):
             _,
             _,
             _,
-        ) = get_adapter_datasets_etc(cfg, exp_path, cfg.validator, [d], trial)
+        ) = get_adapter_datasets_etc(cfg, exp_path, [d], trial)
         adapter = framework(adapter, checkpoint_fn=checkpoint_fn)
         validator = validator.validator  # don't need ScoreHistory
         scores[d] = main_utils.evaluate(
@@ -89,7 +97,6 @@ def evaluate_best_model(cfg, exp_path):
 def get_adapter_datasets_etc(
     cfg,
     exp_path,
-    validator_name,
     target_domains,
     trial,
     num_fixed_params=0,
@@ -97,13 +104,10 @@ def get_adapter_datasets_etc(
     if cfg.pretrain_on_src:
         assert cfg.feature_layer == 0
     checkpoint_path = os.path.join(exp_path, "checkpoints")
-    num_classes = main_utils.num_classes(cfg.dataset)
+    num_classes = dataset_utils.num_classes(cfg.dataset)
 
     validator, checkpoint_fn = get_validator(
-        num_classes,
-        validator_name,
-        checkpoint_path,
-        cfg.feature_layer,
+        num_classes, cfg.validator, checkpoint_path
     )
 
     configerer = getattr(configs, cfg.adapter)(trial)
@@ -125,15 +129,18 @@ def get_adapter_datasets_etc(
     models, framework = configerer.get_models(
         dataset=cfg.dataset,
         src_domains=cfg.src_domains,
-        start_with_pretrained=cfg.start_with_pretrained,
         pretrain_on_src=cfg.pretrain_on_src,
         num_classes=num_classes,
         feature_layer=cfg.feature_layer,
+        multilabel=cfg.multilabel,
     )
+
+    main_utils.framework_check(cfg.adapter, framework)
+
     optimizers = configerer.get_optimizers(
         cfg.pretrain_on_src, cfg.optimizer, cfg.pretrain_lr
     )
-    before_training_starts = configerer.get_before_training_starts_hook(cfg.optimizer)
+    before_training_starts = configerer.get_before_training_starts_hook()
 
     adapter = configerer.get_new_adapter(
         models,
@@ -144,8 +151,6 @@ def get_adapter_datasets_etc(
         datasets=datasets,
     )
     logger = Logger(os.path.join(exp_path, "logs"))
-    if framework is None:
-        framework = Ignite
 
     if (len(trial.params) - num_fixed_params) > 5:
         raise ValueError("Should only optimize 5 hyperparams")
@@ -186,18 +191,22 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     ) = get_adapter_datasets_etc(
         cfg,
         exp_path,
-        cfg.validator,
         cfg.target_domains,
         trial,
         num_fixed_params,
     )
 
     save_features_cls = ignite_save_features.SaveFeatures
-    if cfg.adapter == "ATDOCConfig":
-        save_features_cls = ignite_save_features.save_features_atdoc(configerer.atdoc)
 
     val_hooks = main_utils.get_val_hooks(
-        cfg, exp_path, logger, num_classes, cfg.pretrain_on_src, save_features_cls
+        folder=exp_path,
+        logger=logger,
+        num_classes=num_classes,
+        pretrain_on_src=cfg.pretrain_on_src,
+        multilabel=cfg.multilabel,
+        use_stat_getter=cfg.use_stat_getter,
+        save_features=cfg.save_features,
+        save_features_cls=save_features_cls,
     )
 
     adapter = framework(
@@ -217,7 +226,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
     if cfg.patience:
         early_stopper_kwargs = {"patience": cfg.patience}
 
-    best_score, best_epoch = adapter.run(
+    best_score, _ = adapter.run(
         datasets=datasets,
         dataloader_creator=dataloader_creator,
         max_epochs=cfg.max_epochs,
@@ -339,9 +348,9 @@ if __name__ == "__main__":
     parser.add_argument("--num_workers", type=int, default=8)
     parser.add_argument("--num_trials", type=int, default=10)
     parser.add_argument("--n_startup_trials", type=int, default=10)
-    parser.add_argument("--start_with_pretrained", action="store_true")
     parser.add_argument("--validator", type=str, default=None)
     parser.add_argument("--pretrain_on_src", action="store_true")
+    parser.add_argument("--multilabel", action="store_true")
     parser.add_argument("--evaluate", action="store_true")
     parser.add_argument("--num_reproduce", type=int, default=0)
     parser.add_argument("--feature_layer", type=int, default=0)
@@ -355,4 +364,5 @@ if __name__ == "__main__":
     parser.add_argument("--check_initial_score", action="store_true")
     parser.add_argument("--use_full_inference", action="store_true")
     args = parser.parse_args()
+    main_utils.args_check(args)
     main(args)

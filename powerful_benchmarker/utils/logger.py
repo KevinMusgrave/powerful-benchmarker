@@ -1,7 +1,9 @@
+from pytorch_adapt.frameworks.ignite import IgniteValHookWrapper
 from pytorch_adapt.frameworks.ignite.loggers import (
     BasicLossLogger,
     IgniteRecordKeeperLogger,
 )
+from pytorch_adapt.utils import common_functions as c_f
 
 
 class Logger:
@@ -29,3 +31,9 @@ class Logger:
 
     def get_losses(self):
         return self.logger1.get_losses()
+
+
+class IgniteValHookWrapperWithPrint(IgniteValHookWrapper):
+    def __call__(self, *args, **kwargs):
+        super().__call__(*args, **kwargs)
+        c_f.LOGGER.info(self.validator)

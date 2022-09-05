@@ -25,7 +25,7 @@ Train a model using DANN for 20 epochs, with 10 different random hyperparameter 
 ```
 python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 --src_domains mnist --target_domains mnistm --adapter DANNConfig \
---start_with_pretrained --feature_layer 6 \
+--feature_layer 6 \
 --max_epochs 20 --num_trials 10 --save_features \
 --val_interval 5
 ```
@@ -50,7 +50,6 @@ python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 |`--num_workers` | The number of PyTorch dataloader workers for loading images 
 |`--num_trials` | The number of hyperparameter settings to be tried. Each trial gets its own folder: `<exp_folder>/<exp_name>/<trial_num>`.
 |`--n_startup_trials` | The number of trials with randomly picked hyperparameters, before a hyperparameter optimization algorithm is used.
-|`--start_with_pretrained` | Add this flag to load the source-only model's weights. Otherwise the model will be randomly initialized.
 |`--validator` | If specified, a validation score will be computed every `val_interval` epochs.
 |`--pretrain_on_src` | Add this flag to train a source-only model.
 |`--evaluate` | Add this flag to evaluate the best model of an existing experiment.

@@ -9,6 +9,12 @@ from validator_tests.utils import utils
 from validator_tests.utils.df_utils import get_name_from_exp_groups
 
 
+def maybe_set_to_null_fn(x):
+    if x is None:
+        return lambda _: None
+    return x
+
+
 def save_to_latex(
     df,
     folder,
@@ -22,6 +28,12 @@ def save_to_latex(
     final_str_hook=None,
     **kwargs,
 ):
+    if len(df.columns) == 3 and "Mean" in df.columns and "Std" in df.columns:
+        df = df.drop(columns=["Mean", "Std"])
+
+    highlight_max_subset = maybe_set_to_null_fn(highlight_max_subset)
+    highlight_min_subset = maybe_set_to_null_fn(highlight_min_subset)
+
     c_f.makedir_if_not_there(folder)
     tags_dict, color_map_tags = None, ""
     if color_map_tag_kwargs:
@@ -31,11 +43,11 @@ def save_to_latex(
     df_style = df.style
     if highlight_max:
         df_style = df_style.highlight_max(
-            subset=highlight_max_subset, props="textbf:--rwrap"
+            subset=highlight_max_subset(df), props="textbf:--rwrap"
         )
     if highlight_min:
         df_style = df_style.highlight_min(
-            subset=highlight_min_subset, props="textbf:--rwrap"
+            subset=highlight_min_subset(df), props="textbf:--rwrap"
         )
     latex_str = df_style.format(
         tags_dict,
@@ -64,6 +76,7 @@ def table_creator(
     add_resizebox=False,
     do_save_to_latex=True,
     caption_hook=None,
+    label_prefix=None,
     **kwargs,
 ):
     exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
@@ -78,6 +91,7 @@ def table_creator(
     output_folder = os.path.join(
         args.output_folder, get_name_from_exp_groups(exp_groups)
     )
+    # df.to_csv(os.path.join(output_folder, f"{basename}.csv"))
     if do_save_to_latex:
         if isinstance(df, dict):
             original_caption = kwargs.pop("caption", None)
@@ -91,7 +105,7 @@ def table_creator(
                     curr_basename,
                     color_map_tag_kwargs,
                     add_resizebox,
-                    label=curr_basename,
+                    label=f"{label_prefix}{curr_basename}",
                     caption=caption,
                     **kwargs,
                 )
@@ -102,7 +116,7 @@ def table_creator(
                 basename,
                 color_map_tag_kwargs,
                 add_resizebox,
-                label=basename,
+                label=f"{label_prefix}{basename}",
                 **kwargs,
             )
     else:

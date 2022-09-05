@@ -21,7 +21,7 @@ def main(args, fn1, fn2):
             exp_folder = os.path.join(args.exp_folder, e)
             df = get_processed_df(exp_folder)
             if df is not None:
-                fn1(exp_folder, [e], output_folder, df)
+                fn1(output_folder, df)
 
     if args.run_combined:
         # now do with feature layers in one dataframe
@@ -36,11 +36,9 @@ def main(args, fn1, fn2):
             for e in e_group:
                 df.append(get_processed_df(os.path.join(args.exp_folder, e)))
             df = pd.concat(df, axis=0, ignore_index=True)
-            fn2(args.exp_folder, e_group, output_folder, df)
+            fn2(output_folder, df)
 
 
 def add_main_args(parser):
     parser.add_argument("--run_single", action="store_true")
     parser.add_argument("--run_combined", action="store_true")
-    parser.add_argument("--topN", type=int, default=200)
-    parser.add_argument("--topN_per_adapter", type=int, default=20)

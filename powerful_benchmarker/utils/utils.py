@@ -29,8 +29,8 @@ def create_slurm_args(args, other_args, folder):
     return slurm_args
 
 
-def rotate(l, n):
-    return l[n:] + l[:n]
+def rotate(x, n):
+    return x[n:] + x[:n]
 
 
 def get_yaml_config_folder():

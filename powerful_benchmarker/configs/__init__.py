@@ -33,11 +33,13 @@ from .pretrainer_config import (
     BNMConfig,
     BSPConfig,
     FinetunerConfig,
+    FinetunerMultiLabelConfig,
     IMConfig,
     ITLConfig,
     MCCConfig,
     MinEntConfig,
     PretrainerConfig,
+    PretrainerMultiLabelConfig,
 )
 from .rtn_config import RTNConfig
 from .symnets_config import SymNetsConfig
