@@ -183,7 +183,7 @@ def get_datasets(
         download=download,
         transform_getter=transform_getter,
     )
-    c_f.LOGGER.debug(datasets)
+    c_f.LOGGER.info(datasets)
     return datasets
 
 
