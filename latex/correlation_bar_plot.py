@@ -14,7 +14,13 @@ def combine_levels(df):
 
 
 def reshape_and_plot(
-    df, output_folder, basename, name, new_col_fn=None, figsize=(12, 12)
+    df,
+    output_folder,
+    basename,
+    name,
+    new_col_fn=None,
+    figsize=(12, 12),
+    y_tick_labelsize=None,
 ):
     new_col_fn = combine_levels if new_col_fn is None else new_col_fn
     df = df.reset_index()
@@ -32,7 +38,7 @@ def reshape_and_plot(
         else "Spearman Correlation"
     )
 
-    sns.set(style="whitegrid", rc={"figure.figsize": figsize})
+    sns.set_theme(style="whitegrid")
     plt = sns.barplot(
         x="value",
         y="validator_as_str",
@@ -44,7 +50,10 @@ def reshape_and_plot(
         capsize=0.1,
     )
     plt.set(xlabel=xlabel, ylabel="Validator", xlim=(-100, 100))
+    if y_tick_labelsize:
+        plt.set_yticklabels(plt.get_yticklabels(), size=y_tick_labelsize)
     fig = plt.get_figure()
+    fig.set_size_inches(*figsize)
     fig.savefig(
         os.path.join(output_folder, f"{basename}_barplot.png"), bbox_inches="tight"
     )

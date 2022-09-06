@@ -15,7 +15,7 @@ def postprocess_df_wrapper(df):
 
 def new_col_fn(df):
     new_col = df.apply(
-        lambda x: f'{x["adapter"]}: {x["validator"]}: {x["validator_args"]}', axis=1
+        lambda x: f'{x["adapter"]} / {x["validator"]}: {x["validator_args"]}', axis=1
     )
     return df.assign(validator_as_str=new_col).drop(
         columns=["adapter", "validator", "validator_args"]
@@ -35,4 +35,12 @@ def correlation_bar_plot_adapter_validator_pairs(args, name, src_threshold):
 
     basename = basename.replace("_per_adapter", "")
     basename = f"{basename}_adapter_validator_pairs"
-    reshape_and_plot(df, output_folder, basename, name, new_col_fn, figsize=(12, 60))
+    reshape_and_plot(
+        df,
+        output_folder,
+        basename,
+        name,
+        new_col_fn,
+        figsize=(12, 72),
+        y_tick_labelsize=6,
+    )
