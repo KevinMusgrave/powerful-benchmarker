@@ -25,7 +25,7 @@ def get_preprocess_df(per_adapter):
     return fn
 
 
-def get_postprocess_df(per_adapter):
+def get_postprocess_df(per_adapter, remove_index_names=True):
     def fn(df):
         df = pd.concat(df, axis=0).reset_index(drop=True)
         df = latex_utils.rename_validator_args(df)
@@ -38,7 +38,8 @@ def get_postprocess_df(per_adapter):
         df = latex_utils.add_mean_std_column(df)
         df = (df * 100).round(1)
         df.columns.names = (None,)
-        df.index.names = (None, None)
+        if remove_index_names:
+            df.index.names = (None, None)
         return df
 
     return fn

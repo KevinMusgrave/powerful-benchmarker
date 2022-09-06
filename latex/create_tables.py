@@ -5,6 +5,9 @@ sys.path.insert(0, ".")
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
 from latex.correlation import correlation
 from latex.correlation_bar_plot import correlation_bar_plot
+from latex.correlation_bar_plot_adapter_validator_pairs import (
+    correlation_bar_plot_adapter_validator_pairs,
+)
 from latex.correlation_bar_plot_single_adapter import (
     correlation_bar_plot_single_adapter,
 )
@@ -20,6 +23,7 @@ def main(args):
     correlation_diffs(args, False, [wsp, "spearman"], src_threshold)
     correlation_single_adapter(args, wsp, src_threshold)
     correlation_bar_plot_single_adapter(args, wsp, src_threshold)
+    correlation_bar_plot_adapter_validator_pairs(args, wsp, src_threshold)
 
     for per_adapter in [False, True]:
         correlation(args, per_adapter, wsp, src_threshold)

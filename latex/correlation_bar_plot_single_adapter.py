@@ -1,6 +1,6 @@
 from latex.correlation import base_filename, get_preprocess_df
 from latex.correlation_bar_plot import reshape_and_plot
-from latex.correlation_single_adapter import postprocess_df
+from latex.correlation_single_adapter import get_postprocess_df
 from latex.table_creator import table_creator
 
 
@@ -11,7 +11,7 @@ def correlation_bar_plot_single_adapter(args, name, src_threshold):
         args,
         basename,
         preprocess_df=get_preprocess_df(per_adapter=True),
-        postprocess_df=postprocess_df,
+        postprocess_df=get_postprocess_df(remove_index_names=False),
         do_save_to_latex=False,
     )
 

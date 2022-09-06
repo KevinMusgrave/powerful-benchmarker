@@ -18,21 +18,25 @@ from latex.correlation import (
 from latex.table_creator import table_creator
 
 
-def postprocess_df(df):
-    df = pd.concat(df, axis=0).reset_index(drop=True)
-    df = latex_utils.rename_validator_args(df)
-    df = df.pivot(index=["validator", "validator_args"], columns="task")
-    df_dict = {}
-    for i in df.columns.levels[0]:
-        df_dict[i] = df[i]
-    for k, df in df_dict.items():
-        df = latex_utils.shortened_task_names(df)
-        df = latex_utils.add_mean_std_column(df)
-        df = (df * 100).round(1)
-        df.columns.names = (None,)
-        df.index.names = (None, None)
-        df_dict[k] = df
-    return df_dict
+def get_postprocess_df(remove_index_names=True):
+    def fn(df):
+        df = pd.concat(df, axis=0).reset_index(drop=True)
+        df = latex_utils.rename_validator_args(df)
+        df = df.pivot(index=["validator", "validator_args"], columns="task")
+        df_dict = {}
+        for i in df.columns.levels[0]:
+            df_dict[i] = df[i]
+        for k, df in df_dict.items():
+            df = latex_utils.shortened_task_names(df)
+            df = latex_utils.add_mean_std_column(df)
+            df = (df * 100).round(1)
+            df.columns.names = (None,)
+            if remove_index_names:
+                df.index.names = (None, None)
+            df_dict[k] = df
+        return df_dict
+
+    return fn
 
 
 def caption_hook(caption, k):
@@ -59,7 +63,7 @@ def correlation_single_adapter(args, name, src_threshold):
         args,
         basename,
         get_preprocess_df(per_adapter=True),
-        postprocess_df,
+        get_postprocess_df(),
         color_map_tag_kwargs,
         add_resizebox=get_add_resizebox(args),
         clines="skip-last;data",
