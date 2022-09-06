@@ -97,11 +97,20 @@ def get_spearman_score(output_folder, df, per_adapter, src_threshold):
 def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_ACCURACY):
     assert rank_by in [TARGET_ACCURACY, "score"]
     groupby = group_by_task_validator(per_adapter=True)
+    groupby_with_trial_num = groupby + ["trial_num"]
 
-    ranked = df.groupby(groupby + ["trial_num"])[rank_by].rank(
+    # best score per trial
+    ranked = df.groupby(groupby_with_trial_num)[rank_by].rank(
         method="min", ascending=False
     )
     to_save = df[ranked <= 1]
+
+    # remove duplicate scores for a trial by taking the earliest epoch
+    to_save = to_save.sort_values(by=["epoch"]).drop_duplicates(
+        subset=groupby_with_trial_num
+    )
+
+    # best scores across trials
     ranked = to_save.groupby(groupby)[rank_by].rank(method="min", ascending=False)
     to_save = to_save[ranked <= nlargest]
     to_save = to_save.groupby(groupby, as_index=False).agg(
