@@ -1,4 +1,4 @@
 dataset: domainnet126
-max_epochs: 100
-val_interval: 5
+max_epochs: 40
+val_interval: 2
 num_workers: 5

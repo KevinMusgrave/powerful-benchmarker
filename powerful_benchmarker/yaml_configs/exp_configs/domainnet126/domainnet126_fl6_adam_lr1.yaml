@@ -25,24 +25,24 @@ commands:
 - - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
   - *A
   - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
-  - *A
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
-  - *A
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
-  - *A
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
-  - *A
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
-  - *A
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
-  - *A
-  - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+#   - *A
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+#   - *A
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+#   - *A
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+#   - *A
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+#   - *A
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
+#   - *A
+#   - *common
 
 
 - - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains painting
@@ -63,24 +63,24 @@ commands:
 - - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
   - *B
   - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
-  - *B
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
-  - *B
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
-  - *B
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
-  - *B
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
-  - *B
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
-  - *B
-  - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+#   - *B
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+#   - *B
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+#   - *B
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+#   - *B
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+#   - *B
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
+#   - *B
+#   - *common
 
 
 - - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains painting
@@ -101,24 +101,24 @@ commands:
 - - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
   - *C
   - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
-  - *C
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
-  - *C
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
-  - *C
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
-  - *C
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
-  - *C
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
-  - *C
-  - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+#   - *C
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+#   - *C
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+#   - *C
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+#   - *C
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+#   - *C
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
+#   - *C
+#   - *common
 
 
 - - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains painting
@@ -139,24 +139,24 @@ commands:
 - - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
   - *D
   - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
-  - *D
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
-  - *D
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
-  - *D
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
-  - *D
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
-  - *D
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
-  - *D
-  - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+#   - *D
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+#   - *D
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+#   - *D
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+#   - *D
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+#   - *D
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
+#   - *D
+#   - *common
 
 
 - - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains painting
@@ -177,22 +177,22 @@ commands:
 - - python powerful_benchmarker/launch_one.py --src_domains painting --target_domains sketch
   - *E
   - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
-  - *E
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
-  - *E
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
-  - *E
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
-  - *E
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
-  - *E
-  - *common
-- - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
-  - *E
-  - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+#   - *E
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains painting
+#   - *E
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains real --target_domains sketch
+#   - *E
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains clipart
+#   - *E
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains painting
+#   - *E
+#   - *common
+# - - python powerful_benchmarker/launch_one.py --src_domains sketch --target_domains real
+#   - *E
+#   - *common
 
