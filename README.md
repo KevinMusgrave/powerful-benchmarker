@@ -105,7 +105,14 @@ Set the google drive folder in `constants.yaml`.
 
 ## Citing the paper
 
-Coming soon...
+```
+@article{musgrave2022benchmarking,
+  title={Benchmarking Validation Methods for Unsupervised Domain Adaptation},
+  author={Musgrave, Kevin and Belongie, Serge and Lim, Ser-Nam},
+  journal={arXiv preprint arXiv:2208.07360},
+  year={2022}
+}
+```
 
 
 ## Looking for [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)?
