@@ -9,15 +9,20 @@ from latex.table_creator import table_creator
 from validator_tests.utils.utils import validator_args_delimited
 
 
+def filter_and_process_validator_args(df):
+    df = latex_utils.filter_validators(df)
+    df["validator_args"] = df.apply(
+        lambda x: validator_args_delimited(x["validator_args"], delimiter=" ").replace(
+            "_", " "
+        ),
+        axis=1,
+    )
+    return df
+
+
 def get_preprocess_df(per_adapter):
     def fn(df):
-        df = latex_utils.filter_validators(df)
-        df["validator_args"] = df.apply(
-            lambda x: validator_args_delimited(
-                x["validator_args"], delimiter=" "
-            ).replace("_", " "),
-            axis=1,
-        )
+        df = filter_and_process_validator_args(df)
         if per_adapter:
             latex_utils.convert_adapter_column_names(df)
         return df
@@ -158,6 +163,8 @@ def correlation(args, per_adapter, name, src_threshold):
 
     table_creator(
         args,
+        args.input_folder,
+        args.output_folder,
         basename,
         get_preprocess_df(per_adapter),
         get_postprocess_df(per_adapter),

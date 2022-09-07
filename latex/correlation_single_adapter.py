@@ -61,6 +61,8 @@ def correlation_single_adapter(args, name, src_threshold):
 
     table_creator(
         args,
+        args.input_folder,
+        args.output_folder,
         basename,
         get_preprocess_df(per_adapter=True),
         get_postprocess_df(),

@@ -27,6 +27,8 @@ def correlation_bar_plot_adapter_validator_pairs(args, name, src_threshold):
 
     df, output_folder = table_creator(
         args,
+        args.input_folder,
+        args.output_folder,
         basename,
         preprocess_df=get_preprocess_df(per_adapter=True),
         postprocess_df=postprocess_df_wrapper,

@@ -11,6 +11,8 @@ def correlation_diffs(args, per_adapter, names, src_threshold):
 
         df, output_folder = table_creator(
             args,
+            args.input_folder,
+            args.output_folder,
             basename,
             preprocess_df=get_preprocess_df(per_adapter),
             postprocess_df=get_postprocess_df(per_adapter),

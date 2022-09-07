@@ -144,7 +144,7 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_AC
         keep_cols.remove("validator_args")
 
     to_save = to_save[keep_cols]
-    rank_by_str = "" if rank_by == TARGET_ACCURACY else f"_{rank_by}"
+    rank_by_str = "" if rank_by == TARGET_ACCURACY else f"_ranked_by_{rank_by}"
     save_df(
         output_folder, df, to_save, f"best_accuracy_per_adapter{rank_by_str}_{nlargest}"
     )

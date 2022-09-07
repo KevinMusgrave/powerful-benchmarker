@@ -9,6 +9,8 @@ def correlation_bar_plot_single_adapter(args, name, src_threshold):
 
     dfs, output_folder = table_creator(
         args,
+        args.input_folder,
+        args.output_folder,
         basename,
         preprocess_df=get_preprocess_df(per_adapter=True),
         postprocess_df=get_postprocess_df(remove_index_names=False),

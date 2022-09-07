@@ -10,14 +10,18 @@ def preprocess_df(df):
     return df
 
 
-def postprocess_df(df):
-    df = pd.concat(df, axis=0)
-    df = df.drop(columns=[f"{TARGET_ACCURACY}_std"])
+def reshape_into_best_accuracy_table(df):
     df = df.pivot(index="adapter", columns="task").droplevel(level=0, axis=1)
     df = latex_utils.add_source_only(df, TARGET_ACCURACY)
     df = latex_utils.shortened_task_names(df)
     df = (df * 100).round(1)
     return df
+
+
+def postprocess_df(df):
+    df = pd.concat(df, axis=0)
+    df = df.drop(columns=[f"{TARGET_ACCURACY}_std"])
+    return reshape_into_best_accuracy_table(df)
 
 
 def min_value_fn(x, *_):
@@ -38,6 +42,8 @@ def best_accuracy_per_adapter(args):
     )
     table_creator(
         args,
+        args.input_folder,
+        args.output_folder,
         basename,
         preprocess_df,
         postprocess_df,

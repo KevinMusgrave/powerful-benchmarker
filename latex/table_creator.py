@@ -69,6 +69,8 @@ def save_to_latex(
 
 def table_creator(
     args,
+    input_folder,
+    output_folder,
     basename,
     preprocess_df,
     postprocess_df,
@@ -77,20 +79,19 @@ def table_creator(
     do_save_to_latex=True,
     caption_hook=None,
     label_prefix=None,
+    exp_groups=None,
     **kwargs,
 ):
-    exp_groups = utils.get_exp_groups(args, exp_folder=args.input_folder)
+    exp_groups = c_f.default(exp_groups, utils.get_exp_groups, [args, input_folder])
     df = []
     for e in exp_groups:
-        filename = os.path.join(args.input_folder, e, f"{basename}.pkl")
+        filename = os.path.join(input_folder, e, f"{basename}.pkl")
         curr_df = pd.read_pickle(filename)
         curr_df = preprocess_df(curr_df)
         df.append(curr_df)
 
     df = postprocess_df(df)
-    output_folder = os.path.join(
-        args.output_folder, get_name_from_exp_groups(exp_groups)
-    )
+    output_folder = os.path.join(output_folder, get_name_from_exp_groups(exp_groups))
     # df.to_csv(os.path.join(output_folder, f"{basename}.csv"))
     if do_save_to_latex:
         if isinstance(df, dict):
