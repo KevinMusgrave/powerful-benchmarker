@@ -15,6 +15,7 @@ def main(cfg):
     exp_groups = utils.get_exp_groups(cfg)
     folders_to_delete = []
     for e in exp_groups:
+        assert len(e) > 0
         full_path = os.path.join(cfg.exp_folder, e)
         if cfg.delete:
             print("deleting", full_path)
