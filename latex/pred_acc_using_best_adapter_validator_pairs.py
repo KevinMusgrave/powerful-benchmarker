@@ -1,7 +1,10 @@
 import pandas as pd
 
 from latex import utils as latex_utils
-from latex.best_accuracy_per_adapter import reshape_into_best_accuracy_table
+from latex.best_accuracy_per_adapter import (
+    min_value_fn,
+    reshape_into_best_accuracy_table,
+)
 from latex.correlation import base_filename, filter_and_process_validator_args
 from latex.correlation import get_preprocess_df as get_preprocess_df_correlation
 from latex.correlation_single_adapter import (
@@ -26,8 +29,7 @@ def get_postprocess_df(best_validators):
             )
         df = df[filter]
         df = df.drop(columns=[f"{TARGET_ACCURACY}_std", "validator", "validator_args"])
-        df = reshape_into_best_accuracy_table(df)
-        print(df)
+        return reshape_into_best_accuracy_table(df)
 
     return fn
 
@@ -60,6 +62,10 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
 
     nlargest = args.nlargest
     basename = f"best_accuracy_per_adapter_ranked_by_score_{nlargest}"
+    color_map_tag_kwargs = {
+        "tag_prefix": latex_utils.get_tag_prefix(basename),
+        "min_value_fn": min_value_fn,
+    }
     table_creator(
         args,
         args.input_folder,
@@ -67,5 +73,7 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         basename,
         preprocess_df=filter_and_process_validator_args,
         postprocess_df=get_postprocess_df(best_validators),
-        do_save_to_latex=False,
+        color_map_tag_kwargs=color_map_tag_kwargs,
+        add_resizebox=True,
+        final_str_hook=latex_utils.adapter_final_str_hook,
     )
