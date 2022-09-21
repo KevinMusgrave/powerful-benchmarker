@@ -3,6 +3,7 @@ import os
 import tqdm
 from pytorch_adapt.utils import common_functions as c_f
 
+from . import threshold_utils
 from .df_utils import domains_str, maybe_per_adapter
 from .utils import validator_args_delimited
 
@@ -96,3 +97,51 @@ def plot_loop(
                                         filters, filename_components, filename_suffix
                                     )
                                 plot_fn(curr_plots_folder, curr_df, filename)
+
+
+def filter_and_plot(
+    df,
+    plot_fn,
+    plots_folder,
+    per_adapter,
+    per_feature_layer,
+    validator_set=None,
+    src_threshold=None,
+    adapter=None,
+):
+    filter_by = [
+        "dataset",
+        "src_domains",
+        "target_domains",
+        "validator",
+        "validator_args",
+    ]
+
+    sub_folder_components = ["dataset", "src_domains", "target_domains"]
+
+    if per_adapter:
+        filter_by.append("adapter")
+        sub_folder_components.append("adapter")
+    if per_feature_layer:
+        filter_by.append("feature_layer")
+        sub_folder_components.append("feature_layer")
+
+    filename_suffix = ""
+    if src_threshold is not None:
+        df = threshold_utils.filter_by_src_threshold(
+            df, src_threshold, filter_action="remove"
+        )
+        filename_suffix = f"{src_threshold}_src_threshold"
+
+    plot_loop(
+        df,
+        plots_folder,
+        plot_fn,
+        filter_by=filter_by,
+        sub_folder_components=sub_folder_components,
+        filename_components=["validator", "validator_args"],
+        filename_suffix=filename_suffix,
+        per_adapter=per_adapter,
+        validator_set=validator_set,
+        adapter=adapter,
+    )
