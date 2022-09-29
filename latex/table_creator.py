@@ -120,5 +120,4 @@ def table_creator(
                 label=f"{label_prefix}{basename}",
                 **kwargs,
             )
-    else:
-        return df, output_folder
+    return df, output_folder

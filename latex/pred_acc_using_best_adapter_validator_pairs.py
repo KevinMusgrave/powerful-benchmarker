@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 from latex import utils as latex_utils
@@ -52,7 +54,7 @@ def get_best_validators(args, name, src_threshold):
     best_validators = {}
     for adapter, df in dfs.items():
         df = df.loc[df["Mean"].idxmax()]
-        best_validators[adapter] = df.name
+        best_validators[adapter] = df.name + (rf"${str(df.Mean)} \pm {str(df.Std)}$",)
 
     return best_validators
 
@@ -66,7 +68,7 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
     }
-    table_creator(
+    _, output_folder = table_creator(
         args,
         args.input_folder,
         args.output_folder,
@@ -76,4 +78,24 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         color_map_tag_kwargs=color_map_tag_kwargs,
         add_resizebox=True,
         final_str_hook=latex_utils.adapter_final_str_hook,
+    )
+
+    to_save = (
+        pd.DataFrame(best_validators)
+        .transpose()
+        .reset_index()
+        .rename(
+            columns={
+                "index": "Algorithm",
+                0: "Validator",
+                1: "Validator Parameters",
+                2: "Weighted Spearman Correlation",
+            }
+        )
+    )
+
+    to_save.style.hide(axis="index").to_latex(
+        os.path.join(output_folder, "best_validator_per_algorithm.tex"),
+        hrules=True,
+        position_float="centering",
     )
