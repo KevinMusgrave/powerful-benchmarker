@@ -142,8 +142,8 @@ def filter_validators(df):
     return df.drop(columns=["unified_validator"])
 
 
-def get_tag_prefix(basename):
-    num_to_word = [
+def num_to_word(i):
+    return [
         "zero",
         "one",
         "two",
@@ -154,10 +154,13 @@ def get_tag_prefix(basename):
         "seven",
         "eight",
         "nine",
-    ]
+    ][i]
+
+
+def get_tag_prefix(basename):
     basename = basename.replace("_", "").replace(".", "")
     for i in range(10):
-        basename = basename.replace(str(i), num_to_word[i])
+        basename = basename.replace(str(i), num_to_word(i))
     return basename
 
 
