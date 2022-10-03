@@ -13,6 +13,12 @@ def scatter(plots_folder, df, per_feature_layer):
     kwargs = {}
     if args.no_color:
         kwargs["c"] = None
+    if args.dot_size:
+        kwargs["s"] = args.dot_size
+    if args.font_scale:
+        kwargs["font_scale"] = args.font_scale
+    if args.figsize:
+        kwargs["figsize"] = args.figsize
     plot_val_vs_acc(
         df,
         plots_folder,
@@ -65,6 +71,9 @@ if __name__ == "__main__":
     parser.add_argument("--validator_set", nargs="+", type=str, default=None)
     parser.add_argument("--src_threshold", type=float)
     parser.add_argument("--no_color", action="store_true")
+    parser.add_argument("--dot_size", type=float, default=None)
+    parser.add_argument("--font_scale", type=float, default=None)
+    parser.add_argument("--figsize", nargs="+", type=float, default=None)
     parser.add_argument("--per_adapter", action="store_true")
     parser.add_argument("--adapter", type=str)
     parser.add_argument("--fn_list", nargs="+", type=str, default=[])
