@@ -80,7 +80,7 @@ def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, nam
 
 def get_weighted_spearman_score(output_folder, df, per_adapter, src_threshold):
     def score_fn(x):
-        return weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
+        return weighted_spearman(x["score"].values, x[TARGET_ACCURACY].values, pow=2)
 
     get_correlation(
         output_folder, df, per_adapter, src_threshold, score_fn, "weighted_spearman"
@@ -89,7 +89,7 @@ def get_weighted_spearman_score(output_folder, df, per_adapter, src_threshold):
 
 def get_spearman_score(output_folder, df, per_adapter, src_threshold):
     def score_fn(x):
-        return spearman(x[TARGET_ACCURACY].values, x["score"].values)
+        return spearman(x["score"].values, x[TARGET_ACCURACY].values)
 
     get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, "spearman")
 
