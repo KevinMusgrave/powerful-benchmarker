@@ -3,17 +3,21 @@ import os
 import sys
 
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 from scipy.stats import spearmanr
 
 sys.path.insert(0, ".")
 
+from validator_tests.utils.plot_val_vs_acc import scatter_plot
 from validator_tests.utils.weighted_spearman import weighted_spearman
 
 
 def save_plot(x, y, plots_folder, filename):
-    plot = sns.scatterplot(x=x, y=y, s=2)
+    df = pd.DataFrame({"Validation Score": x, "Target Accuracy": y})
+    sns.set(font_scale=2, style="whitegrid", rc={"figure.figsize": (10, 10)})
+    plot = sns.scatterplot(data=df, x="Validation Score", y="Target Accuracy", s=4)
     fig = plot.get_figure()
     c_f.makedir_if_not_there(plots_folder)
     fig.savefig(
@@ -23,23 +27,27 @@ def save_plot(x, y, plots_folder, filename):
     fig.clf()
 
 
+def normalize(x):
+    return (x - np.min(x)) / (np.max(x) - np.min(x))
+
+
 def step_example():
     num_samples = 10000
     x = np.arange(num_samples) / num_samples
     y = np.arange(num_samples) / num_samples
     y_bad = np.concatenate([y[:9000], np.arange(1000) / num_samples], axis=0)
     y_good = y
-    return x, y_bad, y_good
+    return x, normalize(y_bad), normalize(y_good)
 
 
 def noise_example():
-    num_samples = 10000
+    num_samples = 40000
     x = np.arange(num_samples) / num_samples
     y = np.arange(num_samples) / num_samples
     noise = np.random.randn(num_samples)
     y_bad = y - noise * x * 0.5
     y_good = y - noise * (x[::-1]) * 0.5
-    return x, y_bad, y_good
+    return x, normalize(y_bad), normalize(y_good)
 
 
 def main(args):
@@ -49,22 +57,45 @@ def main(args):
     ]:
 
         print("\n\n", name)
-        print("spearman", spearmanr(x, y_bad).correlation)
-        print("weighted spearman", weighted_spearman(x, y_bad, 2))
-        print("spearman", spearmanr(x, y_good).correlation)
-        print("weighted spearman", weighted_spearman(x, y_good, 2))
+        spearman_bad = spearmanr(x, y_bad).correlation
+        weighted_spearman_bad = weighted_spearman(x, y_bad, 2)
+        spearman_good = spearmanr(x, y_good).correlation
+        weighted_spearman_good = weighted_spearman(x, y_good, 2)
 
-        save_plot(
-            x,
-            y_bad,
-            os.path.join(args.output_folder, "synthetic_correlation_examples"),
-            f"{name}_bad",
+        print("spearman_bad", spearman_bad)
+        print("weighted_spearman_bad", weighted_spearman_bad)
+        print("spearman_good", spearman_good)
+        print("weighted_spearman_good", weighted_spearman_good)
+
+        plots_folder = os.path.join(
+            args.output_folder, "synthetic_correlation_examples"
         )
-        save_plot(
-            x,
-            y_good,
-            os.path.join(args.output_folder, "synthetic_correlation_examples"),
+        x_label = "Validation Score"
+        y_label = "Target Accuracy"
+        kwargs = {
+            "x_label": x_label,
+            "y_label": y_label,
+            "font_scale": 2,
+            "figsize": (10, 10),
+            "s": 0.2,
+        }
+
+        scatter_plot(
+            plots_folder,
+            pd.DataFrame({x_label: x, y_label: y_bad}),
+            x_label,
+            y_label,
+            f"{name}_bad",
+            **kwargs,
+        )
+
+        scatter_plot(
+            plots_folder,
+            pd.DataFrame({x_label: x, y_label: y_good}),
+            x_label,
+            y_label,
             f"{name}_good",
+            **kwargs,
         )
 
 
