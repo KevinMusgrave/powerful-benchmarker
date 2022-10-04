@@ -16,6 +16,7 @@ from latex.correlation_single_adapter import correlation_single_adapter
 from latex.pred_acc_using_best_adapter_validator_pairs import (
     pred_acc_using_best_adapter_validator_pairs,
 )
+from latex.validator_parameter_explanations import validator_parameter_explanations
 from validator_tests.utils.constants import add_exp_group_args
 
 
@@ -23,6 +24,7 @@ def main(args):
     src_threshold = 0.0
     wsp = "weighted_spearman"
     best_accuracy_per_adapter(args)
+    validator_parameter_explanations(args, wsp, src_threshold)
     pred_acc_using_best_adapter_validator_pairs(args, wsp, src_threshold)
     correlation_diffs(args, False, [wsp, "spearman"], src_threshold)
     correlation_single_adapter(args, wsp, src_threshold)
