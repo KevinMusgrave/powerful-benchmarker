@@ -1,5 +1,6 @@
 import torch
-from pytorch_adapt.layers import BatchSpectralLoss, BNMLoss
+from pytorch_adapt.layers import BatchSpectralLoss
+from pytorch_adapt.validators import BNMValidator
 
 from .base_config import BaseConfig, get_split_and_layer
 
@@ -28,11 +29,13 @@ class BNM(BaseConfig):
     def __init__(self, config):
         super().__init__(config)
         self.layer = self.validator_args["layer"]
-        self.validator = BNMLoss()
+        self.validator = BNMValidator(
+            key_map={self.split: "target_train"},
+        )
 
     def score(self, x, exp_config, device):
         features = get_split_and_layer(x, self.split, self.layer, device)
-        return -self.validator(features).item()
+        return self.validator(**{self.split: {self.layer: features}})
 
     def expected_keys(self):
         return {"split", "layer"}
