@@ -2,9 +2,11 @@ import argparse
 import glob
 import os
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 
 sys.path.insert(0, ".")
@@ -106,17 +108,43 @@ def eval_subsets(subsets_folder, original_folder):
             all_diffs.to_pickle(f"{filename}.pkl")
 
 
+def plot_diffs(subsets_folder):
+    folders = glob.glob(os.path.join(subsets_folder, "diffs", "*"))
+    for fol in folders:
+        files = glob.glob(os.path.join(fol, "*.pkl"))
+        for fil in files:
+            df = pd.read_pickle(fil)
+            df = df.pivot(
+                index=["epoch_interval"], columns=["run_interval"], values=["avg_diff"]
+            )
+            df = df.droplevel(0, axis=1)
+
+            dataset_name = os.path.basename(fol)
+            plot = sns.heatmap(data=df)
+            fig = plot.get_figure()
+            plots_folder = os.path.join(subsets_folder, "plots", dataset_name)
+            c_f.makedir_if_not_there(plots_folder)
+            fig.savefig(
+                os.path.join(plots_folder, f"{Path(fil).stem}.png"),
+                bbox_inches="tight",
+            )
+            fig.clf()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(allow_abbrev=False)
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
     parser.add_argument("--original_folder", type=str, default="tables")
     parser.add_argument("--output_folder", type=str, default="tables_subsets")
+    parser.add_argument("--action", type=str, choices=["create", "eval", "plot"])
     parser.add_argument("--create_subsets", action="store_true")
     create_main.add_main_args(parser)
     args = parser.parse_args()
 
-    if args.create_subsets:
+    if args.action == "create":
         create_main.main(args, create_subsets, create_subsets)
-    else:
+    elif args.action == "eval":
         eval_subsets(args.output_folder, args.original_folder)
+    elif args.action == "plot":
+        plot_diffs(args.output_folder)
