@@ -150,17 +150,21 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_AC
     )
 
 
-def get_fn(args):
-    def eval_validators(output_folder, df):
-        for s in args.src_threshold:
-            get_weighted_spearman_score(output_folder, df, False, s)
-            get_weighted_spearman_score(output_folder, df, True, s)
-            get_spearman_score(output_folder, df, False, s)
-            get_spearman_score(output_folder, df, True, s)
-        get_best_accuracy_per_adapter(output_folder, df, args.nlargest)
-        get_best_accuracy_per_adapter(output_folder, df, args.nlargest, rank_by="score")
+def eval_validators(output_folder, df, src_thresholds, nlargest):
+    for s in src_thresholds:
+        get_weighted_spearman_score(output_folder, df, False, s)
+        get_weighted_spearman_score(output_folder, df, True, s)
+        get_spearman_score(output_folder, df, False, s)
+        get_spearman_score(output_folder, df, True, s)
+    get_best_accuracy_per_adapter(output_folder, df, nlargest)
+    get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by="score")
 
-    return eval_validators
+
+def get_fn(args):
+    def fn(output_folder, df):
+        eval_validators(output_folder, df, args.src_threshold, args.nlargest)
+
+    return fn
 
 
 if __name__ == "__main__":
