@@ -6,7 +6,6 @@ def main(args):
     validators = [
         {"flags": "Accuracy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "Entropy", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "Diversity", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "DEVBinary", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "SND", "exp_per_slurm_job": "3", "trials_per_exp": "100"},
         {
@@ -19,11 +18,7 @@ def main(args):
             "exp_per_slurm_job": "4",
             "trials_per_exp": "100",
         },
-        {"flags": "MMD", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "MMDPerClass", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
         {"flags": "BNM", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "MCC", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
-        {"flags": "NearestSource", "exp_per_slurm_job": "4", "trials_per_exp": "100"},
     ]
 
     if args.validators:

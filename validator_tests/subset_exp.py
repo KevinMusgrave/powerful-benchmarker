@@ -113,6 +113,7 @@ def plot_diffs(subsets_folder):
     for fol in folders:
         files = glob.glob(os.path.join(fol, "*.pkl"))
         for fil in files:
+            print(fil)
             df = pd.read_pickle(fil)
             df = df.pivot(
                 index=["epoch_interval"], columns=["run_interval"], values=["avg_diff"]

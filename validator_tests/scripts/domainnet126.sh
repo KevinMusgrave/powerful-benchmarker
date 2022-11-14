@@ -1,0 +1,1 @@
+python validator_tests/scripts/run.py --exp_per_slurm_job_mul 10 --other_args "--exp_group_prefix $1 --partition=lowpri" --slurm_config a100
