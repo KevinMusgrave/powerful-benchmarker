@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pytorch_adapt.utils import common_functions as c_f
 
-from . import threshold_utils
 from .constants import TARGET_ACCURACY
-from .plot_utils import plot_loop
+from .plot_utils import filter_and_plot
 
 
 def scatter_plot(
@@ -88,39 +87,13 @@ def plot_val_vs_acc(
 ):
     plots_folder = os.path.join(plots_folder, "val_vs_acc")
 
-    filter_by = [
-        "dataset",
-        "src_domains",
-        "target_domains",
-        "validator",
-        "validator_args",
-    ]
-
-    sub_folder_components = ["dataset", "src_domains", "target_domains"]
-
-    if per_adapter:
-        filter_by.append("adapter")
-        sub_folder_components.append("adapter")
-    if per_feature_layer:
-        filter_by.append("feature_layer")
-        sub_folder_components.append("feature_layer")
-
-    filename_suffix = ""
-    if src_threshold is not None:
-        df = threshold_utils.filter_by_src_threshold(
-            df, src_threshold, filter_action="remove"
-        )
-        filename_suffix = f"{src_threshold}_src_threshold"
-
-    plot_loop(
+    filter_and_plot(
         df,
-        plots_folder,
         get_score_vs_target_accuracy_fn(**kwargs),
-        filter_by=filter_by,
-        sub_folder_components=sub_folder_components,
-        filename_components=["validator", "validator_args"],
-        filename_suffix=filename_suffix,
-        per_adapter=per_adapter,
-        validator_set=validator_set,
-        adapter=adapter,
+        plots_folder,
+        per_adapter,
+        per_feature_layer,
+        validator_set,
+        src_threshold,
+        adapter,
     )

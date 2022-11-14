@@ -11,16 +11,16 @@ def set_nan_inf_to_min(x):
     return x
 
 
-def assert_all_finite(target_accuracies, validation_scores):
+def assert_all_finite(validation_scores, target_accuracies):
     validation_scores = set_nan_inf_to_min(validation_scores)
     assert np.isfinite(target_accuracies).all()
     assert np.isfinite(validation_scores).all()
-    return target_accuracies, validation_scores
+    return validation_scores, target_accuracies
 
 
-def weighted_spearman(target_accuracies, validation_scores, pow):
-    target_accuracies, validation_scores = assert_all_finite(
-        target_accuracies, validation_scores
+def weighted_spearman(validation_scores, target_accuracies, pow):
+    validation_scores, target_accuracies = assert_all_finite(
+        validation_scores, target_accuracies
     )
     ranks = rankdata(validation_scores, method="dense").astype(float)
     ranks /= np.max(ranks)
@@ -33,11 +33,8 @@ def weighted_spearman(target_accuracies, validation_scores, pow):
     )(method="spearman")
 
 
-def spearman(target_accuracies, validation_scores):
-    target_accuracies, validation_scores = assert_all_finite(
-        target_accuracies, validation_scores
+def spearman(validation_scores, target_accuracies):
+    validation_scores, target_accuracies = assert_all_finite(
+        validation_scores, target_accuracies
     )
-    return spearmanr(
-        target_accuracies,
-        validation_scores,
-    ).correlation
+    return spearmanr(validation_scores, target_accuracies).correlation

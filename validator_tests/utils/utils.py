@@ -131,14 +131,14 @@ def filter_exp_groups(exp_folder, prefix="", suffix="", includes="", excludes=""
     return exp_groups
 
 
-def get_exp_groups(args, exp_folder=None):
-    if args.exp_groups:
+def get_exp_groups(args, exp_folder=None, suffix=""):
+    if getattr(args, f"exp_groups{suffix}"):
         return args.exp_groups
     else:
         return filter_exp_groups(
-            args.exp_folder if exp_folder is None else exp_folder,
-            prefix=args.exp_group_prefix,
-            suffix=args.exp_group_suffix,
-            includes=args.exp_group_includes,
-            excludes=args.exp_group_excludes,
+            getattr(args, f"exp_folder{suffix}") if exp_folder is None else exp_folder,
+            prefix=getattr(args, f"exp_group_prefix{suffix}"),
+            suffix=getattr(args, f"exp_group_suffix{suffix}"),
+            includes=getattr(args, f"exp_group_includes{suffix}"),
+            excludes=getattr(args, f"exp_group_excludes{suffix}"),
         )

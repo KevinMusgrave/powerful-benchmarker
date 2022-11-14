@@ -80,7 +80,7 @@ def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, nam
 
 def get_weighted_spearman_score(output_folder, df, per_adapter, src_threshold):
     def score_fn(x):
-        return weighted_spearman(x[TARGET_ACCURACY].values, x["score"].values, pow=2)
+        return weighted_spearman(x["score"].values, x[TARGET_ACCURACY].values, pow=2)
 
     get_correlation(
         output_folder, df, per_adapter, src_threshold, score_fn, "weighted_spearman"
@@ -89,24 +89,29 @@ def get_weighted_spearman_score(output_folder, df, per_adapter, src_threshold):
 
 def get_spearman_score(output_folder, df, per_adapter, src_threshold):
     def score_fn(x):
-        return spearman(x[TARGET_ACCURACY].values, x["score"].values)
+        return spearman(x["score"].values, x[TARGET_ACCURACY].values)
 
     get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, "spearman")
 
 
-def get_best_accuracy_per_adapter(output_folder, df, nlargest):
-    # Filtering by validator not actually necessary. I'm only doing it to remove duplicates
-    to_save = df[
-        (df["validator"] == "Accuracy")
-        & (df["validator_args"] == '{"average": "micro", "split": "target_train"}')
-    ]
-    groupby = group_by_task(per_adapter=True)
-    to_save = (
-        to_save.groupby(groupby + ["trial_num"])[TARGET_ACCURACY].max().reset_index()
-    )
-    ranked = to_save.groupby(groupby)[TARGET_ACCURACY].rank(
+def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_ACCURACY):
+    assert rank_by in [TARGET_ACCURACY, "score"]
+    groupby = group_by_task_validator(per_adapter=True)
+    groupby_with_trial_num = groupby + ["trial_num"]
+
+    # best score per trial
+    ranked = df.groupby(groupby_with_trial_num)[rank_by].rank(
         method="min", ascending=False
     )
+    to_save = df[ranked <= 1]
+
+    # remove duplicate scores for a trial by taking the earliest epoch
+    to_save = to_save.sort_values(by=["epoch"]).drop_duplicates(
+        subset=groupby_with_trial_num
+    )
+
+    # best scores across trials
+    ranked = to_save.groupby(groupby)[rank_by].rank(method="min", ascending=False)
     to_save = to_save[ranked <= nlargest]
     to_save = to_save.groupby(groupby, as_index=False).agg(
         {TARGET_ACCURACY: ["mean", "std"]}
@@ -119,20 +124,47 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest):
         }
     )
     to_save = add_task_column(to_save)
-    to_save = to_save[["adapter", "task", TARGET_ACCURACY, f"{TARGET_ACCURACY}_std"]]
-    save_df(output_folder, df, to_save, f"best_accuracy_per_adapter_{nlargest}")
+    keep_cols = [
+        "adapter",
+        "task",
+        "validator",
+        "validator_args",
+        TARGET_ACCURACY,
+        f"{TARGET_ACCURACY}_std",
+    ]
+    if rank_by == TARGET_ACCURACY:
+        to_save = to_save[
+            (to_save["validator"] == "Accuracy")
+            & (
+                to_save["validator_args"]
+                == '{"average": "micro", "split": "target_train"}'
+            )
+        ]
+        keep_cols.remove("validator")
+        keep_cols.remove("validator_args")
+
+    to_save = to_save[keep_cols]
+    rank_by_str = "" if rank_by == TARGET_ACCURACY else f"_ranked_by_{rank_by}"
+    save_df(
+        output_folder, df, to_save, f"best_accuracy_per_adapter{rank_by_str}_{nlargest}"
+    )
+
+
+def eval_validators(output_folder, df, src_thresholds, nlargest):
+    for s in src_thresholds:
+        get_weighted_spearman_score(output_folder, df, False, s)
+        get_weighted_spearman_score(output_folder, df, True, s)
+        get_spearman_score(output_folder, df, False, s)
+        get_spearman_score(output_folder, df, True, s)
+    get_best_accuracy_per_adapter(output_folder, df, nlargest)
+    get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by="score")
 
 
 def get_fn(args):
-    def eval_validators(output_folder, df):
-        for s in args.src_threshold:
-            get_weighted_spearman_score(output_folder, df, False, s)
-            get_weighted_spearman_score(output_folder, df, True, s)
-            get_spearman_score(output_folder, df, False, s)
-            get_spearman_score(output_folder, df, True, s)
-        get_best_accuracy_per_adapter(output_folder, df, args.nlargest)
+    def fn(output_folder, df):
+        eval_validators(output_folder, df, args.src_threshold, args.nlargest)
 
-    return eval_validators
+    return fn
 
 
 if __name__ == "__main__":

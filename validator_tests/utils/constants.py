@@ -18,9 +18,9 @@ def exp_group_args():
     ]
 
 
-def add_exp_group_args(parser):
-    parser.add_argument("--exp_groups", nargs="+", type=str, default=[])
+def add_exp_group_args(parser, suffix=""):
+    parser.add_argument(f"--exp_groups{suffix}", nargs="+", type=str, default=[])
     x = exp_group_args()
     x.remove("exp_groups")
     for k in x:
-        parser.add_argument(f"--{k}", type=str)
+        parser.add_argument(f"--{k}{suffix}", type=str)

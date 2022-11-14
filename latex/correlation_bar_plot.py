@@ -6,10 +6,25 @@ from latex.correlation import base_filename, get_postprocess_df, get_preprocess_
 from latex.table_creator import table_creator
 
 
-def reshape_and_plot(df, output_folder, basename, name):
+def combine_levels(df):
+    new_col = df.apply(lambda x: f'{x["validator"]}: {x["validator_args"]}', axis=1)
+    return df.assign(validator_as_str=new_col).drop(
+        columns=["validator", "validator_args"]
+    )
+
+
+def reshape_and_plot(
+    df,
+    output_folder,
+    basename,
+    name,
+    new_col_fn=None,
+    figsize=(12, 12),
+    y_tick_labelsize=None,
+):
+    new_col_fn = combine_levels if new_col_fn is None else new_col_fn
     df = df.reset_index()
-    new_col = df.apply(lambda x: f'{x["level_0"]}: {x["level_1"]}', axis=1)
-    df = df.assign(validator_as_str=new_col).drop(columns=["level_0", "level_1"])
+    df = new_col_fn(df)
     df["validator_as_str"] = df["validator_as_str"].str.replace(
         "\\tau", "τ", regex=False
     )
@@ -23,7 +38,7 @@ def reshape_and_plot(df, output_folder, basename, name):
         else "Spearman Correlation"
     )
 
-    sns.set(style="whitegrid", rc={"figure.figsize": (12, 12)})
+    sns.set_theme(style="whitegrid")
     plt = sns.barplot(
         x="value",
         y="validator_as_str",
@@ -35,7 +50,10 @@ def reshape_and_plot(df, output_folder, basename, name):
         capsize=0.1,
     )
     plt.set(xlabel=xlabel, ylabel="Validator", xlim=(-100, 100))
+    if y_tick_labelsize:
+        plt.set_yticklabels(plt.get_yticklabels(), size=y_tick_labelsize)
     fig = plt.get_figure()
+    fig.set_size_inches(*figsize)
     fig.savefig(
         os.path.join(output_folder, f"{basename}_barplot.png"), bbox_inches="tight"
     )
@@ -47,9 +65,11 @@ def correlation_bar_plot(args, per_adapter, name, src_threshold):
 
     df, output_folder = table_creator(
         args,
+        args.input_folder,
+        args.output_folder,
         basename,
         preprocess_df=get_preprocess_df(per_adapter),
-        postprocess_df=get_postprocess_df(per_adapter),
+        postprocess_df=get_postprocess_df(per_adapter, remove_index_names=False),
         do_save_to_latex=False,
     )
 
