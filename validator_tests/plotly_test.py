@@ -12,7 +12,7 @@ from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.eval_validators import group_by_task_validator
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
-from validator_tests.utils.df_utils import unify_validator_columns
+from validator_tests.utils.df_utils import validator_str
 
 
 def get_best_accuracy_per_adapter(df):
@@ -39,14 +39,18 @@ def add_dummy_validator_column(df):
     return pd.merge(df, dfg, on="validator", how="left")
 
 
-def create_plot(original_df, validator_name):
+def create_plot(original_df, validator_name, validator_args):
     true_max = original_df[TARGET_ACCURACY].max()
     true_min = original_df[TARGET_ACCURACY].min()
     df = original_df.copy()
-    df = df[(df["adapter"] == "DANNConfig") & (df["validator"] == validator_name)]
+    df = df[
+        (df["adapter"] == "DANNConfig")
+        & (df["validator"] == validator_name)
+        & (df["validator_args"] == validator_args)
+    ]
+    if len(df) == 0:
+        return
     df = get_best_accuracy_per_adapter(df)
-    df = unify_validator_columns(df)
-    df = add_dummy_validator_column(df)
 
     applied_df = df.apply(
         lambda row: json.loads(row.trial_params), axis="columns", result_type="expand"
@@ -67,13 +71,6 @@ def create_plot(original_df, validator_name):
         for x in trial_param_keys
     ]
 
-    validator_dimension = dict(
-        tickvals=df["validator_index"],
-        ticktext=df["validator"],
-        label="Validator",
-        values=df["validator_index"],
-    )
-
     fig = go.Figure(
         data=go.Parcoords(
             line=dict(
@@ -85,21 +82,21 @@ def create_plot(original_df, validator_name):
             ),
             dimensions=list(
                 [
-                    validator_dimension,
                     *trial_param_dimensions,
                     dict(label="Feature Layer", values=df["feature_layer"]),
                 ]
             ),
         )
     )
-    fig.write_html(f"plotly_test_{validator_name}.html")
+    fig.write_html(f"plotly_test_{validator_str(validator_name, validator_args)}.html")
 
 
 def create_subsets(output_folder, original_df):
     for validator_name in original_df["validator"].unique():
-        print(validator_name)
-        create_plot(original_df, validator_name)
-    
+        curr_df = original_df[original_df["validator"] == validator_name]
+        for validator_args in curr_df["validator_args"].unique():
+            print(validator_name, validator_args)
+            create_plot(original_df, validator_name, validator_args)
 
 
 if __name__ == "__main__":
