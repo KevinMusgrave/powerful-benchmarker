@@ -50,7 +50,19 @@ def group_by_task_validator(per_adapter):
     return ["validator", "validator_args"] + group_by_task(per_adapter)
 
 
-def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, name):
+def get_score_fn(name):
+    def ws_score_fn(x):
+        return weighted_spearman(x["score"].values, x[TARGET_ACCURACY].values, pow=2)
+
+    def s_score_fn(x):
+        return spearman(x["score"].values, x[TARGET_ACCURACY].values)
+
+    return {"weighted_spearman": ws_score_fn, "spearman": s_score_fn}[name]
+
+
+def _get_correlation(df, per_adapter, src_threshold, name):
+    score_fn = get_score_fn(name)
+
     if src_threshold != 0:
         raise ValueError("src_threshold is temporarily disabled")
     # df = threshold_utils.filter_by_src_threshold(
@@ -62,10 +74,8 @@ def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, nam
     new_df = new_df.reset_index(name=name)
     df = assign_original_df_info(new_df, df)
 
-    filename = f"{name}_{src_threshold}_src_threshold"
     keep = ["validator", "validator_args", "task", name]
     if per_adapter:
-        filename += "_per_adapter"
         keep += ["adapter"]
     to_save = df[keep]
 
@@ -75,26 +85,18 @@ def get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, nam
         )
         to_save = to_save.droplevel(0, axis=1).rename_axis(None, axis=1).reset_index()
 
+    return to_save
+
+
+def get_correlation(output_folder, df, per_adapter, src_threshold, name):
+    to_save = _get_correlation(df, per_adapter, src_threshold, name)
+    filename = f"{name}_{src_threshold}_src_threshold"
+    if per_adapter:
+        filename += "_per_adapter"
     save_df(output_folder, df, to_save, filename)
 
 
-def get_weighted_spearman_score(output_folder, df, per_adapter, src_threshold):
-    def score_fn(x):
-        return weighted_spearman(x["score"].values, x[TARGET_ACCURACY].values, pow=2)
-
-    get_correlation(
-        output_folder, df, per_adapter, src_threshold, score_fn, "weighted_spearman"
-    )
-
-
-def get_spearman_score(output_folder, df, per_adapter, src_threshold):
-    def score_fn(x):
-        return spearman(x["score"].values, x[TARGET_ACCURACY].values)
-
-    get_correlation(output_folder, df, per_adapter, src_threshold, score_fn, "spearman")
-
-
-def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_ACCURACY):
+def _get_best_accuracy_per_adapter(df, nlargest, rank_by=TARGET_ACCURACY):
     assert rank_by in [TARGET_ACCURACY, "score"]
     groupby = group_by_task_validator(per_adapter=True)
     groupby_with_trial_num = groupby + ["trial_num"]
@@ -143,7 +145,11 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_AC
         keep_cols.remove("validator")
         keep_cols.remove("validator_args")
 
-    to_save = to_save[keep_cols]
+    return to_save[keep_cols]
+
+
+def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_ACCURACY):
+    to_save = _get_best_accuracy_per_adapter(df, nlargest, rank_by)
     rank_by_str = "" if rank_by == TARGET_ACCURACY else f"_ranked_by_{rank_by}"
     save_df(
         output_folder, df, to_save, f"best_accuracy_per_adapter{rank_by_str}_{nlargest}"
@@ -152,10 +158,10 @@ def get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by=TARGET_AC
 
 def eval_validators(output_folder, df, src_thresholds, nlargest):
     for s in src_thresholds:
-        get_weighted_spearman_score(output_folder, df, False, s)
-        get_weighted_spearman_score(output_folder, df, True, s)
-        get_spearman_score(output_folder, df, False, s)
-        get_spearman_score(output_folder, df, True, s)
+        get_correlation(output_folder, df, False, s, "weighted_spearman")
+        get_correlation(output_folder, df, True, s, "weighted_spearman")
+        get_correlation(output_folder, df, False, s, "spearman")
+        get_correlation(output_folder, df, True, s, "spearman")
     get_best_accuracy_per_adapter(output_folder, df, nlargest)
     get_best_accuracy_per_adapter(output_folder, df, nlargest, rank_by="score")
 

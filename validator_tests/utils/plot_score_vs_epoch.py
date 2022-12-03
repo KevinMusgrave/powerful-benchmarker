@@ -17,9 +17,9 @@ def line_plot(
 ):
     sns.set(font_scale=font_scale, style="whitegrid", rc={"figure.figsize": figsize})
 
-    best_trial_num = df.loc[df["score"].idxmax()]["trial_num"]    
+    best_trial_num = df.loc[df["score"].idxmax()]["trial_num"]
     best_trial = df[df["trial_num"] == best_trial_num]
-    worst_trial_num = df.loc[df["score"].idxmin()]["trial_num"]    
+    worst_trial_num = df.loc[df["score"].idxmin()]["trial_num"]
     worst_trial = df[df["trial_num"] == worst_trial_num]
 
     sns.lineplot(data=df, x=x, y=y, ci="sd")
