@@ -3,6 +3,7 @@ import os
 import sys
 
 import pandas as pd
+import seaborn as sns
 
 sys.path.insert(0, ".")
 
@@ -20,6 +21,17 @@ from validator_tests.utils.plot_val_vs_acc import scatter_plot
 
 def get_folder_name(folder, full_df):
     return os.path.join(folder, get_name_from_df(full_df, assert_one_task=True))
+
+
+def save_boxplot(folder_name, df, x, y, filename, figsize=(4.8, 4.8)):
+    sns.set(style="whitegrid", rc={"figure.figsize": figsize})
+    plot = sns.boxplot(data=df, x=x, y=y)
+    fig = plot.get_figure()
+    fig.savefig(
+        os.path.join(folder_name, f"{filename}.png"),
+        bbox_inches="tight",
+    )
+    fig.clf()
 
 
 def plot_globally_ranked(folder_name, one_adapter, corr_name, adapter_name):
@@ -41,9 +53,10 @@ def plot_globally_ranked(folder_name, one_adapter, corr_name, adapter_name):
         x=corr_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_top200",
-        figsize=(20, 20),
+        figsize=(4.8, 4.8),
         s=1,
     )
+    return one_adapter
 
 
 def plot_trial_ranked(folder_name, one_adapter, corr_name, adapter_name):
@@ -66,9 +79,10 @@ def plot_trial_ranked(folder_name, one_adapter, corr_name, adapter_name):
         x=corr_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_per_trial_top5",
-        figsize=(20, 20),
+        figsize=(4.8, 4.8),
         s=1,
     )
+    return one_adapter
 
 
 def plot_best_pairs(folder_name, df, corr_name):
@@ -88,8 +102,25 @@ def plot_best_pairs(folder_name, df, corr_name):
     for adapter, validator in best_validators:
         mask |= (df["adapter"] == adapter) & (df["unified_validator"] == validator)
     df = df[mask]
-    plot_globally_ranked(folder_name, df, corr_name, "ALL")
-    plot_trial_ranked(folder_name, df, corr_name, "ALL")
+    gdf = plot_globally_ranked(folder_name, df, corr_name, "ALL")
+    tdf = plot_trial_ranked(folder_name, df, corr_name, "ALL")
+    gdf = gdf.sort_values(by=["adapter"])
+    tdf = tdf.sort_values(by=["adapter"])
+
+    save_boxplot(
+        folder_name,
+        gdf[gdf["rank"] < 200],
+        "adapter",
+        TARGET_ACCURACY,
+        "AAA_best_pairs_global_boxplot",
+    )
+    save_boxplot(
+        folder_name,
+        tdf[tdf["rank"] < 5],
+        "adapter",
+        TARGET_ACCURACY,
+        "AAA_best_pairs_per_trial_boxplot",
+    )
 
 
 def adapter_names():
