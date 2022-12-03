@@ -14,7 +14,7 @@ from validator_tests.eval_validators import (
 )
 from validator_tests.utils import create_main
 from validator_tests.utils.constants import TARGET_ACCURACY, add_exp_group_args
-from validator_tests.utils.df_utils import get_name_from_df
+from validator_tests.utils.df_utils import get_name_from_df, unify_validator_columns
 from validator_tests.utils.plot_val_vs_acc import scatter_plot
 
 
@@ -41,7 +41,6 @@ def plot_globally_ranked(folder_name, one_adapter, corr_name, adapter_name):
         x=corr_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_top200",
-        c="rank",
         figsize=(20, 20),
         s=1,
     )
@@ -61,6 +60,51 @@ def plot_trial_ranked(folder_name, one_adapter, corr_name, adapter_name):
         figsize=(20, 20),
         s=1,
     )
+    scatter_plot(
+        folder_name,
+        df=one_adapter[one_adapter["rank"] < 5],
+        x=corr_name,
+        y=TARGET_ACCURACY,
+        filename=f"{adapter_name}_per_trial_top5",
+        figsize=(20, 20),
+        s=1,
+    )
+
+
+def plot_best_pairs(folder_name, df, corr_name):
+    df = unify_validator_columns(
+        df, new_col_name="unified_validator", drop_validator_args=False
+    )
+    best_validators = [
+        (
+            x,
+            "BNMSummedSrcVal_layer_logits"
+            if x == "ATDOCConfig"
+            else "Accuracy_average_micro_split_src_val",
+        )
+        for x in adapter_names()
+    ]
+    mask = False
+    for adapter, validator in best_validators:
+        mask |= (df["adapter"] == adapter) & (df["unified_validator"] == validator)
+    df = df[mask]
+    plot_globally_ranked(folder_name, df, corr_name, "ALL")
+    plot_trial_ranked(folder_name, df, corr_name, "ALL")
+
+
+def adapter_names():
+    return [
+        "ATDOCConfig",
+        "BNMConfig",
+        "BSPConfig",
+        "CDANConfig",
+        "DANNConfig",
+        "GVBConfig",
+        "IMConfig",
+        "MCCConfig",
+        "MCDConfig",
+        "MMDConfig",
+    ]
 
 
 def get_fn(args):
@@ -70,29 +114,21 @@ def get_fn(args):
         corr = pd.melt(
             corr,
             id_vars=["validator", "validator_args", "task"],
-            value_vars=[
-                "ATDOCConfig",
-                "BNMConfig",
-                "BSPConfig",
-                "CDANConfig",
-                "DANNConfig",
-                "GVBConfig",
-                "IMConfig",
-                "MCCConfig",
-                "MCDConfig",
-                "MMDConfig",
-            ],
+            value_vars=adapter_names(),
             var_name="adapter",
             value_name=corr_name,
         )
         assert len(df["task"].unique()) == 1
-        for a in corr["adapter"].unique():
-            print(a)
-            one_adapter = corr[corr["adapter"] == a]
-            one_adapter = one_adapter.merge(df)
-            folder_name = get_folder_name(output_folder, one_adapter)
-            plot_globally_ranked(folder_name, one_adapter, corr_name, a)
-            plot_trial_ranked(folder_name, one_adapter, corr_name, a)
+        folder_name = get_folder_name(output_folder, df)
+
+        plot_best_pairs(folder_name, corr.merge(df), corr_name)
+
+        # for a in corr["adapter"].unique():
+        #     print(a)
+        #     one_adapter = corr[corr["adapter"] == a]
+        #     one_adapter = one_adapter.merge(df)
+        #     plot_globally_ranked(folder_name, one_adapter, corr_name, a)
+        #     plot_trial_ranked(folder_name, one_adapter, corr_name, a)
 
     return fn
 
