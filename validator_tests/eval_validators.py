@@ -96,7 +96,9 @@ def get_correlation(output_folder, df, per_adapter, src_threshold, name):
     save_df(output_folder, df, to_save, filename)
 
 
-def _get_best_accuracy_per_adapter(df, nlargest, rank_by=TARGET_ACCURACY):
+def _get_best_accuracy_per_adapter(
+    df, nlargest, rank_by=TARGET_ACCURACY, return_ranks=False
+):
     assert rank_by in [TARGET_ACCURACY, "score"]
     groupby = group_by_task_validator(per_adapter=True)
     groupby_with_trial_num = groupby + ["trial_num"]
@@ -114,6 +116,10 @@ def _get_best_accuracy_per_adapter(df, nlargest, rank_by=TARGET_ACCURACY):
 
     # best scores across trials
     ranked = to_save.groupby(groupby)[rank_by].rank(method="min", ascending=False)
+    if return_ranks:
+        to_save["rank"] = ranked
+        return to_save[to_save["rank"] <= nlargest]
+
     to_save = to_save[ranked <= nlargest]
     to_save = to_save.groupby(groupby, as_index=False).agg(
         {TARGET_ACCURACY: ["mean", "std"]}
