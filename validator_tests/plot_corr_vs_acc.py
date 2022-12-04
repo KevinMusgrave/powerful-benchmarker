@@ -34,23 +34,23 @@ def save_boxplot(folder_name, df, x, y, filename, figsize=(4.8, 4.8)):
     fig.clf()
 
 
-def plot_globally_ranked(folder_name, one_adapter, corr_name, adapter_name):
+def plot_globally_ranked(folder_name, one_adapter, x_name, adapter_name):
     groupby = group_by_task_validator(per_adapter=True)
     ranks = one_adapter.groupby(groupby)["score"].rank(method="min", ascending=False)
     one_adapter["rank"] = ranks
     scatter_plot(
         folder_name,
         df=one_adapter,
-        x=corr_name,
+        x=x_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_all",
         c="rank",
-        figsize=(20, 20),
+        figsize=(4.8, 4.8),
     )
     scatter_plot(
         folder_name,
         df=one_adapter[one_adapter["rank"] < 200],
-        x=corr_name,
+        x=x_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_top200",
         figsize=(4.8, 4.8),
@@ -59,24 +59,24 @@ def plot_globally_ranked(folder_name, one_adapter, corr_name, adapter_name):
     return one_adapter
 
 
-def plot_trial_ranked(folder_name, one_adapter, corr_name, adapter_name):
+def plot_trial_ranked(folder_name, one_adapter, x_name, adapter_name):
     one_adapter = _get_best_accuracy_per_adapter(
         one_adapter, nlargest=100, rank_by="score", return_ranks=True
     )
     scatter_plot(
         folder_name,
         df=one_adapter,
-        x=corr_name,
+        x=x_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_per_trial",
         c="rank",
-        figsize=(20, 20),
+        figsize=(4.8, 4.8),
         s=1,
     )
     scatter_plot(
         folder_name,
         df=one_adapter[one_adapter["rank"] < 5],
-        x=corr_name,
+        x=x_name,
         y=TARGET_ACCURACY,
         filename=f"{adapter_name}_per_trial_top5",
         figsize=(4.8, 4.8),
@@ -85,7 +85,7 @@ def plot_trial_ranked(folder_name, one_adapter, corr_name, adapter_name):
     return one_adapter
 
 
-def plot_best_pairs(folder_name, df, corr_name):
+def plot_best_pairs(folder_name, df):
     df = unify_validator_columns(
         df, new_col_name="unified_validator", drop_validator_args=False
     )
@@ -102,8 +102,8 @@ def plot_best_pairs(folder_name, df, corr_name):
     for adapter, validator in best_validators:
         mask |= (df["adapter"] == adapter) & (df["unified_validator"] == validator)
     df = df[mask]
-    gdf = plot_globally_ranked(folder_name, df, corr_name, "ALL")
-    tdf = plot_trial_ranked(folder_name, df, corr_name, "ALL")
+    gdf = plot_globally_ranked(folder_name, df, "adapter", "ALL")
+    tdf = plot_trial_ranked(folder_name, df, "adapter", "ALL")
     gdf = gdf.sort_values(by=["adapter"])
     tdf = tdf.sort_values(by=["adapter"])
 
@@ -152,7 +152,7 @@ def get_fn(args):
         assert len(df["task"].unique()) == 1
         folder_name = get_folder_name(output_folder, df)
 
-        plot_best_pairs(folder_name, corr.merge(df), corr_name)
+        plot_best_pairs(folder_name, corr.merge(df))
 
         # for a in corr["adapter"].unique():
         #     print(a)
