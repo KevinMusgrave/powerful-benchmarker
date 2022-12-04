@@ -8,12 +8,10 @@ from .constants import TARGET_ACCURACY
 from .plot_utils import filter_and_plot
 
 
-def scatter_plot(
-    plots_folder,
+def _scatter_plot(
     df,
     x,
     y,
-    filename,
     c=None,
     colobar_label=None,
     log_x=False,
@@ -49,6 +47,11 @@ def scatter_plot(
     else:
         plot = sns.scatterplot(data=df, x=x, y=y, hue=c, s=s)
         fig = plot.get_figure()
+    return fig
+
+
+def scatter_plot(plots_folder, df, x, y, filename, **kwargs):
+    fig = _scatter_plot(df, x, y, **kwargs)
     c_f.makedir_if_not_there(plots_folder)
     fig.savefig(
         os.path.join(plots_folder, f"{filename}.png"),
