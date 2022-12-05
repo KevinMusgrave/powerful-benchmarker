@@ -25,7 +25,6 @@ def validator_parameter_explanations(args, name, src_threshold):
     new_col = df.apply(explanations, axis=1)
     df["Explanation"] = new_col
     df = df.set_index(["Validator", "Parameters"])
-    print(df)
 
     df_style = df.style
     latex_str = df_style.format(

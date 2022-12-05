@@ -3,6 +3,7 @@ import sys
 
 sys.path.insert(0, ".")
 from latex.best_accuracy_per_adapter import best_accuracy_per_adapter
+from latex.best_validator_per_adapter_task import best_validator_per_adapter_task
 from latex.correlation import correlation
 from latex.correlation_bar_plot import correlation_bar_plot
 from latex.correlation_bar_plot_adapter_validator_pairs import (
@@ -26,6 +27,7 @@ def main(args):
     best_accuracy_per_adapter(args)
     validator_parameter_explanations(args, wsp, src_threshold)
     pred_acc_using_best_adapter_validator_pairs(args, wsp, src_threshold)
+    best_validator_per_adapter_task(args, wsp, src_threshold)
     correlation_diffs(args, False, [wsp, "spearman"], src_threshold)
     correlation_single_adapter(args, wsp, src_threshold)
     correlation_bar_plot_single_adapter(args, wsp, src_threshold)
