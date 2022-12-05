@@ -56,11 +56,13 @@ def get_best_validators(args, name, src_threshold):
         df = df.loc[df["Mean"].idxmax()]
         best_validators[adapter] = df.name + (rf"${str(df.Mean)} \pm {str(df.Std)}$",)
 
-    return best_validators
+    tasks = [x for x in list(dfs.values())[0].columns if x not in ["Mean", "Std"]]
+
+    return best_validators, tasks
 
 
 def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
-    best_validators = get_best_validators(args, name, src_threshold)
+    best_validators, tasks = get_best_validators(args, name, src_threshold)
 
     nlargest = args.nlargest
     basename = f"best_accuracy_per_adapter_ranked_by_score_{nlargest}"
@@ -68,7 +70,7 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         "tag_prefix": latex_utils.get_tag_prefix(basename),
         "min_value_fn": min_value_fn,
     }
-    _, output_folder = table_creator(
+    best_accs, output_folder = table_creator(
         args,
         args.input_folder,
         args.output_folder,
@@ -78,6 +80,16 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         color_map_tag_kwargs=color_map_tag_kwargs,
         add_resizebox=True,
         final_str_hook=latex_utils.adapter_final_str_hook,
+    )
+
+    best_accs = best_accs[tasks]
+    mean = best_accs.mean(axis=1).round(1).astype(str)
+    std = best_accs.std(axis=1).round(1).astype(str)
+    meanstd = (
+        ("$" + mean + r" \pm " + std + "$")
+        .to_frame("Accuracy")
+        .reset_index()
+        .rename(columns={"index": "Algorithm"})
     )
 
     to_save = (
@@ -94,6 +106,7 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         )
     )
 
+    to_save = to_save.merge(meanstd)
     to_save.style.hide(axis="index").to_latex(
         os.path.join(output_folder, "best_validator_per_algorithm.tex"),
         hrules=True,
