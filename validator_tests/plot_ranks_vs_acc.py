@@ -83,11 +83,30 @@ def get_corr_df(df, corr_name):
         value_name=corr_name,
     )
     assert len(corr["task"].unique()) == 1
+
+    # remove target accuracy validator
+    corr = corr[
+        ~(
+            (corr["validator"] == "Accuracy")
+            & (corr["validator_args"].str.contains("target"))
+        )
+    ]
+
+    # best validators per adapter, for this task
+    best_validators = corr.loc[corr.groupby(["task", "adapter"])[corr_name].idxmax()]
+
     corr = corr.merge(df)
     corr = unify_validator_columns(
         corr, new_col_name="unified_validator", drop_validator_args=False
     )
-    best_validators = [
+
+    # best validators per adapter, for this task, with all columns
+    corr_best_validators = best_validators.merge(corr)
+
+    # TODO: don't have this hardcoded
+    # best validators across all tasks
+    # Determined in latex.pred_acc_using_best_adapter_validator_pairs
+    best_validators_across_tasks = [
         (
             x,
             "BNMSummedSrcVal_layer_logits"
@@ -97,45 +116,55 @@ def get_corr_df(df, corr_name):
         for x in adapter_names()
     ]
     mask = False
-    for adapter, validator in best_validators:
+    for adapter, validator in best_validators_across_tasks:
         mask |= (corr["adapter"] == adapter) & (corr["unified_validator"] == validator)
-    corr_best_validators = corr[mask]
+    corr_best_validators_across_tasks = corr[mask]
 
-    return corr, corr_best_validators
+    return corr, corr_best_validators, corr_best_validators_across_tasks
 
 
 def main_fn(output_folder, df, nlargest, nlargest_global):
     corr_name = "weighted_spearman"
-    corr, corr_best_validators = get_corr_df(df, corr_name)
-
-    best_by_score = _get_best_accuracy_per_adapter(
-        corr_best_validators.copy(), nlargest=100000, rank_by="score", return_ranks=True
-    )
-    best_by_acc = _get_best_accuracy_per_adapter(
-        corr_best_validators.copy(),
-        nlargest=100000,
-        rank_by=TARGET_ACCURACY,
-        return_ranks=True,
-    )
-    best_by_score["rank_type"] = "by validation score"
-    best_by_acc["rank_type"] = "by accuracy"
-    best = pd.concat([best_by_score, best_by_acc], axis=0)
-    plot_corr_vs_true_and_predicted(
-        best, nlargest, corr_name, output_folder, f"selected_models_local_{nlargest}"
+    corr, corr_best_validators, corr_best_validators_across_tasks = get_corr_df(
+        df, corr_name
     )
 
-    best_by_score = get_global_ranks(corr_best_validators.copy(), "score")
-    best_by_acc = get_global_ranks(corr_best_validators.copy(), TARGET_ACCURACY)
-    best_by_score["rank_type"] = "by validation score"
-    best_by_acc["rank_type"] = "by accuracy"
-    best = pd.concat([best_by_score, best_by_acc], axis=0)
-    plot_corr_vs_true_and_predicted(
-        best,
-        nlargest_global,
-        corr_name,
-        output_folder,
-        f"selected_models_global_{nlargest_global}",
-    )
+    for corr_df_name, corr_df in [
+        ("within_task", corr_best_validators),
+        ("across_tasks", corr_best_validators_across_tasks),
+    ]:
+        best_by_score = _get_best_accuracy_per_adapter(
+            corr_df.copy(), nlargest=100000, rank_by="score", return_ranks=True
+        )
+        best_by_acc = _get_best_accuracy_per_adapter(
+            corr_df.copy(),
+            nlargest=100000,
+            rank_by=TARGET_ACCURACY,
+            return_ranks=True,
+        )
+        best_by_score["rank_type"] = "by validation score"
+        best_by_acc["rank_type"] = "by accuracy"
+        best = pd.concat([best_by_score, best_by_acc], axis=0)
+        plot_corr_vs_true_and_predicted(
+            best,
+            nlargest,
+            corr_name,
+            output_folder,
+            f"selected_models_local_{nlargest}_best_validators_{corr_df_name}",
+        )
+
+        best_by_score = get_global_ranks(corr_df.copy(), "score")
+        best_by_acc = get_global_ranks(corr_df.copy(), TARGET_ACCURACY)
+        best_by_score["rank_type"] = "by validation score"
+        best_by_acc["rank_type"] = "by accuracy"
+        best = pd.concat([best_by_score, best_by_acc], axis=0)
+        plot_corr_vs_true_and_predicted(
+            best,
+            nlargest_global,
+            corr_name,
+            output_folder,
+            f"selected_models_global_{nlargest_global}_best_validators_{corr_df_name}",
+        )
 
     for a in corr["adapter"].unique():
         one_adapter = corr[corr["adapter"] == a]
