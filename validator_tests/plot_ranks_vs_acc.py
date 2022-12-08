@@ -54,18 +54,19 @@ def plot_corr_vs_acc(df, max_rank, corr_name, folder, filename):
     to_plot = df[df["rank"] <= max_rank]
     to_plot = to_plot.sort_values(by=["adapter"])
     to_plot["adapter"] = to_plot["adapter"].str.replace("Config", "")
-    sns.set(style="whitegrid", rc={"figure.figsize": (8, 8)})
-    plot = sns.scatterplot(
-        data=to_plot, x=corr_name, y=TARGET_ACCURACY, hue="rank_type", alpha=0.5
-    )
-    sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
-    fig = plot.get_figure()
-    c_f.makedir_if_not_there(folder)
-    fig.savefig(
-        os.path.join(folder, f"{filename}.png"),
-        bbox_inches="tight",
-    )
-    fig.clf()
+    for x in [corr_name, "adapter"]:
+        sns.set(style="whitegrid", rc={"figure.figsize": (8, 8)})
+        plot = sns.scatterplot(
+            data=to_plot, x=x, y=TARGET_ACCURACY, hue="rank_type", alpha=0.5
+        )
+        sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
+        fig = plot.get_figure()
+        c_f.makedir_if_not_there(folder)
+        fig.savefig(
+            os.path.join(folder, f"{x}_{filename}.png"),
+            bbox_inches="tight",
+        )
+        fig.clf()
 
 
 def plot_corr_vs_true_and_predicted(best, max_rank, corr_name, output_folder, filename):
@@ -146,11 +147,15 @@ def main_fn(output_folder, df, nlargest, nlargest_global):
             y=TARGET_ACCURACY,
             filename=f"global_rank_heatmap_{a}",
             c="rank",
+            alpha=0.5,
         )
 
 
 def get_fn(args):
     def fn(output_folder, df):
+        output_folder = os.path.join(
+            output_folder, get_name_from_df(df, assert_one_task=True)
+        )
         return main_fn(output_folder, df, args.nlargest, args.nlargest_global)
 
     return fn

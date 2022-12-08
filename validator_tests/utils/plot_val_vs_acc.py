@@ -23,6 +23,7 @@ def _scatter_plot(
     colorbar=True,
     x_label=None,
     y_label=None,
+    alpha=None,
 ):
     sns.set(font_scale=font_scale, style="whitegrid", rc={"figure.figsize": figsize})
     if colorbar:
@@ -32,6 +33,7 @@ def _scatter_plot(
             c=df[c] if c is not None else None,
             s=s,
             cmap="rainbow",
+            alpha=alpha,
         )
         if c:
             cbar = plt.colorbar(points)
@@ -45,7 +47,7 @@ def _scatter_plot(
             plt.xscale("symlog")
         fig = plt
     else:
-        plot = sns.scatterplot(data=df, x=x, y=y, hue=c, s=s)
+        plot = sns.scatterplot(data=df, x=x, y=y, hue=c, s=s, alpha=alpha)
         fig = plot.get_figure()
     return fig
 
