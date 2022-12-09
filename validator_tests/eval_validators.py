@@ -101,17 +101,17 @@ def _get_best_accuracy_per_adapter(
 ):
     assert rank_by in [TARGET_ACCURACY, "score"]
     groupby = group_by_task_validator(per_adapter=True)
-    groupby_with_trial_num = groupby + ["trial_num"]
+    groupby_with_fl_trial_num = groupby + ["feature_layer", "trial_num"]
 
-    # best score per trial
-    ranked = df.groupby(groupby_with_trial_num)[rank_by].rank(
+    # best score per feature layer per trial
+    ranked = df.groupby(groupby_with_fl_trial_num)[rank_by].rank(
         method="min", ascending=False
     )
     to_save = df[ranked <= 1]
 
     # remove duplicate scores for a trial by taking the earliest epoch
     to_save = to_save.sort_values(by=["epoch"]).drop_duplicates(
-        subset=groupby_with_trial_num
+        subset=groupby_with_fl_trial_num
     )
 
     # best scores across trials
