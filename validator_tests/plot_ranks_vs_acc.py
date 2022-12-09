@@ -4,6 +4,7 @@ import sys
 
 import pandas as pd
 import seaborn as sns
+from scipy.stats import pearsonr, spearmanr
 
 sys.path.insert(0, ".")
 
@@ -81,6 +82,67 @@ def plot_corr_vs_true_and_predicted(best, max_rank, corr_name, output_folder, fi
     plot_corr_vs_acc(best, max_rank, corr_name, output_folder, filename)
 
 
+def plot_corr_vs_nlargest(df, output_folder, filename, corr_name):
+    for rank_method in ["global", "local"]:
+        best_by_score = (
+            get_global_ranks(df.copy(), "score")
+            if rank_method == "global"
+            else _get_best_accuracy_per_adapter(
+                df.copy(), nlargest=10000, rank_by="score", return_ranks=True
+            )
+        )
+
+        for agg in ["min", "max"]:
+            s = {"spearman_correlation": [], "metric": [], "nlargest": []}
+            p = {"pearson_correlation": [], "metric": [], "nlargest": []}
+
+            for nlargest in range(1, 201):
+                curr = best_by_score.copy()
+                curr = curr[curr["rank"] <= nlargest]
+                curr["min"] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(agg)
+                curr["mean"] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(
+                    "mean"
+                )
+                curr = curr[["adapter", corr_name, "min", "mean"]].drop_duplicates()
+
+                min_accs = curr["min"].values
+                mean_accs = curr["mean"].values
+                wsc = curr[corr_name].values
+
+                s["spearman_correlation"].append(
+                    spearmanr(min_accs, mean_accs).correlation
+                )
+                p["pearson_correlation"].append(pearsonr(min_accs, mean_accs)[0])
+                s["metric"].append("mean_acc")
+                p["metric"].append("mean_acc")
+                s["nlargest"].append(nlargest)
+                p["nlargest"].append(nlargest)
+
+                s["spearman_correlation"].append(spearmanr(min_accs, wsc).correlation)
+                p["pearson_correlation"].append(pearsonr(min_accs, wsc)[0])
+                s["metric"].append("weighted_spearman_correlation")
+                p["metric"].append("weighted_spearman_correlation")
+                s["nlargest"].append(nlargest)
+                p["nlargest"].append(nlargest)
+
+            s = pd.DataFrame.from_dict(s)
+            p = pd.DataFrame.from_dict(p)
+
+            for y, corr_df in [("spearman_correlation", s), ("pearson_correlation", p)]:
+                plot = sns.lineplot(data=corr_df, x="nlargest", y=y, hue="metric")
+                sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
+                fig = plot.get_figure()
+                c_f.makedir_if_not_there(output_folder)
+                fig.savefig(
+                    os.path.join(
+                        output_folder,
+                        f"{filename}_{rank_method}_{y}_corr_vs_nlargest_{agg}.png",
+                    ),
+                    bbox_inches="tight",
+                )
+                fig.clf()
+
+
 def get_corr_df(df, corr_name):
     corr = _get_correlation(df.copy(), True, 0.0, corr_name)
     corr = pd.melt(
@@ -141,6 +203,13 @@ def main_fn(output_folder, df, nlargest, nlargest_global):
         ("within_task", corr_best_validators),
         ("across_tasks", corr_best_validators_across_tasks),
     ]:
+        plot_corr_vs_nlargest(
+            corr_df,
+            output_folder,
+            corr_df_name,
+            corr_name,
+        )
+
         best_by_score = _get_best_accuracy_per_adapter(
             corr_df.copy(), nlargest=100000, rank_by="score", return_ranks=True
         )
