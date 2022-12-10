@@ -96,7 +96,7 @@ def plot_corr_vs_nlargest(df, output_folder, filename, corr_name):
             s = {"spearman_correlation": [], "metric": [], "nlargest": []}
             p = {"pearson_correlation": [], "metric": [], "nlargest": []}
 
-            for nlargest in range(1, 201):
+            for nlargest in range(1, best_by_score["rank"].max().squeeze().astype(int)):
                 curr = best_by_score.copy()
                 curr = curr[curr["rank"] <= nlargest]
                 curr["min"] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(agg)
