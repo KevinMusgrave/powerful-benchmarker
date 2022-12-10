@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.stats import pearsonr, spearmanr
@@ -95,8 +96,9 @@ def plot_corr_vs_nlargest(df, output_folder, filename, corr_name):
         for agg in ["min", "max"]:
             s = {"spearman_correlation": [], "metric": [], "nlargest": []}
             p = {"pearson_correlation": [], "metric": [], "nlargest": []}
-
-            for nlargest in range(1, best_by_score["rank"].max().squeeze().astype(int)):
+            for nlargest in np.linspace(
+                1, best_by_score["rank"].max().squeeze().astype(int), 200
+            ):
                 curr = best_by_score.copy()
                 curr = curr[curr["rank"] <= nlargest]
                 curr["min"] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(agg)
