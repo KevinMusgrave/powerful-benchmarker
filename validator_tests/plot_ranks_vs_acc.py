@@ -60,23 +60,23 @@ def plot_corr_vs_acc(df, max_rank, corr_name, folder, filename):
         TARGET_ACCURACY
     ].transform("mean")
     for x in [corr_name, "adapter", "mean_acc"]:
-        _to_plot = (
-            to_plot[to_plot["rank_type"] == "by validation score"]
-            if x == "mean_acc"
-            else to_plot
-        )
-        sns.set(style="whitegrid", rc={"figure.figsize": (8, 8)})
-        plot = sns.scatterplot(
-            data=_to_plot, x=x, y=TARGET_ACCURACY, hue="rank_type", alpha=0.5
-        )
-        sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
-        fig = plot.get_figure()
-        c_f.makedir_if_not_there(folder)
-        fig.savefig(
-            os.path.join(folder, f"{x}_{filename}.png"),
-            bbox_inches="tight",
-        )
-        fig.clf()
+        for series in ["acc_and_validation", "validation"]:
+            if series == "validation":
+                _to_plot = to_plot[to_plot["rank_type"] == "by validation score"]
+            else:
+                _to_plot = to_plot
+            sns.set(style="whitegrid", rc={"figure.figsize": (8, 8)})
+            plot = sns.scatterplot(
+                data=_to_plot, x=x, y=TARGET_ACCURACY, hue="rank_type", alpha=0.5
+            )
+            sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
+            fig = plot.get_figure()
+            c_f.makedir_if_not_there(folder)
+            fig.savefig(
+                os.path.join(folder, f"{x}_{series}_{filename}.png"),
+                bbox_inches="tight",
+            )
+            fig.clf()
 
 
 def plot_corr_vs_true_and_predicted(best, max_rank, corr_name, output_folder, filename):
@@ -195,7 +195,7 @@ def get_corr_df(df, corr_name):
     return corr, corr_best_validators, corr_best_validators_across_tasks
 
 
-def main_fn(output_folder, df, nlargest, nlargest_global):
+def main_fn(output_folder, df):
     corr_name = "weighted_spearman"
     corr, corr_best_validators, corr_best_validators_across_tasks = get_corr_df(
         df, corr_name
@@ -212,51 +212,53 @@ def main_fn(output_folder, df, nlargest, nlargest_global):
             corr_name,
         )
 
-        best_by_score = _get_best_accuracy_per_adapter(
-            corr_df.copy(), nlargest=100000, rank_by="score", return_ranks=True
-        )
-        best_by_acc = _get_best_accuracy_per_adapter(
-            corr_df.copy(),
-            nlargest=100000,
-            rank_by=TARGET_ACCURACY,
-            return_ranks=True,
-        )
-        best_by_score["rank_type"] = "by validation score"
-        best_by_acc["rank_type"] = "by accuracy"
-        best = pd.concat([best_by_score, best_by_acc], axis=0)
-        plot_corr_vs_true_and_predicted(
-            best,
-            nlargest,
-            corr_name,
-            output_folder,
-            f"selected_models_local_{nlargest}_best_validators_{corr_df_name}",
-        )
+        for a in corr["adapter"].unique():
+            one_adapter = corr[corr["adapter"] == a]
+            best_by_score = get_global_ranks(one_adapter, "score")
+            scatter_plot(
+                output_folder,
+                df=best_by_score,
+                x=corr_name,
+                y=TARGET_ACCURACY,
+                filename=f"global_rank_heatmap_{a}",
+                c="rank",
+                alpha=0.5,
+            )
 
-        best_by_score = get_global_ranks(corr_df.copy(), "score")
-        best_by_acc = get_global_ranks(corr_df.copy(), TARGET_ACCURACY)
-        best_by_score["rank_type"] = "by validation score"
-        best_by_acc["rank_type"] = "by accuracy"
-        best = pd.concat([best_by_score, best_by_acc], axis=0)
-        plot_corr_vs_true_and_predicted(
-            best,
-            nlargest_global,
-            corr_name,
-            output_folder,
-            f"selected_models_global_{nlargest_global}_best_validators_{corr_df_name}",
-        )
+        for nlargest in range(1, 11):
+            nlargest_global = nlargest * 20
+            best_by_score = _get_best_accuracy_per_adapter(
+                corr_df.copy(), nlargest=100000, rank_by="score", return_ranks=True
+            )
+            best_by_acc = _get_best_accuracy_per_adapter(
+                corr_df.copy(),
+                nlargest=100000,
+                rank_by=TARGET_ACCURACY,
+                return_ranks=True,
+            )
+            best_by_score["rank_type"] = "by validation score"
+            best_by_acc["rank_type"] = "by accuracy"
+            best = pd.concat([best_by_score, best_by_acc], axis=0)
+            plot_corr_vs_true_and_predicted(
+                best,
+                nlargest,
+                corr_name,
+                output_folder,
+                f"selected_models_local_{nlargest}_best_validators_{corr_df_name}",
+            )
 
-    for a in corr["adapter"].unique():
-        one_adapter = corr[corr["adapter"] == a]
-        best_by_score = get_global_ranks(one_adapter, "score")
-        scatter_plot(
-            output_folder,
-            df=best_by_score,
-            x=corr_name,
-            y=TARGET_ACCURACY,
-            filename=f"global_rank_heatmap_{a}",
-            c="rank",
-            alpha=0.5,
-        )
+            best_by_score = get_global_ranks(corr_df.copy(), "score")
+            best_by_acc = get_global_ranks(corr_df.copy(), TARGET_ACCURACY)
+            best_by_score["rank_type"] = "by validation score"
+            best_by_acc["rank_type"] = "by accuracy"
+            best = pd.concat([best_by_score, best_by_acc], axis=0)
+            plot_corr_vs_true_and_predicted(
+                best,
+                nlargest_global,
+                corr_name,
+                output_folder,
+                f"selected_models_global_{nlargest_global}_best_validators_{corr_df_name}",
+            )
 
 
 def get_fn(args):
@@ -264,7 +266,7 @@ def get_fn(args):
         output_folder = os.path.join(
             output_folder, get_name_from_df(df, assert_one_task=True)
         )
-        return main_fn(output_folder, df, args.nlargest, args.nlargest_global)
+        return main_fn(output_folder, df)
 
     return fn
 
@@ -274,8 +276,6 @@ if __name__ == "__main__":
     add_default_args(parser, ["exp_folder"])
     add_exp_group_args(parser)
     parser.add_argument("--output_folder", type=str, default="plots/ranks_vs_acc")
-    parser.add_argument("--nlargest", type=int, default=5)
-    parser.add_argument("--nlargest_global", type=int, default=200)
     create_main.add_main_args(parser)
     args = parser.parse_args()
     create_main.main(args, get_fn(args), get_fn(args))
