@@ -27,6 +27,15 @@ def get_folder_name(folder, full_df):
     return os.path.join(folder, get_name_from_df(full_df, assert_one_task=True))
 
 
+def axis_label_dict(x):
+    return {
+        TARGET_ACCURACY: "Target Domain Accuracy",
+        "adapter": "Algorithm",
+        "mean_acc": "Average Target Domain Accuracy of the Top 5 Training Runs",
+        "weighted_spearman": "Weighted Spearman Correlation",
+    }[x]
+
+
 def adapter_names():
     return [
         "ATDOCConfig",
@@ -56,20 +65,26 @@ def plot_corr_vs_acc(df, max_rank, corr_name, folder, filename):
     to_plot = df[df["rank"] <= max_rank]
     to_plot = to_plot.sort_values(by=["adapter"])
     to_plot["adapter"] = to_plot["adapter"].str.replace("Config", "")
-    to_plot["mean_acc"] = to_plot.groupby(["adapter", "rank_type"])[
+    to_plot["mean_acc"] = to_plot.groupby(["adapter", "Checkpoints Ranked By"])[
         TARGET_ACCURACY
     ].transform("mean")
     for x in [corr_name, "adapter", "mean_acc"]:
         for series in ["acc_and_validation", "validation"]:
             if series == "validation":
-                _to_plot = to_plot[to_plot["rank_type"] == "by validation score"]
+                _to_plot = to_plot[
+                    to_plot["Checkpoints Ranked By"] == "validation score"
+                ]
+                hue = None
             else:
                 _to_plot = to_plot
+                hue = "Checkpoints Ranked By"
             sns.set(style="whitegrid", rc={"figure.figsize": (8, 8)})
             plot = sns.scatterplot(
-                data=_to_plot, x=x, y=TARGET_ACCURACY, hue="rank_type", alpha=0.5
+                data=_to_plot, x=x, y=TARGET_ACCURACY, hue=hue, alpha=0.5
             )
-            sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
+            plot.set(xlabel=axis_label_dict(x), ylabel=axis_label_dict(TARGET_ACCURACY))
+            if hue:
+                sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
             fig = plot.get_figure()
             c_f.makedir_if_not_there(folder)
             fig.savefig(
@@ -236,8 +251,8 @@ def main_fn(output_folder, df):
                 rank_by=TARGET_ACCURACY,
                 return_ranks=True,
             )
-            best_by_score["rank_type"] = "by validation score"
-            best_by_acc["rank_type"] = "by accuracy"
+            best_by_score["Checkpoints Ranked By"] = "validation score"
+            best_by_acc["Checkpoints Ranked By"] = "target domain accuracy"
             best = pd.concat([best_by_score, best_by_acc], axis=0)
             plot_corr_vs_true_and_predicted(
                 best,
@@ -249,8 +264,8 @@ def main_fn(output_folder, df):
 
             best_by_score = get_global_ranks(corr_df.copy(), "score")
             best_by_acc = get_global_ranks(corr_df.copy(), TARGET_ACCURACY)
-            best_by_score["rank_type"] = "by validation score"
-            best_by_acc["rank_type"] = "by accuracy"
+            best_by_score["Checkpoints Ranked By"] = "validation score"
+            best_by_acc["Checkpoints Ranked By"] = "target domain accuracy"
             best = pd.concat([best_by_score, best_by_acc], axis=0)
             plot_corr_vs_true_and_predicted(
                 best,
