@@ -29,9 +29,9 @@ def get_folder_name(folder, full_df):
 
 def axis_label_dict(x):
     return {
-        TARGET_ACCURACY: "Target Domain Accuracy",
+        TARGET_ACCURACY: "Target Accuracy",
         "adapter": "Algorithm",
-        "mean_acc": "Average Target Domain Accuracy of the Top 5 Training Runs",
+        "mean_acc": "Average Target Accuracy of the Top 5 Training Runs",
         "weighted_spearman": "Weighted Spearman Correlation",
     }[x]
 
@@ -237,7 +237,12 @@ def main_fn(output_folder, df):
                 y=TARGET_ACCURACY,
                 filename=f"global_rank_heatmap_{a}",
                 c="rank",
+                colobar_label="Checkpoint Rank",
+                cmap="viridis",
+                invert_cmap_axis=True,
                 alpha=0.5,
+                x_label=axis_label_dict(corr_name),
+                y_label=axis_label_dict(TARGET_ACCURACY),
             )
 
         for nlargest in range(1, 11):

@@ -24,6 +24,8 @@ def _scatter_plot(
     x_label=None,
     y_label=None,
     alpha=None,
+    cmap="rainbow",
+    invert_cmap_axis=False,
 ):
     sns.set(font_scale=font_scale, style="whitegrid", rc={"figure.figsize": figsize})
     if colorbar:
@@ -32,11 +34,13 @@ def _scatter_plot(
             df[y],
             c=df[c] if c is not None else None,
             s=s,
-            cmap="rainbow",
+            cmap=cmap,
             alpha=alpha,
         )
         if c:
             cbar = plt.colorbar(points)
+            if invert_cmap_axis:
+                cbar.ax.invert_yaxis()
         if colobar_label:
             cbar.set_label(colobar_label)
         if show_x_label:
