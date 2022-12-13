@@ -1,11 +1,12 @@
 import argparse
 import os
 import sys
+import textwrap
 
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import spearmanr
 
 sys.path.insert(0, ".")
 
@@ -32,6 +33,7 @@ def axis_label_dict(x):
         TARGET_ACCURACY: "Target Accuracy",
         "adapter": "Algorithm",
         "mean_acc": "Average Target Accuracy of the Top 5 Training Runs",
+        "mean_acc_N": "Average Target Accuracy of the Top N Training Runs",
         "weighted_spearman": "Weighted Spearman Correlation",
     }[x]
 
@@ -109,55 +111,49 @@ def plot_corr_vs_nlargest(df, output_folder, filename, corr_name):
         )
 
         for agg in ["min", "max"]:
-            s = {"spearman_correlation": [], "metric": [], "nlargest": []}
-            p = {"pearson_correlation": [], "metric": [], "nlargest": []}
+            s = {"spearman_correlation": [], "Metric": [], "N": []}
             for nlargest in np.linspace(
                 1, best_by_score["rank"].max().squeeze().astype(int), 200
             ):
                 curr = best_by_score.copy()
                 curr = curr[curr["rank"] <= nlargest]
-                curr["min"] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(agg)
+                curr[agg] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(agg)
                 curr["mean"] = curr.groupby(["adapter"])[TARGET_ACCURACY].transform(
                     "mean"
                 )
-                curr = curr[["adapter", corr_name, "min", "mean"]].drop_duplicates()
+                curr = curr[["adapter", corr_name, agg, "mean"]].drop_duplicates()
 
-                min_accs = curr["min"].values
+                agg_accs = curr[agg].values
                 mean_accs = curr["mean"].values
                 wsc = curr[corr_name].values
 
                 s["spearman_correlation"].append(
-                    spearmanr(min_accs, mean_accs).correlation
+                    spearmanr(agg_accs, mean_accs).correlation
                 )
-                p["pearson_correlation"].append(pearsonr(min_accs, mean_accs)[0])
-                s["metric"].append("mean_acc")
-                p["metric"].append("mean_acc")
-                s["nlargest"].append(nlargest)
-                p["nlargest"].append(nlargest)
+                s["Metric"].append(
+                    "\n".join(textwrap.wrap(axis_label_dict("mean_acc_N"), 20))
+                )
+                s["N"].append(nlargest)
 
-                s["spearman_correlation"].append(spearmanr(min_accs, wsc).correlation)
-                p["pearson_correlation"].append(pearsonr(min_accs, wsc)[0])
-                s["metric"].append("weighted_spearman_correlation")
-                p["metric"].append("weighted_spearman_correlation")
-                s["nlargest"].append(nlargest)
-                p["nlargest"].append(nlargest)
+                s["spearman_correlation"].append(spearmanr(agg_accs, wsc).correlation)
+                s["Metric"].append(axis_label_dict("weighted_spearman"))
+                s["N"].append(nlargest)
 
             s = pd.DataFrame.from_dict(s)
-            p = pd.DataFrame.from_dict(p)
 
-            for y, corr_df in [("spearman_correlation", s), ("pearson_correlation", p)]:
-                plot = sns.lineplot(data=corr_df, x="nlargest", y=y, hue="metric")
-                sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
-                fig = plot.get_figure()
-                c_f.makedir_if_not_there(output_folder)
-                fig.savefig(
-                    os.path.join(
-                        output_folder,
-                        f"{filename}_{rank_method}_{y}_corr_vs_nlargest_{agg}.png",
-                    ),
-                    bbox_inches="tight",
-                )
-                fig.clf()
+            plot = sns.lineplot(data=s, x="N", y="spearman_correlation", hue="Metric")
+            sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
+            plot.set(ylabel=f"Spearman Correlation With {agg.title()} Accuracy")
+            fig = plot.get_figure()
+            c_f.makedir_if_not_there(output_folder)
+            fig.savefig(
+                os.path.join(
+                    output_folder,
+                    f"{filename}_{rank_method}_corr_vs_nlargest_{agg}.png",
+                ),
+                bbox_inches="tight",
+            )
+            fig.clf()
 
 
 def get_corr_df(df, corr_name):
