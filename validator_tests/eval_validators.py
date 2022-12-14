@@ -60,8 +60,8 @@ def get_score_fn(name):
     return {"weighted_spearman": ws_score_fn, "spearman": s_score_fn}[name]
 
 
-def _get_correlation(df, per_adapter, src_threshold, name):
-    score_fn = get_score_fn(name)
+def _get_correlation(df, per_adapter, src_threshold, name, score_fn=None):
+    score_fn = score_fn if score_fn else get_score_fn(name)
 
     if src_threshold != 0:
         raise ValueError("src_threshold is temporarily disabled")
