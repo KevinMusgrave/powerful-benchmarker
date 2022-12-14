@@ -28,11 +28,11 @@ def get_folder_name(folder, full_df):
     return os.path.join(folder, get_name_from_df(full_df, assert_one_task=True))
 
 
-def axis_label_dict(x):
+def axis_label_dict(x, N=None):
     return {
         TARGET_ACCURACY: "Target Accuracy",
         "adapter": "Algorithm",
-        "mean_acc": "Average Target Accuracy of the Top 5 Training Runs",
+        "mean_acc": f"Average Target Accuracy of the Top {N} Training Runs",
         "mean_acc_N": "Average Target Accuracy of the Top N Training Runs",
         "weighted_spearman": "Weighted Spearman Correlation",
     }[x]
@@ -84,7 +84,10 @@ def plot_corr_vs_acc(df, max_rank, corr_name, folder, filename):
             plot = sns.scatterplot(
                 data=_to_plot, x=x, y=TARGET_ACCURACY, hue=hue, alpha=0.5
             )
-            plot.set(xlabel=axis_label_dict(x), ylabel=axis_label_dict(TARGET_ACCURACY))
+            plot.set(
+                xlabel=axis_label_dict(x, max_rank),
+                ylabel=axis_label_dict(TARGET_ACCURACY),
+            )
             if hue:
                 sns.move_legend(plot, "upper left", bbox_to_anchor=(1, 1))
             fig = plot.get_figure()
@@ -131,7 +134,7 @@ def plot_corr_vs_nlargest(df, output_folder, filename, corr_name):
                     spearmanr(agg_accs, mean_accs).correlation
                 )
                 s["Metric"].append(
-                    "\n".join(textwrap.wrap(axis_label_dict("mean_acc_N"), 20))
+                    "\n".join(textwrap.wrap(axis_label_dict("mean_acc_N"), 30))
                 )
                 s["N"].append(nlargest)
 
