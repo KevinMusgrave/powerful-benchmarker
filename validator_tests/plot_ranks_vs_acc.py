@@ -53,8 +53,8 @@ def adapter_names():
     ]
 
 
-def get_global_ranks(df, rank_by):
-    groupby = group_by_task_validator(per_adapter=True)
+def get_global_ranks(df, rank_by, per_adapter=True):
+    groupby = group_by_task_validator(per_adapter=per_adapter)
     corr_with_ranks = df.copy()
     ranks = corr_with_ranks.groupby(groupby)[rank_by].rank(
         method="min", ascending=False
