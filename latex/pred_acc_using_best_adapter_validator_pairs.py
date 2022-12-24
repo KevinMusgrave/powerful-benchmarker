@@ -82,6 +82,8 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         final_str_hook=latex_utils.adapter_final_str_hook,
     )
 
+    
+    tasks = [x for x in tasks if x in best_accs.columns]
     best_accs = best_accs[tasks]
     mean = best_accs.mean(axis=1).round(1).astype(str)
     std = best_accs.std(axis=1).round(1).astype(str)

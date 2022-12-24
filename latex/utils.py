@@ -25,6 +25,18 @@ def shortened_task_name_dict():
         "officehome_real_art": "RA",
         "officehome_real_clipart": "RC",
         "officehome_real_product": "RP",
+        "domainnet126_clipart_painting": "DCP",
+        "domainnet126_clipart_real": "DCR",
+        "domainnet126_clipart_sketch": "DCS",
+        "domainnet126_painting_clipart": "DPC",
+        "domainnet126_painting_real": "DPR",
+        "domainnet126_painting_sketch": "DPS",
+        "domainnet126_real_clipart": "DRC",
+        "domainnet126_real_painting": "DRP",
+        "domainnet126_real_sketch": "DRS",
+        "domainnet126_sketch_clipart": "DSC",
+        "domainnet126_sketch_painting": "DSP",
+        "domainnet126_sketch_real": "DSR",
     }
 
 
