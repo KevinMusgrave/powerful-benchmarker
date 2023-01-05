@@ -39,24 +39,24 @@ def unused_mmdperclass_args():
 def expected_num_validators():
     accuracy = 8
     entropy = 3
-    diversity = 3
+    # diversity = 3
     dev_binary = 9
     snd = 12
     class_ami = 8
     class_ss = 8
-    mmd = 6
-    mmd_per_class = 4
+    # mmd = 6
+    # mmd_per_class = 4
     bnm = 3
     return (
         accuracy
         + entropy
-        + diversity
+        # + diversity
         + dev_binary
         + snd
         + class_ami
         + class_ss
-        + mmd
-        + mmd_per_class
+        # + mmd
+        # + mmd_per_class
         + bnm
     )
 
@@ -67,13 +67,13 @@ def filter_validators(df):
             [
                 "Accuracy",
                 "Entropy",
-                "Diversity",
+                # "Diversity",
                 "DEVBinary",
                 "SND",
                 "ClassAMICentroidInit",
                 "ClassSSCentroidInit",
-                "MMD",
-                "MMDPerClass",
+                # "MMD",
+                # "MMDPerClass",
                 "BNM",
                 # "MCC",
                 # "NearestSource",

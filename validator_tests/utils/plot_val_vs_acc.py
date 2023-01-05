@@ -8,12 +8,10 @@ from .constants import TARGET_ACCURACY
 from .plot_utils import filter_and_plot
 
 
-def scatter_plot(
-    plots_folder,
+def _scatter_plot(
     df,
     x,
     y,
-    filename,
     c=None,
     colobar_label=None,
     log_x=False,
@@ -25,6 +23,9 @@ def scatter_plot(
     colorbar=True,
     x_label=None,
     y_label=None,
+    alpha=None,
+    cmap="rainbow",
+    invert_cmap_axis=False,
 ):
     sns.set(font_scale=font_scale, style="whitegrid", rc={"figure.figsize": figsize})
     if colorbar:
@@ -33,10 +34,13 @@ def scatter_plot(
             df[y],
             c=df[c] if c is not None else None,
             s=s,
-            cmap="rainbow",
+            cmap=cmap,
+            alpha=alpha,
         )
         if c:
             cbar = plt.colorbar(points)
+            if invert_cmap_axis:
+                cbar.ax.invert_yaxis()
         if colobar_label:
             cbar.set_label(colobar_label)
         if show_x_label:
@@ -47,8 +51,13 @@ def scatter_plot(
             plt.xscale("symlog")
         fig = plt
     else:
-        plot = sns.scatterplot(data=df, x=x, y=y, hue=c, s=s)
+        plot = sns.scatterplot(data=df, x=x, y=y, hue=c, s=s, alpha=alpha)
         fig = plot.get_figure()
+    return fig
+
+
+def scatter_plot(plots_folder, df, x, y, filename, **kwargs):
+    fig = _scatter_plot(df, x, y, **kwargs)
     c_f.makedir_if_not_there(plots_folder)
     fig.savefig(
         os.path.join(plots_folder, f"{filename}.png"),

@@ -16,7 +16,15 @@ def line_plot(
     figsize=(4.8, 4.8),
 ):
     sns.set(font_scale=font_scale, style="whitegrid", rc={"figure.figsize": figsize})
-    plot = sns.lineplot(data=df, x=x, y=y)
+
+    best_trial_num = df.loc[df["score"].idxmax()]["trial_num"]
+    best_trial = df[df["trial_num"] == best_trial_num]
+    worst_trial_num = df.loc[df["score"].idxmin()]["trial_num"]
+    worst_trial = df[df["trial_num"] == worst_trial_num]
+
+    sns.lineplot(data=df, x=x, y=y, ci="sd")
+    sns.lineplot(data=best_trial, x=x, y=y, color="green")
+    plot = sns.lineplot(data=worst_trial, x=x, y=y, color="red")
     fig = plot.get_figure()
     c_f.makedir_if_not_there(plots_folder)
     fig.savefig(

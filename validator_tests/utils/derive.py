@@ -10,7 +10,7 @@ from .df_utils import (
 def add_derived_scores(df):
     for x in [
         add_IM,
-        add_NegSND,
+        # add_NegSND,
         add_BNMSummed,
         add_BNMSummedSrcVal,
         add_BSPSummed,
