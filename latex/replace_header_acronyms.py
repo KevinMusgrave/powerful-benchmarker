@@ -4,9 +4,7 @@ import os
 
 
 def main(args):
-    matches = glob.glob(
-        os.path.join(args.input_folder, "**", "*.tex")
-    )
+    matches = glob.glob(os.path.join(args.input_folder, "**", "*.tex"))
     for m in matches:
         print(m)
         with open(m, "r") as f:

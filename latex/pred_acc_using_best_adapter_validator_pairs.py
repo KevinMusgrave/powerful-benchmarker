@@ -88,7 +88,7 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
     std = best_accs.std(axis=1).round(1).astype(str)
     meanstd = (
         ("$" + mean + r" \pm " + std + "$")
-        .to_frame("Accuracy")
+        .to_frame("Average Accuracy")
         .reset_index()
         .rename(columns={"index": "Algorithm"})
     )
@@ -107,7 +107,12 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         )
     )
 
-    to_save = to_save.merge(meanstd)
+    to_save = (
+        to_save.merge(meanstd)
+        .drop(columns=["Weighted Spearman Correlation"])
+        .sort_values(by="Average Accuracy", ascending=False)
+    )
+
     to_save.style.hide(axis="index").to_latex(
         os.path.join(output_folder, "best_validator_per_algorithm.tex"),
         hrules=True,
