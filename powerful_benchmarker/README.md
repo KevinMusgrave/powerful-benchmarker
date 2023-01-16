@@ -88,3 +88,10 @@ python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 | - | - |
 |`--adapter` | The adapter experiment to delete. For example, `dann` will find all folders matching `<exp_folder>/<exp_group>/dann`.
 |`--delete` | The found folders will be deleted only if this flag is used.
+
+
+### delete_exp_groups.py
+This will delete all experiments within experiment groups matching the `--exp_group` flag filters.
+| Command-line argument | Description |
+| - | - |
+|`--delete` | The found folders will be deleted only if this flag is used.

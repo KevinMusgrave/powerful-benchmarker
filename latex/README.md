@@ -3,6 +3,7 @@
 The following commands reads the dataframes created by `../validator_tests/eval_validators.py`, and creates latex tables that summarize the results.
 
 The `--exp_group_excludes_select_best mnist` flag tells the code to ignore `mnist` when determining the best validator per algorithm.
+
 The `--nlargest 5` flag refers to the top-5 checkpoints for computing accuracy.
 
 ```
