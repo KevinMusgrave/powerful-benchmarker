@@ -1,6 +1,7 @@
-<h1 align="center">
- Powerful Benchmarker
-</h1>
+<a href="https://github.com/KevinMusgrave/powerful-benchmarker">
+<img alt="Logo" src="https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/imgs/Logo.png">
+</a>
+
 
 ## [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
 
