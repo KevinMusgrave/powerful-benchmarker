@@ -107,6 +107,9 @@ python upload_logs.py
 Set the google drive folder in `constants.yaml`.
 
 
+## Logo
+Thanks to [Jeff Musgrave](https://www.designgenius.ca/) for designing the logo.
+
 
 ## Citing the paper
 
