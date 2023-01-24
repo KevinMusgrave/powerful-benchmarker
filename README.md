@@ -3,7 +3,7 @@
 </a>
 
 
-## [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
+## Code for the paper: [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
 
 ## Installation
 
