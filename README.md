@@ -2,8 +2,12 @@
 <img alt="Logo" src="https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/imgs/Logo.png">
 </a>
 
+## Which git branch should you checkout?
 
-## Code for the paper: [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
+- The [domain-adaptation](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation) branch contains code for:
+  - [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
+- The [metric-learning](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning) branch contains code for:
+  - [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)
 
 ## Installation
 
@@ -114,7 +118,3 @@ Set the google drive folder in `constants.yaml`.
   year={2022}
 }
 ```
-
-
-## Looking for [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)?
-Checkout the [metric-learning branch](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning).
