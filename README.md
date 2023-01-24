@@ -1,5 +1,5 @@
 <a href="https://github.com/KevinMusgrave/powerful-benchmarker">
-<img alt="Logo" src="https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/imgs/Logo.png">
+<img alt="Logo" src="https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/imgs/Logo.png">
 </a>
 
 
@@ -33,12 +33,12 @@ Visit each folder to view its readme file.
 
 | Folder | Description |
 | - | - |
-| [`latex`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/latex) | Code for creating latex tables from experiment data.
-| [`notebooks`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/notebooks) | Jupyter notebooks
-| [`powerful_benchmarker`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker) | Code for hyperparameter searches for training models.
-| [`scripts`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/scripts) | Various bash scripts, including scripts for uploading logs to google drive.
-| [`unit_tests`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/unit_tests) | Tests to check if there are bugs.
-| [`validator_tests`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/validator_tests) | Code for evaluating validation methods (validators).
+| [`latex`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/latex) | Code for creating latex tables from experiment data.
+| [`notebooks`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/notebooks) | Jupyter notebooks
+| [`powerful_benchmarker`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/powerful_benchmarker) | Code for hyperparameter searches for training models.
+| [`scripts`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/scripts) | Various bash scripts, including scripts for uploading logs to google drive.
+| [`unit_tests`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/unit_tests) | Tests to check if there are bugs.
+| [`validator_tests`](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/validator_tests) | Code for evaluating validation methods (validators).
 
 
 ## Useful top-level scripts

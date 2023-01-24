@@ -47,7 +47,7 @@ python validator_tests/run_validators.py --slurm_config a100 --run --exp_names a
 --exp_per_slurm_job 4 --trials_per_exp 100
 ```
 
-See [scripts/run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/run.py), [scripts/mnist.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/mnist.sh), [scripts/office31.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/office31.sh), and [scripts/officehome.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/officehome.sh) for examples.
+See [scripts/run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/run.py), [scripts/mnist.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/mnist.sh), [scripts/office31.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/office31.sh), and [scripts/officehome.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/officehome.sh) for examples.
 
 
 ---
