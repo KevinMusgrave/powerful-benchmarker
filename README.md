@@ -8,6 +8,8 @@
   - [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
 - The [metric-learning](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning) branch contains code for:
   - [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)
+  
+Currently I can provide technical support (help with code, bug fixes etc.) for the `domain-adaptation` branch only.
 
 ## Installation
 
