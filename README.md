@@ -1,6 +1,8 @@
+<h1>
 <a href="https://github.com/KevinMusgrave/powerful-benchmarker">
-<img alt="Logo" src="https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/imgs/Logo.png">
+<img alt="Powerful Benchmarker" src="https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/imgs/Logo.png">
 </a>
+</h1>
 
 ## Which git branch should you checkout?
 
