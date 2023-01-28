@@ -118,10 +118,11 @@ Thanks to [Jeff Musgrave](https://www.designgenius.ca/) for designing the logo.
 ## Citing the paper
 
 ```
-@article{musgrave2022benchmarking,
+@article{Musgrave2022EvaluatingTE,
   title={Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?},
-  author={Musgrave, Kevin and Belongie, Serge and Lim, Ser-Nam},
-  journal={arXiv preprint arXiv:2208.07360},
-  year={2022}
+  author={Kevin Musgrave and Serge J. Belongie and Ser Nam Lim},
+  journal={ArXiv},
+  year={2022},
+  volume={abs/2208.07360}
 }
 ```
