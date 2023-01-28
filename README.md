@@ -45,13 +45,11 @@ pip install powerful-benchmarker
 ## Citing the benchmark results or code
 If you'd like to cite the benchmark results, please cite this paper:
 ```latex
-@misc{musgrave2020metric,
-    title={A Metric Learning Reality Check},
-    author={Kevin Musgrave and Serge Belongie and Ser-Nam Lim},
-    year={2020},
-    eprint={2003.08505},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV}
+@inproceedings{Musgrave2020AML,
+  title={A Metric Learning Reality Check},
+  author={Kevin Musgrave and Serge J. Belongie and Ser-Nam Lim},
+  booktitle={European Conference on Computer Vision},
+  year={2020}
 }
 ```
 
