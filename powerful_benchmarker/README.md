@@ -36,12 +36,12 @@ python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 ### main.py
 | Command-line argument | Description |
 | - | - |
-|`--exp_folder` | The root experiment folder. This defaults to the value set in [constants.yaml](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/constants.yaml).
-|`--dataset_folder` | Where the datasets exist or where they will be downloaded to. This defaults to the value set in [constants.yaml](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/constants.yaml).
+|`--exp_folder` | The root experiment folder. This defaults to the value set in [constants.yaml](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/constants.yaml).
+|`--dataset_folder` | Where the datasets exist or where they will be downloaded to. This defaults to the value set in [constants.yaml](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/constants.yaml).
 |`--dataset` | The dataset that contains the source and target domains. Choices are `mnist`, `office31`, or `officehome` 
 |`--src_domains` | The name of the source domain. For example, if the dataset is `office31`, then this could be one of `amazon`, `dslr`, or `webcam`. 
 |`--target_domains` | The name of the target domain. 
-|`--adapter` | The name of the domain adaptation algorithm configuration, e.g. `DANNConfig`. See the [configs](https://github.com/KevinMusgrave/powerful-benchmarker/tree/master/powerful_benchmarker/configs) folder for all available configurations. 
+|`--adapter` | The name of the domain adaptation algorithm configuration, e.g. `DANNConfig`. See the [configs](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation/powerful_benchmarker/configs) folder for all available configurations. 
 |`--exp_name` | Experiment data will be saved in `<exp_folder>/<exp_name>`.
 |`--max_epochs` | Training will stop after this many epochs. For domain adaptation, the number of epochs is based on the length of the target domain.
 |`--patience` | Training will stop if the validation score does not improve after this many epochs. This only works if `--validator` is specified.
@@ -54,12 +54,12 @@ python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 |`--pretrain_on_src` | Add this flag to train a source-only model.
 |`--evaluate` | Add this flag to evaluate the best model of an existing experiment.
 |`--num_reproduce` | The best hyperparameters will be used to train this many more models. This is useful if you want to get the standard deviation of an algorithm's performance.
-|`--feature_layer` | If 0, then the output of the trunk (a.k.a. feature generator) is used as the "features". Higher numbers correspond with layers of the classifier model. For example, if set to 3, then the 3rd layer of the classifier model will be used as features. See the `set_feature_layer` function in [BaseConfig](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/configs/base_config.py).
+|`--feature_layer` | If 0, then the output of the trunk (a.k.a. feature generator) is used as the "features". Higher numbers correspond with layers of the classifier model. For example, if set to 3, then the 3rd layer of the classifier model will be used as features. See the `set_feature_layer` function in [BaseConfig](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/powerful_benchmarker/configs/base_config.py).
 |`--optimizer` | Either "SGD" or "Adam".
 |`--lr_multiplier` | The base learning rate will be multiplied by this amount for certain models or layers, depending on the adapter config.
 |`--pretrain_lr` | The learning rate used for training a source-only model.
 |`--fixed_param_source` | Hyperparameters will be loaded from the best trial of `<exp_folder>/<fixed_param_source>`. For example, when trying MCC-DANN, you may want to load the best hyperparameters from the DANN experiment, so that the search space is limited to only the MCC-related hyperparameters.
-|`--save_features` | Add this flag to save features every `val_interval` epochs. See [utils/ignite_save_features](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/utils/ignite_save_features.py) for details.
+|`--save_features` | Add this flag to save features every `val_interval` epochs. See [utils/ignite_save_features](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/powerful_benchmarker/utils/ignite_save_features.py) for details.
 |`--download_datasets` | Add this flag to automatically download datasets to `dataset_folder` if they aren't already present.
 |`--use_stat_getter` | Add this flag to compute source and target accuracies every `val_interval` epochs. This is independent of `validator`.
 |`--check_initial_score` | Add this flag to compute a validation score before training begins. This is relevant only if `validator` is specified.
@@ -69,7 +69,7 @@ python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 ### launch_multiple.py
 | Command-line argument | Description |
 | - | - |
-|--exp_config | The name of the experiment config yaml file. For example, `mnist/mnist_fl3_adam_lr1` refers to [this yaml config file](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/powerful_benchmarker/yaml_configs/exp_configs/mnist/mnist_fl3_adam_lr1.yaml).
+|--exp_config | The name of the experiment config yaml file. For example, `mnist/mnist_fl3_adam_lr1` refers to [this yaml config file](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/powerful_benchmarker/yaml_configs/exp_configs/mnist/mnist_fl3_adam_lr1.yaml).
 
 
 ### launch_one.py
@@ -87,4 +87,11 @@ python powerful_benchmarker/main.py --exp_name dann_test --dataset mnist \
 | Command-line argument | Description |
 | - | - |
 |`--adapter` | The adapter experiment to delete. For example, `dann` will find all folders matching `<exp_folder>/<exp_group>/dann`.
+|`--delete` | The found folders will be deleted only if this flag is used.
+
+
+### delete_exp_groups.py
+This will delete all experiments within experiment groups matching the `--exp_group` flag filters.
+| Command-line argument | Description |
+| - | - |
 |`--delete` | The found folders will be deleted only if this flag is used.

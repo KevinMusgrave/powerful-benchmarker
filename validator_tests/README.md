@@ -6,8 +6,7 @@
 1. main.py (or run_validators.py) to compute scores
 2. collect_dfs.py to gather all dataframe pkls into one dataframe pkl
 3. process_df.py
-4. per_src_threshold.py
-5. create_tables.py and create_plots.py
+4. eval_validators.py
 
 
 ### Common command line flags
@@ -24,9 +23,8 @@ These flags are available in the following scripts:
 
 - collect_dfs.py
 - create_plots.py
-- create_tables.py
+- eval_validators.py
 - delete_pkls.py
-- per_src_threshold.py
 - run_validators.py
 
 ---
@@ -49,7 +47,7 @@ python validator_tests/run_validators.py --slurm_config a100 --run --exp_names a
 --exp_per_slurm_job 4 --trials_per_exp 100
 ```
 
-See [scripts/run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/run.py), [scripts/mnist.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/mnist.sh), [scripts/office31sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/office31.sh), and [scripts/officehome.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/officehome.sh) for examples.
+See [scripts/run.py](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/run.py), [scripts/mnist.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/mnist.sh), [scripts/office31.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/office31.sh), and [scripts/officehome.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/domain-adaptation/validator_tests/scripts/officehome.sh) for examples.
 
 
 ---
@@ -70,15 +68,8 @@ python process_df.py --exp_group_prefix mnist
 ```
 
 ---
-### per_src_threshold.py
-The next step is to compute relative target accuracies and Spearman correlation at various source validation thresholds.
-
-See [scripts/per_src_threshold.sh](https://github.com/KevinMusgrave/powerful-benchmarker/blob/master/validator_tests/scripts/per_src_threshold.sh) for examples.
-
-
----
-### create_tables.py
-
+### eval_validators.py
+The next step is to compute the weighted Spearman correlation and top-N accuracies.
 
 ---
 ### create_plots.py
