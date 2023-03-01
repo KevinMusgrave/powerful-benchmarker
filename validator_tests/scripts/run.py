@@ -35,6 +35,7 @@ def main(args):
         "mcc",
         "mcd",
         "mmd",
+        "epoch_0"
     ]
     if args.exp_names is not None:
         exp_names = args.exp_names

@@ -1,0 +1,1 @@
+python validator_tests/scripts/run.py --exp_names epoch_0 --other_args "--exp_group_excludes oracle" --slurm_config mnist
