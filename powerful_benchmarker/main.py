@@ -233,6 +233,7 @@ def objective(cfg, root_exp_path, trial, reproduce_iter=None, num_fixed_params=0
         early_stopper_kwargs=early_stopper_kwargs,
         val_interval=cfg.val_interval,
         check_initial_score=cfg.check_initial_score,
+        epoch_length=cfg.epoch_length,
     )
 
     if validator is None:
@@ -342,6 +343,7 @@ if __name__ == "__main__":
     parser.add_argument("--adapter", type=str)
     parser.add_argument("--exp_name", type=str, default="test")
     parser.add_argument("--max_epochs", type=int, default=100)
+    parser.add_argument("--epoch_length", type=int, default=None)
     parser.add_argument("--patience", type=int, default=None)
     parser.add_argument("--val_interval", type=int, default=1)
     parser.add_argument("--batch_size", type=int, default=64)

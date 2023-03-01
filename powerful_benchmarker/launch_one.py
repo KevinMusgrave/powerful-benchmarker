@@ -96,8 +96,7 @@ def main(cfg, slurm_args):
         ("gvb", "GVBConfig"),
         ("atdoc", "ATDOCConfig"),
         ("im", "IMConfig"),
-        ("star", "STARConfig"),
-        ("atdocdann", "ATDOCDANNConfig"),
+        ("epoch_0", "PretrainerConfig")
     ]
 
     for i in [0, 1]:

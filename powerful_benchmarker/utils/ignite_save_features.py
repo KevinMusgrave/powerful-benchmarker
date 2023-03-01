@@ -18,9 +18,6 @@ class SaveFeatures:
         ]
 
     def __call__(self, epoch, **collected_data):
-        if epoch == 0:
-            return
-
         inference_dict = {}
         for k, v in collected_data.items():
             curr_k = k.replace("_with_labels", "")

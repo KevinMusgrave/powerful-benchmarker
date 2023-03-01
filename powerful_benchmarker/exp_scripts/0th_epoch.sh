@@ -1,0 +1,9 @@
+python powerful_benchmarker/launch_multiple.py --exp_config mnist/mnist_fl3_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config mnist/mnist_fl6_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config office31/office31_amazon_fl3_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config office31/office31_amazon_fl6_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config office31/office31_fl3_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config office31/office31_fl6_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config officehome/officehome_fl3_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config officehome/officehome_fl6_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300
+python powerful_benchmarker/launch_multiple.py --exp_config domainnet126/domainnet126_fl6_adam_lr1_0th_epoch --slurm_config mnist --nodelist=belongie-compute-01 --script_wrapper_timeout=300

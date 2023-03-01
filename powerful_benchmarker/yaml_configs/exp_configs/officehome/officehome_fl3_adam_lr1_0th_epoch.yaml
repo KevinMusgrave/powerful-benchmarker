@@ -1,0 +1,41 @@
+common: &common --group_configs default fl3_adam_lr1 officehome 0_epochs
+A: &A --config_names epoch_0
+
+
+commands:
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains product
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains art --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains art
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains product
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains clipart --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains art
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains clipart
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains product --target_domains real
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains art
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains product
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains real --target_domains clipart
+  - *A
+  - *common
