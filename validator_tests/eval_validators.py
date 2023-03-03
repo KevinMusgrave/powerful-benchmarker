@@ -113,9 +113,11 @@ def _get_best_accuracy_per_adapter(
     to_save = to_save.sort_values(by=["epoch"]).drop_duplicates(
         subset=groupby_with_fl_trial_num
     )
-
+    # for oracle (TARGET_ACCURACY), we want only the first tied checkpoint
+    # for validation scores, we want tied checkpoints to share the same rank
+    rank_method = "first" if rank_by == TARGET_ACCURACY else "min"
     # best scores across trials
-    ranked = to_save.groupby(groupby)[rank_by].rank(method="min", ascending=False)
+    ranked = to_save.groupby(groupby)[rank_by].rank(method=rank_method, ascending=False)
     if return_ranks:
         to_save["rank"] = ranked
         return to_save[to_save["rank"] <= nlargest]
