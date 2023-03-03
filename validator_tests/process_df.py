@@ -2,6 +2,8 @@ import argparse
 import os
 import sys
 
+import pandas as pd
+
 sys.path.insert(0, ".")
 from powerful_benchmarker.utils.constants import add_default_args
 from validator_tests.utils import derive, utils
@@ -124,6 +126,54 @@ def assert_all_same_size(df):
         raise ValueError
 
 
+def copy_epoch_0_rows(df):
+    new_rows = []
+    num_trials = 0
+    epoch_0_rows = df[df["exp_name"] == "epoch_0"]
+    for exp_name in df["exp_name"].unique():
+        if exp_name == "epoch_0":
+            continue
+        curr_df = df[df["exp_name"] == exp_name]
+        adapter = curr_df["adapter"].unique().item()
+        dataset = curr_df["dataset"].unique().item()
+        src_domains = curr_df["src_domains"].unique().item()
+        target_domains = curr_df["target_domains"].unique().item()
+        for trial_num in curr_df["trial_num"].unique():
+            num_trials += 1
+            curr_0_rows = epoch_0_rows.copy()
+            curr_0_rows["adapter"] = adapter
+            curr_0_rows["exp_name"] = exp_name
+            curr_0_rows["trial_num"] = trial_num
+            assert len(curr_0_rows) == expected_num_validators()
+            assert curr_0_rows.dataset.unique().item() == dataset
+            assert curr_0_rows.src_domains.unique().item() == src_domains
+            assert curr_0_rows.target_domains.unique().item() == target_domains
+            new_rows.append(curr_0_rows)
+
+    new_df = pd.concat([df, *new_rows], axis=0)
+    new_df = new_df[new_df["exp_name"] != "epoch_0"]
+    new_len = len(new_df)
+    correct_len = (
+        len(df)
+        + (expected_num_validators() * num_trials)
+        - len(df[df["exp_name"] == "epoch_0"])
+    )
+    assert new_len == correct_len
+
+    for adapter in df["adapter"].unique():
+        if adapter == "PretrainerConfig":
+            continue
+        old_df = df[df["adapter"] == adapter]
+        num_trials = len(old_df["trial_num"].unique())
+        print("num_trials", num_trials)
+        new_len = len(new_df[new_df["adapter"] == adapter])
+        expected_len = len(old_df) + (expected_num_validators() * num_trials)
+        print(adapter, new_len, expected_len)
+        assert new_len == expected_len
+
+    return new_df
+
+
 def process_df(args, exp_group):
     exp_folder = os.path.join(args.exp_folder, exp_group)
     filename = os.path.join(exp_folder, PROCESSED_DF_FILENAME)
@@ -141,6 +191,9 @@ def process_df(args, exp_group):
 
     print("filtering validators")
     df = filter_validators(df)
+
+    print("copying epoch_0 rows")
+    df = copy_epoch_0_rows(df)
 
     print("keep common experiments")
     df = keep_common_experiments(df)
