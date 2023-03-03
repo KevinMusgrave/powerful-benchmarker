@@ -165,10 +165,8 @@ def copy_epoch_0_rows(df):
             continue
         old_df = df[df["adapter"] == adapter]
         num_trials = len(old_df["trial_num"].unique())
-        print("num_trials", num_trials)
         new_len = len(new_df[new_df["adapter"] == adapter])
         expected_len = len(old_df) + (expected_num_validators() * num_trials)
-        print(adapter, new_len, expected_len)
         assert new_len == expected_len
 
     return new_df
