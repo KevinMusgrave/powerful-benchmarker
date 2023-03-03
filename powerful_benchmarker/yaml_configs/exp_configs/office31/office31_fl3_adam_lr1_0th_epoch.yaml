@@ -1,0 +1,17 @@
+common: &common --group_configs default fl3_adam_lr1 office31 0_epochs
+A: &A --config_names epoch_0
+
+
+commands:
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains dslr
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains amazon --target_domains webcam
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains dslr --target_domains webcam
+  - *A
+  - *common
+- - python powerful_benchmarker/launch_one.py --src_domains webcam --target_domains dslr
+  - *A
+  - *common

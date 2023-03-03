@@ -1,0 +1,6 @@
+num_trials: 1
+n_startup_trials: 1
+max_epochs: 1
+epoch_length: 1
+val_interval: 10
+check_initial_score: true
