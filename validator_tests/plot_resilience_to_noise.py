@@ -13,7 +13,7 @@ def save_plot(output_folder, df):
         "Noise Standard Deviation",
         "Correlation with original data",
     ]
-    new_keys = [f"Avg Accuracy of Top {N}" for N in Ns] + [x_axis_title, y_axis_title]
+    new_keys = [f"AATN, N={N}" for N in Ns] + [x_axis_title, y_axis_title]
     df = df.rename(columns={k: v for k, v in zip(keys, new_keys)})
 
     df = pd.melt(
@@ -27,7 +27,7 @@ def save_plot(output_folder, df):
         value_name=y_axis_title,
     )
 
-    sns.set(font_scale=1, style="whitegrid", rc={"figure.figsize": (8, 8)})
+    sns.set(font_scale=1, style="whitegrid", rc={"figure.figsize": (10, 7.5)})
     plot = sns.lineplot(
         data=df,
         x=x_axis_title,
@@ -54,7 +54,7 @@ def main():
         if os.path.isfile(filename):
             df = pd.read_pickle(filename)
             all_dfs.append(df)
-            # save_plot(f, df)
+            save_plot(f, df)
 
     df = pd.concat(all_dfs, axis=0).reset_index()
     save_plot(folder, df)
