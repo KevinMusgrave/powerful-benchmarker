@@ -52,12 +52,12 @@ def get_acc(df, per_adapter, N):
 def save_df(output_folder, df):
     accs = {}
     corr = get_correlation(df, per_adapter=False)
-    Ns = [1, 5, 100, 1000]
+    Ns = [1, 5, 10, 50, 100, 500, 1000, 5000]
     for N in Ns:
         accs[N] = get_acc(df, per_adapter=False, N=N)
 
     s = defaultdict(list)
-    for scale in np.linspace(0, 0.2, 1):
+    for scale in np.linspace(0, 0.2, 21):
         s["Noise Standard Deviation"].append(scale)
         df_with_noise = add_noise(df, scale)
         corr_with_noise = get_correlation(df_with_noise, per_adapter=False)
