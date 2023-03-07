@@ -40,7 +40,7 @@ def best_accuracy_per_adapter(args):
         "Green cells have an average accuracy greater than than the source-only model. "
         "A stronger green color indicates higher accuracy. The highest value per column is bolded."
     )
-    table_creator(
+    return table_creator(
         args,
         args.input_folder,
         args.output_folder,
