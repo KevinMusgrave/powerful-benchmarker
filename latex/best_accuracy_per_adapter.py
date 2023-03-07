@@ -28,7 +28,7 @@ def min_value_fn(x, *_):
     return x.loc["Source only"]
 
 
-def best_accuracy_per_adapter(args):
+def best_accuracy_per_adapter(args, do_save_to_latex=True):
     nlargest = args.nlargest
     basename = f"best_accuracy_per_adapter_{nlargest}"
     color_map_tag_kwargs = {
@@ -51,4 +51,5 @@ def best_accuracy_per_adapter(args):
         add_resizebox=True,
         caption=caption,
         final_str_hook=latex_utils.adapter_final_str_hook,
+        do_save_to_latex=do_save_to_latex,
     )

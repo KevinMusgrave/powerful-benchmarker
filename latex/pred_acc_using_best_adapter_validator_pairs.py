@@ -94,7 +94,7 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         final_str_hook=latex_utils.adapter_final_str_hook,
     )
 
-    best_accs_oracle, _ = best_accuracy_per_adapter(args)
+    best_accs_oracle, _ = best_accuracy_per_adapter(args, do_save_to_latex=False)
 
     tasks = [x for x in tasks if x in best_accs.columns]
     best_accs = best_accs[tasks]
