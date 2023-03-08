@@ -28,3 +28,4 @@ python validator_tests/create_plots.py --no_color --validator_set DEVBinary --ru
 python validator_tests/create_plots.py --no_color --validator_set ClassAMICentroidInit ClassSSCentroidInit --run_combined --exp_group_prefix officehome_real_clipart --figsize 10 10 --font_scale 2
 python validator_tests/create_plots.py --no_color --validator_set SND --run_combined --exp_group_prefix officehome_clipart_real --figsize 10 10 --font_scale 2 --dot_size 1 --adapter CDANConfig --per_adapter
 python validator_tests/create_plots.py --no_color --validator_set SND --run_combined --exp_group_prefix officehome_product_clipart --figsize 10 10 --font_scale 2 --dot_size 1 --adapter MMDConfig --per_adapter
+python validator_tests/create_plots.py --no_color --validator_set ClassSSCentroidInit --run_combined --exp_group_prefix mnist --figsize 10 10 --font_scale 2
