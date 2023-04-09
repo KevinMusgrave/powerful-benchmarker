@@ -22,9 +22,11 @@ def weighted_spearman(validation_scores, target_accuracies, pow):
     validation_scores, target_accuracies = assert_all_finite(
         validation_scores, target_accuracies
     )
-    ranks = rankdata(validation_scores, method="dense").astype(float)
-    ranks /= np.max(ranks)
-    weights = ranks**pow
+    v_ranks = rankdata(validation_scores, method="dense").astype(float)
+    v_ranks /= np.max(v_ranks)
+    t_ranks = rankdata(target_accuracies, method="dense").astype(float)
+    t_ranks /= np.max(t_ranks)
+    weights = np.maximum(v_ranks, t_ranks) ** pow
 
     return WeightedCorr(
         x=pd.Series(validation_scores),

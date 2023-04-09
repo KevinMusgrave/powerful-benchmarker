@@ -4,6 +4,7 @@ import pandas as pd
 
 from latex import utils as latex_utils
 from latex.best_accuracy_per_adapter import (
+    best_accuracy_per_adapter,
     min_value_fn,
     reshape_into_best_accuracy_table,
 )
@@ -61,6 +62,17 @@ def get_best_validators(args, name, src_threshold):
     return best_validators, tasks
 
 
+def get_meanstd(df, name):
+    mean = df.mean(axis=1).round(1).astype(str)
+    std = df.std(axis=1).round(1).astype(str)
+    return (
+        ("$" + mean + r" \pm " + std + "$")
+        .to_frame(name)
+        .reset_index()
+        .rename(columns={"index": "Algorithm"})
+    )
+
+
 def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
     best_validators, tasks = get_best_validators(args, name, src_threshold)
 
@@ -82,16 +94,15 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
         final_str_hook=latex_utils.adapter_final_str_hook,
     )
 
+    best_accs_oracle, _ = best_accuracy_per_adapter(args, do_save_to_latex=False)
+
     tasks = [x for x in tasks if x in best_accs.columns]
     best_accs = best_accs[tasks]
-    mean = best_accs.mean(axis=1).round(1).astype(str)
-    std = best_accs.std(axis=1).round(1).astype(str)
-    meanstd = (
-        ("$" + mean + r" \pm " + std + "$")
-        .to_frame("Average Accuracy")
-        .reset_index()
-        .rename(columns={"index": "Algorithm"})
-    )
+    best_accs_oracle = best_accs_oracle[tasks]
+    diff_from_oracle = best_accs - best_accs_oracle
+
+    best_accs_meanstd = get_meanstd(best_accs, "Average Accuracy")
+    diff_from_oracle_meanstd = get_meanstd(diff_from_oracle, "Degradation")
 
     to_save = (
         pd.DataFrame(best_validators)
@@ -108,10 +119,12 @@ def pred_acc_using_best_adapter_validator_pairs(args, name, src_threshold):
     )
 
     to_save = (
-        to_save.merge(meanstd)
+        to_save.merge(best_accs_meanstd)
         .drop(columns=["Weighted Spearman Correlation"])
         .sort_values(by="Average Accuracy", ascending=False)
     )
+
+    to_save = to_save.merge(diff_from_oracle_meanstd)
 
     to_save.style.hide(axis="index").to_latex(
         os.path.join(output_folder, "best_validator_per_algorithm.tex"),
