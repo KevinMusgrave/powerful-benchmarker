@@ -40,10 +40,30 @@ def step_example():
     return x, normalize(y_bad), normalize(y_good)
 
 
+def outliers_example1():
+    num_samples = 10000
+    x = np.arange(num_samples) / num_samples
+    y = np.arange(num_samples) / num_samples
+    y_bad = np.copy(y)
+    y_bad[:1000] = np.random.randn(1000) + 10
+    y_good = y
+    return x, normalize(y_bad), normalize(y_good)
+
+
+def outliers_example2():
+    num_samples = 10000
+    x = np.arange(num_samples) / num_samples
+    y = np.arange(num_samples) / num_samples
+    y_bad = np.copy(y)
+    y_bad[-1000:] = np.random.randn(1000) - 10
+    y_good = y
+    return x, normalize(y_bad), normalize(y_good)
+
+
 def noise_example():
     num_samples = 40000
     x = np.arange(num_samples) / num_samples
-    y = np.arange(num_samples) / num_samples
+    y = np.arange(num_samples) * 2 / num_samples
     noise = np.random.randn(num_samples)
     y_bad = y - noise * x * 0.5
     y_good = y - noise * (x[::-1]) * 0.5
@@ -54,6 +74,8 @@ def main(args):
     for name, (x, y_bad, y_good) in [
         ("step", step_example()),
         ("noise", noise_example()),
+        ("outliers1", outliers_example1()),
+        ("outliers2", outliers_example2()),
     ]:
 
         print("\n\n", name)
