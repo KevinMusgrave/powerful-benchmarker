@@ -7,7 +7,7 @@
 ## Which git branch should you checkout?
 
 - The [domain-adaptation](https://github.com/KevinMusgrave/powerful-benchmarker/tree/domain-adaptation) branch contains code for:
-  - [Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?](https://arxiv.org/pdf/2208.07360.pdf)
+  - [Three New Validators and a Large-Scale Benchmark Ranking for Unsupervised Domain Adaptation](https://arxiv.org/pdf/2208.07360.pdf)
 - The [metric-learning](https://github.com/KevinMusgrave/powerful-benchmarker/tree/metric-learning) branch contains code for:
   - [A Metric Learning Reality Check](https://arxiv.org/pdf/2003.08505.pdf)
   
@@ -118,8 +118,8 @@ Thanks to [Jeff Musgrave](https://www.designgenius.ca/) for designing the logo.
 ## Citing the paper
 
 ```
-@article{Musgrave2022EvaluatingTE,
-  title={Evaluating the Evaluators: Which UDA validation methods are most effective? Can they be improved?},
+@article{Musgrave2022ThreeNew,
+  title={Three New Validators and a Large-Scale Benchmark Ranking for Unsupervised Domain Adaptation},
   author={Kevin Musgrave and Serge J. Belongie and Ser Nam Lim},
   journal={ArXiv},
   year={2022},
