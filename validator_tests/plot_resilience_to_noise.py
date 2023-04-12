@@ -20,6 +20,7 @@ def save_plot(output_folder, df):
         df,
         id_vars=[x_axis_title],
         value_vars=[
+            "Spearman Correlation",
             "Weighted Spearman Correlation",
             *new_keys[:-2],
         ],

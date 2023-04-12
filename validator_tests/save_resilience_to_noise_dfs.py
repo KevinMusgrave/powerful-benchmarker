@@ -31,9 +31,9 @@ def add_noise(original_df, scale):
     return df
 
 
-def get_correlation(df, per_adapter):
+def get_correlation(df, per_adapter, name="weighted_spearman"):
     return _get_correlation(
-        df.copy(), per_adapter=per_adapter, src_threshold=0.0, name="weighted_spearman"
+        df.copy(), per_adapter=per_adapter, src_threshold=0.0, name=name
     )
 
 
@@ -51,7 +51,8 @@ def get_acc(df, per_adapter, N):
 
 def save_df(output_folder, df):
     accs = {}
-    corr = get_correlation(df, per_adapter=False)
+    corr = get_correlation(df, per_adapter=False, name="spearman")
+    wcorr = get_correlation(df, per_adapter=False)
     Ns = [1, 5, 10, 50, 100, 500, 1000, 5000]
     for N in Ns:
         accs[N] = get_acc(df, per_adapter=False, N=N)
@@ -60,11 +61,20 @@ def save_df(output_folder, df):
     for scale in np.linspace(0, 0.2, 21):
         s["Noise Standard Deviation"].append(scale)
         df_with_noise = add_noise(df, scale)
-        corr_with_noise = get_correlation(df_with_noise, per_adapter=False)
+        corr_with_noise = get_correlation(
+            df_with_noise, per_adapter=False, name="spearman"
+        )
+        wcorr_with_noise = get_correlation(df_with_noise, per_adapter=False)
+        s["Spearman Correlation"].append(
+            spearmanr(
+                corr_with_noise["spearman"].values,
+                corr["spearman"].values,
+            ).correlation
+        )
         s["Weighted Spearman Correlation"].append(
             spearmanr(
-                corr_with_noise["weighted_spearman"].values,
-                corr["weighted_spearman"].values,
+                wcorr_with_noise["weighted_spearman"].values,
+                wcorr["weighted_spearman"].values,
             ).correlation
         )
         for N in Ns:
