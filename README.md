@@ -16,12 +16,12 @@ Currently I can provide technical support (help with code, bug fixes etc.) for t
 ## Installation
 
 Clone this repo:
-```
+```bash
 git clone https://github.com/KevinMusgrave/powerful-benchmarker.git
 ```
 
 Then go into the folder and install the required packages:
-```
+```bash
 cd powerful-benchmarker
 pip install -r requirements.txt
 ```
@@ -53,38 +53,38 @@ Visit each folder to view its readme file.
 
 ### delete_slurm_logs.py
 Delete all slurm logs:
-```
+```bash
 python delete_slurm_logs.py --delete
 ```
 
 Or delete slurm logs for specific experiments groups. For example, delete slurm logs for all experiment groups starting with "officehome":
-```
+```bash
 python delete_slurm_logs.py --delete --exp_group_prefix officehome
 ```
 ---
 ### kill_all.py
 Kill all model training jobs:
-```
+```bash
 python kill_all.py
 ```
 Or kill all validator test jobs:
-```
+```bash
 python kill_all.py --validator_tests
 ```
 ---
 ### print_progress.py
 Print how many hyperparameter trials are done:
-```
+```bash
 python print_progress.py
 ```
 
 Include a detailed summary of validator test jobs:
-```
+```bash
 python print_progress.py --with_validator_progress
 ```
 
 Save to `progress.txt` instead of printing to screen:
-```
+```bash
 python print_progress.py --save_to_file progress.txt
 ```
 ---
@@ -92,20 +92,20 @@ python print_progress.py --save_to_file progress.txt
 A simple way to run a program via slurm. 
 
 For example, run `collect_dfs.py` for all experiment groups starting with "office31", using a separate slurm job for each experiment group:
-```
+```bash
 python simple_slurm.py --command "python validator_tests/collect_dfs.py" --slurm_config_folder validator_tests \
 --slurm_config a100 --job_name=collect_dfs --cpus-per-task=16 --exp_group_prefix office31
 ```
 
 Or run a program without considering experiment groups at all:
-```
+```bash
 python simple_slurm.py --command "python validator_tests/zip_dfs.py" --slurm_config_folder validator_tests \
 --slurm_config a100 --job_name=zip_dfs --cpus-per-task=16
 ```
 ---
 ### upload_logs.py
 Upload slurm logs and experiment progress to a google drive folder at regular intervals (the default is every 2 hours):
-```
+```bash
 python upload_logs.py
 ```
 Set the google drive folder in `constants.yaml`.
@@ -117,7 +117,7 @@ Thanks to [Jeff Musgrave](https://www.designgenius.ca/) for designing the logo.
 
 ## Citing the paper
 
-```
+```bibtex
 @article{Musgrave2022ThreeNew,
   title={Three New Validators and a Large-Scale Benchmark Ranking for Unsupervised Domain Adaptation},
   author={Kevin Musgrave and Serge J. Belongie and Ser Nam Lim},
